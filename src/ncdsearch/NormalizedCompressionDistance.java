@@ -14,10 +14,14 @@ public class NormalizedCompressionDistance implements AutoCloseable {
 
 	private Deflater deflater;
 	private DeflateSize sizeRecorder;
+	private TokenSequence query;
+	private long baseSize;
 	
-	public NormalizedCompressionDistance() {
+	public NormalizedCompressionDistance(TokenSequence query) {
 		deflater = new Deflater();
 		sizeRecorder = new DeflateSize();
+		this.query = query;
+		baseSize = getCompressedDataSize(query, null);
 	}
 	
 	@Override
@@ -25,11 +29,10 @@ public class NormalizedCompressionDistance implements AutoCloseable {
 		deflater.end();
 	}
 	
-    public double ncd(TokenSequence s1, TokenSequence s2) {
-        long c1 = getCompressedDataSize(s1, null);
-        long c2 = getCompressedDataSize(s2, null);
-        long c1and2 = getCompressedDataSize(s1, s2);
-        return (c1and2 - Math.min(c1, c2)) * 1.0 / Math.max(c1, c2);
+    public double ncd(TokenSequence target) {
+        long c2 = getCompressedDataSize(target, null);
+        long c1and2 = getCompressedDataSize(query, target);
+        return (c1and2 - Math.min(baseSize, c2)) * 1.0 / Math.max(baseSize, c2);
     }
 
     public long getCompressedDataSize(TokenSequence s1, TokenSequence s2) {

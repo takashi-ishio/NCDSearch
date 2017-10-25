@@ -93,14 +93,14 @@ public class SearchMain {
 		TIntArrayList windowSize = new TIntArrayList();
 		for (int i=0; i<windowRatio.size(); i++) {
 			int w = (int)Math.ceil(queryTokens.size() * windowRatio.get(i));
-			if (i == 0 || windowSize.get(i-1) != w) {
+			if (i == 0 || windowSize.get(windowSize.size()-1) != w) {
 				windowSize.add(w);
 			}
 		}
 		final double th = threshold; // for compiler aid
 		
 
-		NormalizedCompressionDistance ncd = new NormalizedCompressionDistance();
+		NormalizedCompressionDistance ncd = new NormalizedCompressionDistance(queryTokens);
 
 		for (String dir: sourceDirs) {
 			DirectoryScan.scan(new File(dir), new DirectoryScan.Action() {
@@ -119,7 +119,7 @@ public class SearchMain {
 								for (int w=0; w<windowSize.size(); w++) {
 									TokenSequence window = fileTokens.substring(pos, pos+windowSize.get(w));
 									if (window != null) {
-										sim[pos][w] = ncd.ncd(queryTokens, window);
+										sim[pos][w] = ncd.ncd(window);
 									} else {
 										sim[pos][w] = Double.MAX_VALUE;
 									}

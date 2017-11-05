@@ -59,15 +59,9 @@ public class NormalizedCompressionDistance implements AutoCloseable {
     	sizeRecorder.reset();
     	DeflaterOutputStream out = new DeflaterOutputStream(sizeRecorder, deflater);
     	try {
-    		for (int i=0; i<s1.size(); i++) {
-    	    	out.write(s1.getTokenBytes(i));
-    	    	out.write(0);
-    		}
+    		out.write(s1.toByteArray());
 	    	if (s2 != null) {
-	    		for (int i=0; i<s2.size(); i++) {
-	    	    	out.write(s2.getTokenBytes(i));
-	    	    	out.write(0);
-	    		}
+	    		out.write(s2.toByteArray());
 	    	}
 	    	out.close();
 	    	return sizeRecorder.size;

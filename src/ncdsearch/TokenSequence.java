@@ -1,7 +1,5 @@
 package ncdsearch;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 
 import gnu.trove.list.array.TIntArrayList;
@@ -76,23 +74,24 @@ public class TokenSequence {
 		}
 	}
 	
+	/**
+	 * Create byte[] including token data.
+	 * This method constructs a new array for each call.
+	 * @return
+	 */
 	public byte[] toByteArray() {
-		try {
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			for (int i=start; i<end; i++) {
-				String s = tokens.get(i);
-				if (s != null) {
-					out.write(s.getBytes());
-					out.write(0);
-				}
-			}
-			out.close();
-			return out.toByteArray();
-		} catch (IOException e) {
-			assert false: "ByteArrayOutputStream does not cause IOException.";
-			return new byte[0];
+		int len = 0;
+		for (int i=start; i<end; i++) {
+			len += bytes.get(i).length + 1;
 		}
-
+		byte[] buf = new byte[len];
+		int pos = 0;
+		for (int i=start; i<end; i++) {
+			byte[] b = bytes.get(i);
+			System.arraycopy(b, 0, buf, pos, b.length);
+			pos += b.length + 1;
+		}
+		return buf;
 	}
 
 }

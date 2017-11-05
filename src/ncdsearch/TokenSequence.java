@@ -2,6 +2,7 @@ package ncdsearch;
 
 import java.util.ArrayList;
 
+
 import gnu.trove.list.array.TIntArrayList;
 import sarf.lexer.TokenReader;
 
@@ -13,6 +14,7 @@ public class TokenSequence {
 	private int start;
 	private int end;
 	private ArrayList<byte[]> bytes;
+	private byte[] cache;
 	
 	public TokenSequence(TokenReader r) {
 		tokens = new ArrayList<>();
@@ -66,32 +68,33 @@ public class TokenSequence {
 	 */
 	public TokenSequence substring(int start, int end) {
 		if (0 <= start && start < tokens.size() &&
-			1 <= end && end <= tokens.size() &&
-			start < end) {
+			start < end && end <= tokens.size()) {
 			return new TokenSequence(this, start, end);
 		} else {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Create byte[] including token data.
-	 * This method constructs a new array for each call.
+	 * This method use a cache to keep the created array.
 	 * @return
 	 */
 	public byte[] toByteArray() {
-		int len = 0;
-		for (int i=start; i<end; i++) {
-			len += bytes.get(i).length + 1;
+		if (cache == null) {
+			int len = 0;
+			for (int i=start; i<end; i++) {
+				len += bytes.get(i).length + 1;
+			}
+			cache = new byte[len];
+			int pos = 0;
+			for (int i=start; i<end; i++) {
+				byte[] b = bytes.get(i);
+				System.arraycopy(b, 0, cache, pos, b.length);
+				pos += b.length + 1;
+			}
 		}
-		byte[] buf = new byte[len];
-		int pos = 0;
-		for (int i=start; i<end; i++) {
-			byte[] b = bytes.get(i);
-			System.arraycopy(b, 0, buf, pos, b.length);
-			pos += b.length + 1;
-		}
-		return buf;
+		return cache;
 	}
 
 }

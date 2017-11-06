@@ -26,7 +26,9 @@ public class NormalizedCompressionDistance implements AutoCloseable {
 		deflater = new Deflater();
 		sizeRecorder = new DeflateSize();
 		this.query = query;
-		baseSize = getCompressedDataSize(query, null);
+		
+		byte[] b = query.toByteArray();
+		baseSize = getCompressedDataSize(b, 0, b.length);
 	}
 	
 	/**
@@ -41,28 +43,24 @@ public class NormalizedCompressionDistance implements AutoCloseable {
 	 * Compute a distance between a preset query and a given target file. 
 	 */
     public double ncd(TokenSequence target) {
-        long c2 = getCompressedDataSize(target, null);
-        long c1and2 = getCompressedDataSize(query, target);
+    	byte[] b = query.concat(target);
+    	long c1and2 = getCompressedDataSize(b, 0, b.length);
+    	long c2 = getCompressedDataSize(b, query.toByteArray().length, b.length - query.toByteArray().length);
         return (c1and2 - Math.min(baseSize, c2)) * 1.0 / Math.max(baseSize, c2);
     }
 
     /**
-     * Compute a distance between given two files.
-     * This method does not use a preset query.
+     * Compute a compressed data size for the query and a given file.
      * @param s1
      * @param s2
      * @return
      */
-    public long getCompressedDataSize(TokenSequence s1, TokenSequence s2) {
-    	
+    private long getCompressedDataSize(byte[] buf, int start, int length) {
     	deflater.reset();
     	sizeRecorder.reset();
     	DeflaterOutputStream out = new DeflaterOutputStream(sizeRecorder, deflater);
     	try {
-    		out.write(s1.toByteArray());
-	    	if (s2 != null) {
-	    		out.write(s2.toByteArray());
-	    	}
+    		out.write(buf, start, length);
 	    	out.close();
 	    	return sizeRecorder.size;
     	} catch (IOException e) {
@@ -70,6 +68,7 @@ public class NormalizedCompressionDistance implements AutoCloseable {
     		return 0;
     	}
     }
+
 
     private static class DeflateSize extends OutputStream { 
 

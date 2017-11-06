@@ -97,4 +97,25 @@ public class TokenSequence {
 		return cache;
 	}
 
+	/**
+	 * Create a byte array including two token sequence data.
+	 * @param another
+	 * @return
+	 */
+	public byte[] concat(TokenSequence another) {
+		int len = toByteArray().length;
+		for (int i=another.start; i<another.end; i++) {
+			len += another.bytes.get(i).length + 1;
+		}
+		byte[] buf = new byte[len];
+		System.arraycopy(cache, 0, buf, 0, toByteArray().length);
+		int pos = toByteArray().length;
+		for (int i=another.start; i<another.end; i++) {
+			byte[] b = another.bytes.get(i);
+			System.arraycopy(b, 0, buf, pos, b.length);
+			pos += b.length + 1;
+		}
+		return buf;
+	}
+
 }

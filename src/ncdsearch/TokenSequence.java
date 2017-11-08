@@ -1,10 +1,13 @@
 package ncdsearch;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
-
+import java.util.Arrays;
 
 import gnu.trove.list.array.TIntArrayList;
 import sarf.lexer.TokenReader;
+
 
 public class TokenSequence {
 
@@ -13,51 +16,85 @@ public class TokenSequence {
 	private TIntArrayList charpos;
 	private int start;
 	private int end;
-	private ArrayList<byte[]> bytes;
-	private byte[] cache;
+	private byte[] bytes;
+	private TIntArrayList bytepos;
 	
+	/**
+	 * Create an object including all tokens obtained from a reader.
+	 * @param r specifies a TokenReader.
+	 */
 	public TokenSequence(TokenReader r) {
 		tokens = new ArrayList<>();
 		lines = new TIntArrayList();
 		charpos = new TIntArrayList();
-		bytes = new ArrayList<>();
-		while (r.next()) {
-			tokens.add(r.getToken());
-			lines.add(r.getLine());
-			charpos.add(r.getCharPositionInLine());
-			bytes.add(r.getToken().getBytes());
+		bytepos = new TIntArrayList();
+		ByteArrayOutputStream s = new ByteArrayOutputStream(65536);
+		try {
+			while (r.next()) {
+				tokens.add(r.getToken());
+				lines.add(r.getLine());
+				charpos.add(r.getCharPositionInLine());
+				bytepos.add(s.size());
+				s.write(r.getToken().getBytes());
+				s.write(0);
+			}
+			bytepos.add(s.size());
+		} catch (IOException e) {
+			assert false: "ByteArrayOutputStream never throws IOException.";
 		}
 		start = 0;
 		end = tokens.size();
+		bytes = s.toByteArray();
 	}
 	
-	private TokenSequence(TokenSequence s, int start, int end) { 
-		this.tokens = s.tokens;
-		this.lines = s.lines;
-		this.charpos = s.charpos;
-		this.bytes = s.bytes;
+	/**
+	 * Create a subsequence of tokens.
+	 * @param base
+	 * @param start
+	 * @param end
+	 */
+	private TokenSequence(TokenSequence base, int start, int end) { 
+		this.tokens = base.tokens;
+		this.lines = base.lines;
+		this.charpos = base.charpos;
+		this.bytes = base.bytes;
+		this.bytepos = base.bytepos;
 		this.start = start;
 		this.end = end;
 	}
 	
+	/**
+	 * @return the number of tokens in this sequence.
+	 */
 	public int size() {
 		return end - start;
 	}
 	
+	/**
+	 * Get the line number of a specified token. 
+	 * @param pos index of a token.
+	 * @return a line number.
+	 */
 	public int getLine(int pos) {
 		return lines.get(pos + start);
 	}
 	
+	/**
+	 * Get the character position in the line of a specified token. 
+	 * @param pos index of a token.
+	 * @return a char position in a line. 
+	 */
 	public int getCharPositionInLine(int pos) {
 		return charpos.get(pos + start);
 	}
 	
+	/**
+	 * Get the string content of a specified token.
+	 * @param pos index of a token.
+	 * @return the conent of the token.
+	 */
 	public String getToken(int pos) {
 		return tokens.get(pos + start);
-	}
-	
-	public byte[] getTokenBytes(int pos) {
-		return bytes.get(pos + start);
 	}
 	
 	/**
@@ -76,46 +113,31 @@ public class TokenSequence {
 	}
 
 	/**
-	 * Create byte[] including token data.
-	 * This method use a cache to keep the created array.
+	 * Return a byte array including tokens.
+	 * The byte array should not be modified, because 
+	 * an internal cache may be corrupted.
 	 * @return
 	 */
 	public byte[] toByteArray() {
-		if (cache == null) {
-			int len = 0;
-			for (int i=start; i<end; i++) {
-				len += bytes.get(i).length + 1;
-			}
-			cache = new byte[len];
-			int pos = 0;
-			for (int i=start; i<end; i++) {
-				byte[] b = bytes.get(i);
-				System.arraycopy(b, 0, cache, pos, b.length);
-				pos += b.length + 1;
-			}
+		if (start == 0 && end == tokens.size()) {
+			return bytes;
+		} else {
+			return Arrays.copyOfRange(bytes, bytepos.get(start), bytepos.get(end));
 		}
-		return cache;
 	}
 
 	/**
 	 * Create a byte array including two token sequence data.
-	 * @param another
-	 * @return
+	 * @param another token sequence.
+	 * @return a single byte array including two token sequences.
 	 */
 	public byte[] concat(TokenSequence another) {
-		int len = toByteArray().length;
-		for (int i=another.start; i<another.end; i++) {
-			len += another.bytes.get(i).length + 1;
-		}
-		byte[] buf = new byte[len];
-		System.arraycopy(cache, 0, buf, 0, toByteArray().length);
-		int pos = toByteArray().length;
-		for (int i=another.start; i<another.end; i++) {
-			byte[] b = another.bytes.get(i);
-			System.arraycopy(b, 0, buf, pos, b.length);
-			pos += b.length + 1;
-		}
-		return buf;
+		byte[] b = toByteArray();
+		int anotherLen = another.bytepos.get(another.end)-another.bytepos.get(start); 
+		byte[] result = new byte[b.length + anotherLen];
+		System.arraycopy(b, 0, result, 0, bytes.length);
+		System.arraycopy(another.bytes, another.bytepos.get(start), result, b.length, anotherLen);
+		return result;
 	}
 
 }

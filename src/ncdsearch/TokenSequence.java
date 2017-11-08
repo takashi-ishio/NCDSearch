@@ -49,9 +49,9 @@ public class TokenSequence {
 	
 	/**
 	 * Create a subsequence of tokens.
-	 * @param base
-	 * @param start
-	 * @param end
+	 * @param base an original sequence.
+	 * @param start index of a start token.
+	 * @param end index of an end token (exclusive).
 	 */
 	private TokenSequence(TokenSequence base, int start, int end) { 
 		this.tokens = base.tokens;

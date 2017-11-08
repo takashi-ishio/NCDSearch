@@ -101,6 +101,7 @@ public class SearchMain {
 		
 
 		NormalizedCompressionDistance ncd = new NormalizedCompressionDistance(queryTokens);
+		final FileType queryFileType = filetype;
 
 		for (String dir: sourceDirs) {
 			DirectoryScan.scan(new File(dir), new DirectoryScan.Action() {
@@ -109,7 +110,7 @@ public class SearchMain {
 				public void process(File f) {
 					try {
 						FileType filetype = TokenReaderFactory.getFileType(f.getAbsolutePath());
-						if (TokenReaderFactory.isSupported(filetype)) {
+						if (queryFileType == filetype) {
 							TokenSequence fileTokens = new TokenSequence(TokenReaderFactory.create(filetype, new FileReader(f)));
 							
 

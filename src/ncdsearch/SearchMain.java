@@ -81,7 +81,7 @@ public class SearchMain {
 		System.err.println(" File type: " + filetype.name());
 		System.err.println(" Query size: " + queryTokens.size());
 		System.err.println(" Search path: " + Arrays.toString(sourceDirs.toArray()));
-
+		
 		TDoubleArrayList windowRatio = new TDoubleArrayList();
 		for (double start = 1.0; start >= MIN_WINDOW; start -= WINDOW_STEP) {
 			windowRatio.add(start);
@@ -114,32 +114,31 @@ public class SearchMain {
 						
 						FileType filetype = TokenReaderFactory.getFileType(f.getAbsolutePath());
 						if (queryFileType == filetype) {
+							System.err.println(f.getAbsolutePath());
 							TokenSequence fileTokens = new TokenSequence(TokenReaderFactory.create(filetype, new FileReader(f)));
 							
+							int[] positions = fileTokens.getLineHeadTokenPositions();
 
 							// Compute similarity values
-							double[][] distance = new double[fileTokens.size()][windowSize.size()];
-							for (int pos=0; pos<fileTokens.size(); pos++) {
+							double[][] distance = new double[positions.length][windowSize.size()];
+							for (int p=0; p<positions.length; p++) {
 								for (int w=0; w<windowSize.size(); w++) {
-									TokenSequence window = fileTokens.substring(pos, pos+windowSize.get(w));
+									TokenSequence window = fileTokens.substring(positions[p], positions[p]+windowSize.get(w));
 									if (window != null) {
-										distance[pos][w] = ncd.ncd(window);
+										distance[p][w] = ncd.ncd(window);
 									} else {
-										distance[pos][w] = Double.MAX_VALUE;
+										distance[p][w] = Double.MAX_VALUE;
 									}
 								}
 							}
 							
 							// Report local maximum values
-							for (int pos=0; pos<fileTokens.size(); pos++) {
+							for (int p=0; p<positions.length; p++) {
 								for (int w=0; w<windowSize.size(); w++) {
-									if (distance[pos][w] < th && isLocalMinimum(distance, pos, w)) {
-										Fragment fragment = new Fragment(f.getAbsolutePath(), pos, pos+windowSize.get(w), distance[pos][w]); 
+									if (distance[p][w] < th && isLocalMinimum(distance, p, w)) {
+										Fragment fragment = new Fragment(f.getAbsolutePath(), positions[p], positions[p]+windowSize.get(w), distance[p][w]); 
 										fragments.add(fragment);
 									}
-//									if (pos + w < fileTokens.size()) {
-//										System.out.println(f.getAbsolutePath() + "," + fileTokens.getLine(pos) + "," + fileTokens.getLine(pos+w) + "," + sim[pos][w] + "," + pos + "," + w);
-//									}
 								}
 							}
 							

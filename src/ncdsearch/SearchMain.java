@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 import gnu.trove.list.array.TDoubleArrayList;
 import gnu.trove.list.array.TIntArrayList;
@@ -109,20 +110,22 @@ public class SearchMain {
 				@Override
 				public void process(File f) {
 					try {
+						ArrayList<Fragment> fragments = new ArrayList<>();
+						
 						FileType filetype = TokenReaderFactory.getFileType(f.getAbsolutePath());
 						if (queryFileType == filetype) {
 							TokenSequence fileTokens = new TokenSequence(TokenReaderFactory.create(filetype, new FileReader(f)));
 							
 
 							// Compute similarity values
-							double[][] sim = new double[fileTokens.size()][windowSize.size()];
+							double[][] distance = new double[fileTokens.size()][windowSize.size()];
 							for (int pos=0; pos<fileTokens.size(); pos++) {
 								for (int w=0; w<windowSize.size(); w++) {
 									TokenSequence window = fileTokens.substring(pos, pos+windowSize.get(w));
 									if (window != null) {
-										sim[pos][w] = ncd.ncd(window);
+										distance[pos][w] = ncd.ncd(window);
 									} else {
-										sim[pos][w] = Double.MAX_VALUE;
+										distance[pos][w] = Double.MAX_VALUE;
 									}
 								}
 							}
@@ -130,15 +133,24 @@ public class SearchMain {
 							// Report local maximum values
 							for (int pos=0; pos<fileTokens.size(); pos++) {
 								for (int w=0; w<windowSize.size(); w++) {
-									if (sim[pos][w] < th && isLocalMinimum(sim, pos, w)) {
-										System.out.println(f.getAbsolutePath() + "," + fileTokens.getLine(pos) + "," + fileTokens.getCharPositionInLine(pos) + "," + fileTokens.getLine(pos+windowSize.get(w)-1) + "," + (fileTokens.getCharPositionInLine(pos+windowSize.get(w)-1) + fileTokens.getToken(pos+windowSize.get(w)-1).length()) + "," + sim[pos][w]);
+									if (distance[pos][w] < th && isLocalMinimum(distance, pos, w)) {
+										Fragment fragment = new Fragment(f.getAbsolutePath(), pos, pos+windowSize.get(w), distance[pos][w]); 
+										fragments.add(fragment);
 									}
 //									if (pos + w < fileTokens.size()) {
 //										System.out.println(f.getAbsolutePath() + "," + fileTokens.getLine(pos) + "," + fileTokens.getLine(pos+w) + "," + sim[pos][w] + "," + pos + "," + w);
 //									}
 								}
 							}
+							
+							// Remove redundant elements
+							ArrayList<Fragment> result = Fragment.filter(fragments);
+							for (Fragment fragment: result) {
+								fragment.printString(fileTokens);
+							}
 						}
+						
+						
 					} catch (IOException e) {
 						return;
 					}
@@ -163,13 +175,113 @@ public class SearchMain {
 
 	public static boolean isLocalMinimum(double[][] array, int p, int w) {
 		double v = array[p][w];
-		return v < value(array, p-1, w-1) && 
-				v < value(array, p-1, w) &&
-				v < value(array, p-1, w+1) &&
-				v < value(array, p, w-1) &&
-				v < value(array, p, w+1) &&
-				v < value(array, p+1, w-1) &&
-				v < value(array, p+1, w) &&
-				v < value(array, p+1, w+1);
+		return v <= value(array, p-1, w-1) && 
+				v <= value(array, p-1, w) &&
+				v <= value(array, p-1, w+1) &&
+				v <= value(array, p, w-1) &&
+				v <= value(array, p, w+1) &&
+				v <= value(array, p+1, w-1) &&
+				v <= value(array, p+1, w) &&
+				v <= value(array, p+1, w+1);
+	}
+	
+	private static class Fragment implements Comparable<Fragment> {
+
+		private String filename;
+		private int startPos;
+		private int endPos;
+		private double distance;
+		
+		/**
+		 * @param filename
+		 * @param startPos
+		 * @param endPos exclusive.
+		 * @param distance
+		 */
+		public Fragment(String filename, int startPos, int endPos, double distance) {
+			this.filename = filename;
+			this.startPos = startPos;
+			this.endPos = endPos;
+			this.distance = distance;
+			assert this.startPos < this.endPos: "Zero-length fragment is not allowed.";
+		}
+		
+		public void printString(TokenSequence fileTokens) {
+			System.out.println(filename + "," + 
+		                       fileTokens.getLine(startPos) + "," + 
+					           fileTokens.getCharPositionInLine(startPos) + "," + 
+		                       fileTokens.getLine(endPos-1) + "," + 
+					           (fileTokens.getCharPositionInLine(endPos-1) + fileTokens.getToken(endPos-1).length()) + "," + 
+		                       distance);
+		}
+		
+		public boolean overlapWith(Fragment another) {
+			return !(this.endPos <= another.startPos ||
+				another.endPos <= this.startPos);
+		}
+		
+		/**
+		 * Compare two overlapping fragments and select a better one.
+		 * @param another
+		 * @return true if this object is better for output. 
+		 * False if another is better.
+		 */
+		public boolean isBetterThan(Fragment another) {
+			assert this.overlapWith(another);
+			// Distance: Lower is better
+			if (this.distance < another.distance) return true;
+			else if (this.distance > another.distance) return false;
+			else {
+				// Longer is better
+				int thislen = this.endPos - this.startPos;
+				int anotherlen = another.endPos - another.startPos;
+				if (thislen > anotherlen) return true;
+				else if (thislen < anotherlen) return false;
+				else {
+					return this.startPos < another.startPos;
+				}
+			}
+		}
+		
+		/**
+		 * Sort fragments by their starting positions in the ascending order.
+		 */
+		@Override
+		public int compareTo(Fragment another) {
+			return this.startPos - another.startPos;
+		}
+		
+		/**
+		 * Remove redundant elements.
+		 * @param fragments a list of fragments to be processed.  
+		 * This collection is modified by this method.
+		 * @return a filtered list of fragments.
+		 */
+		public static ArrayList<Fragment> filter(ArrayList<Fragment> fragments) {
+			for (int i=0; i<fragments.size(); i++) {
+				Fragment f1 = fragments.get(i);
+				if (f1 == null) continue;
+				for (int j=i+1; j<fragments.size(); j++) {
+					Fragment f2 = fragments.get(j);
+					if (f2 == null) continue;
+					if (f1.overlapWith(f2)) {
+						if (f1.isBetterThan(f2)) {
+							fragments.set(j, null);
+						} else {
+							fragments.set(i, null);
+							break;
+						}
+					}
+				}
+			}
+			ArrayList<Fragment> result = new ArrayList<>();
+			for (int i=0; i<fragments.size(); i++) {
+				if (fragments.get(i) != null) {
+					result.add(fragments.get(i));
+				}
+			}
+			Collections.sort(result);
+			return result;
+		}
 	}
 }

@@ -133,11 +133,35 @@ public class TokenSequence {
 	 */
 	public byte[] concat(TokenSequence another) {
 		byte[] b = toByteArray();
-		int anotherLen = another.bytepos.get(another.end)-another.bytepos.get(start); 
+		int anotherLen = another.bytepos.get(another.end)-another.bytepos.get(another.start); 
 		byte[] result = new byte[b.length + anotherLen];
 		System.arraycopy(b, 0, result, 0, bytes.length);
-		System.arraycopy(another.bytes, another.bytepos.get(start), result, b.length, anotherLen);
+		System.arraycopy(another.bytes, another.bytepos.get(another.start), result, b.length, anotherLen);
 		return result;
+	}
+	
+	/**
+	 * @return token positions that are the first tokens of lines, 
+	 * i.e. each pos in the resultant array satisfies: getLine(pos-1) < getLine(pos).
+	 */
+	public int[] getLineHeadTokenPositions() {
+		TIntArrayList result = new TIntArrayList();
+		for (int i=0; i<size(); i++) {
+			if (i == 0 || getLine(i-1) < getLine(i)) {
+				result.add(i);
+			}
+		}
+		return result.toArray();
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder b = new StringBuilder();
+		for (int i=0; i<size(); i++) {
+			b.append(getToken(i));
+			b.append(" ");
+		}
+		return b.toString();
 	}
 
 }

@@ -1,9 +1,9 @@
 package ncdsearch;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,12 +22,14 @@ public class SearchMain {
 	private static final String ARG_MAX_WINDOW = "-max";
 	private static final String ARG_THRESHOLD = "-th";
 	private static final String ARG_LANGUAGE = "-lang";
+	private static final String ARG_VERBOSE = "-v";
 	
 	public static void main(String[] args) {
 		double WINDOW_STEP = 0.05; 
 		double MIN_WINDOW = 0.8;
 		double MAX_WINDOW = 1.2;
 		double threshold = 0.5;
+		boolean verbose = false;
 		FileType filetype = FileType.JAVA;
 		ArrayList<String> sourceDirs = new ArrayList<>();
 		
@@ -65,6 +67,9 @@ public class SearchMain {
 						filetype = t;
 					}
 				}
+			} else if (args[idx].equals(ARG_VERBOSE)) {
+				idx++;
+				verbose = true;
 			} else {
 				sourceDirs.add(args[idx++]);
 			}
@@ -103,6 +108,7 @@ public class SearchMain {
 
 		NormalizedCompressionDistance ncd = new NormalizedCompressionDistance(queryTokens);
 		final FileType queryFileType = filetype;
+		final boolean showProgress = verbose;
 
 		for (String dir: sourceDirs) {
 			DirectoryScan.scan(new File(dir), new DirectoryScan.Action() {
@@ -114,8 +120,8 @@ public class SearchMain {
 						
 						FileType filetype = TokenReaderFactory.getFileType(f.getAbsolutePath());
 						if (queryFileType == filetype) {
-							System.err.println(f.getAbsolutePath());
-							TokenSequence fileTokens = new TokenSequence(TokenReaderFactory.create(filetype, new FileReader(f)));
+							if (showProgress) System.err.println(f.getAbsolutePath());
+							TokenSequence fileTokens = new TokenSequence(TokenReaderFactory.create(filetype, Files.readAllBytes(f.toPath())));
 							
 							int[] positions = fileTokens.getLineHeadTokenPositions();
 

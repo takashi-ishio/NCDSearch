@@ -29,6 +29,7 @@ public class SearchMain {
 	public static final String ARG_LANGUAGE = "-lang";
 	public static final String ARG_VERBOSE = "-v";
 	public static final String ARG_COMPRESSOR = "-c";
+	public static final String ARG_QUERY = "-q";
 	
 	
 	public static void main(String[] args) {
@@ -40,6 +41,7 @@ public class SearchMain {
 		FileType filetype = FileType.JAVA;
 		ArrayList<String> sourceDirs = new ArrayList<>();
 		Compressor compressor = null;
+		String queryFilename = null;
 		
 		int idx = 0;
 		while (idx < args.length) {
@@ -83,6 +85,11 @@ public class SearchMain {
 				if (idx < args.length) {
 					compressor = Compressor.valueOf(args[idx++].toUpperCase());
 				}
+			} else if (args[idx].equals(ARG_QUERY)) {
+				idx++;
+				if (idx < args.length) {
+					queryFilename = args[idx++];
+				}
 			} else {
 				sourceDirs.add(args[idx++]);
 			}
@@ -90,7 +97,20 @@ public class SearchMain {
 		if (sourceDirs.size() == 0) sourceDirs.add(".");
 		if (compressor == null) compressor = Compressor.ZIP;
 		
-		TokenReader reader = TokenReaderFactory.create(filetype, new InputStreamReader(System.in));
+		TokenReader reader;
+		if (queryFilename != null) {
+			try {
+				File f = new File(queryFilename);
+				reader = TokenReaderFactory.create(filetype, Files.readAllBytes(f.toPath())); 
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.err.println("Could not read " + queryFilename + " as a query.");
+				return;
+			}
+		} else {
+			reader = TokenReaderFactory.create(filetype, new InputStreamReader(System.in)); 
+		}
+		
 		TokenSequence queryTokens = new TokenSequence(reader); 
 		
 		System.err.println("Configuration: ");

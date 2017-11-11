@@ -10,6 +10,11 @@ import java.util.Collections;
 
 import gnu.trove.list.array.TDoubleArrayList;
 import gnu.trove.list.array.TIntArrayList;
+import ncdsearch.ncd.Compressor;
+import ncdsearch.ncd.DeflateStrategy;
+import ncdsearch.ncd.ICompressionStrategy;
+import ncdsearch.ncd.XzStrategy;
+import ncdsearch.ncd.ZstdStrategy;
 import sarf.lexer.DirectoryScan;
 import sarf.lexer.FileType;
 import sarf.lexer.TokenReader;
@@ -18,11 +23,13 @@ import sarf.lexer.TokenReaderFactory;
 
 public class SearchMain {
 
-	private static final String ARG_MIN_WINDOW = "-min";
-	private static final String ARG_MAX_WINDOW = "-max";
-	private static final String ARG_THRESHOLD = "-th";
-	private static final String ARG_LANGUAGE = "-lang";
-	private static final String ARG_VERBOSE = "-v";
+	public static final String ARG_MIN_WINDOW = "-min";
+	public static final String ARG_MAX_WINDOW = "-max";
+	public static final String ARG_THRESHOLD = "-th";
+	public static final String ARG_LANGUAGE = "-lang";
+	public static final String ARG_VERBOSE = "-v";
+	public static final String ARG_COMPRESSOR = "-c";
+	
 	
 	public static void main(String[] args) {
 		double WINDOW_STEP = 0.05; 
@@ -32,6 +39,7 @@ public class SearchMain {
 		boolean verbose = false;
 		FileType filetype = FileType.JAVA;
 		ArrayList<String> sourceDirs = new ArrayList<>();
+		Compressor compressor = null;
 		
 		int idx = 0;
 		while (idx < args.length) {
@@ -70,16 +78,23 @@ public class SearchMain {
 			} else if (args[idx].equals(ARG_VERBOSE)) {
 				idx++;
 				verbose = true;
+			} else if (args[idx].equals(ARG_COMPRESSOR)) {
+				idx++;
+				if (idx < args.length) {
+					compressor = Compressor.valueOf(args[idx++].toUpperCase());
+				}
 			} else {
 				sourceDirs.add(args[idx++]);
 			}
 		}
 		if (sourceDirs.size() == 0) sourceDirs.add(".");
+		if (compressor == null) compressor = Compressor.ZIP;
 		
 		TokenReader reader = TokenReaderFactory.create(filetype, new InputStreamReader(System.in));
 		TokenSequence queryTokens = new TokenSequence(reader); 
 		
 		System.err.println("Configuration: ");
+		System.err.println(" Compressor: " + compressor.name());
 		System.err.println(" Min window size ratio: " + MIN_WINDOW);
 		System.err.println(" Max window size ratio: " + MAX_WINDOW);
 		System.err.println(" threshold: " + threshold);
@@ -106,7 +121,7 @@ public class SearchMain {
 		final double th = threshold; // for compiler aid
 		
 
-		NormalizedCompressionDistance ncd = new NormalizedCompressionDistance(queryTokens);
+		NormalizedCompressionDistance ncd = new NormalizedCompressionDistance(queryTokens, Compressor.createInstance(compressor));
 		final FileType queryFileType = filetype;
 		final boolean showProgress = verbose;
 

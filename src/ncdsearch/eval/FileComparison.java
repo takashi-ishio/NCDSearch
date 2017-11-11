@@ -3,9 +3,12 @@ package ncdsearch.eval;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 
 import ncdsearch.NormalizedCompressionDistance;
+import ncdsearch.SearchMain;
 import ncdsearch.TokenSequence;
+import ncdsearch.ncd.Compressor;
 import sarf.lexer.FileType;
 import sarf.lexer.TokenReader;
 import sarf.lexer.TokenReaderFactory;
@@ -17,31 +20,54 @@ import sarf.lexer.TokenReaderFactory;
 public class FileComparison {
 
 	public static void main(String[] args) {
-		if (args.length < 2) {
-			System.err.println("Usage: FileComparison [-best] queryfile comparedfile");
+		int idx = 0;
+		boolean searchBest = false;
+		ArrayList<File> files = new ArrayList<>();
+		Compressor compressor = null;
+		while (idx < args.length) {
+			if (args[idx].equals("-best")) {
+				searchBest = true;
+				idx++;
+			} else if (args[idx].equals(SearchMain.ARG_COMPRESSOR)) {
+				idx++;
+				if (idx < args.length) {
+					compressor = Compressor.valueOf(args[idx++].toUpperCase());
+				}
+			} else {
+				files.add(new File(args[idx++]));
+			}
+		}
+
+		if (files.size() != 2 || 
+			!files.get(0).isFile() ||
+			!files.get(0).canRead() ||
+			!files.get(1).isFile() ||
+			!files.get(1).canRead()) {
+			System.err.println("Usage: FileComparison [-best] [-compressor (ZIP|XZ|ZSTD)] queryfile comparedfile");
 			return;
 		}
-		if (args[0].equals("-best")) {
-			System.out.println(searchBestMatch(args[1], args[2]));
+
+		if (searchBest) {
+			System.out.println(searchBestMatch(files.get(0), files.get(1), compressor));
 		} else {
-			System.out.println(compareSimply(args[0], args[1]));
+			System.out.println(compareSimply(files.get(0), files.get(1), compressor));
 		}
 	}
 	
-	public static double compareSimply(String query, String target) {
+	public static double compareSimply(File query, File target, Compressor c) {
 		TokenSequence tokens1 = read(query);
 		TokenSequence tokens2 = read(target);
 
-		try (NormalizedCompressionDistance ncd = new NormalizedCompressionDistance(tokens1)) {
+		try (NormalizedCompressionDistance ncd = new NormalizedCompressionDistance(tokens1, Compressor.createInstance(c))) {
 			return ncd.ncd(tokens2);
 		}
 	}
 	
-	public static double searchBestMatch(String query, String target) {
+	public static double searchBestMatch(File query, File target, Compressor c) {
 		TokenSequence queryTokens = read(query);
 		TokenSequence tokens = read(target);
 
-		try (NormalizedCompressionDistance ncd = new NormalizedCompressionDistance(queryTokens)) {
+		try (NormalizedCompressionDistance ncd = new NormalizedCompressionDistance(queryTokens, Compressor.createInstance(c))) {
 			double min = Double.MAX_VALUE;
 			for (int i=0; i<tokens.size(); i++) {
 				for (int j=i+1; j<=tokens.size(); j++) {
@@ -54,11 +80,11 @@ public class FileComparison {
 		}
 	}
 	
-	private static TokenSequence read(String filename) {
+	private static TokenSequence read(File f) {
 		try {
-			FileType t = TokenReaderFactory.getFileType(filename);
+			FileType t = TokenReaderFactory.getFileType(f.getAbsolutePath());
 			if (t != FileType.UNSUPPORTED) {
-				TokenReader reader = TokenReaderFactory.create(t, Files.readAllBytes(new File(filename).toPath()));
+				TokenReader reader = TokenReaderFactory.create(t, Files.readAllBytes(f.toPath()));
 				return new TokenSequence(reader);
 			} else {
 				return null;

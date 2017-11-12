@@ -10,6 +10,7 @@ import java.util.Collections;
 
 import gnu.trove.list.array.TDoubleArrayList;
 import gnu.trove.list.array.TIntArrayList;
+import ncdsearch.eval.FileComparison;
 import ncdsearch.ncd.Compressor;
 import ncdsearch.ncd.DeflateStrategy;
 import ncdsearch.ncd.ICompressionStrategy;
@@ -23,6 +24,7 @@ import sarf.lexer.TokenReaderFactory;
 
 public class SearchMain {
 
+	public static final String ARG_TEST_COMPARE = "--test-compare";
 	public static final String ARG_MIN_WINDOW = "-min";
 	public static final String ARG_MAX_WINDOW = "-max";
 	public static final String ARG_THRESHOLD = "-th";
@@ -30,9 +32,14 @@ public class SearchMain {
 	public static final String ARG_VERBOSE = "-v";
 	public static final String ARG_COMPRESSOR = "-c";
 	public static final String ARG_QUERY = "-q";
-	
+
 	
 	public static void main(String[] args) {
+		if (args.length > 1 && args[0].equals(ARG_TEST_COMPARE)) {
+			FileComparison.main(Arrays.copyOfRange(args, 1, args.length));
+			return;
+		}
+			
 		double WINDOW_STEP = 0.05; 
 		double MIN_WINDOW = 0.8;
 		double MAX_WINDOW = 1.2;

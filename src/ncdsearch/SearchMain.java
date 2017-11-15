@@ -3,10 +3,10 @@ package ncdsearch;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 
 import gnu.trove.list.array.TDoubleArrayList;
 import gnu.trove.list.array.TIntArrayList;
@@ -28,6 +28,18 @@ public class SearchMain {
 	public static final String ARG_VERBOSE = "-v";
 	public static final String ARG_COMPRESSOR = "-c";
 	public static final String ARG_QUERY = "-q";
+	public static final String ARG_QUERY_DIRECT = "-e";
+
+	private double WINDOW_STEP = 0.05; 
+	private double MIN_WINDOW = 0.8;
+	private double MAX_WINDOW = 1.2;
+	private double threshold = 0.5;
+	private boolean verbose = false;
+
+	private TokenSequence queryTokens;
+	private ArrayList<String> sourceDirs = new ArrayList<>();
+	private FileType queryFileType = FileType.JAVA;
+	private Compressor compressor = null;
 
 	
 	public static void main(String[] args) {
@@ -35,16 +47,27 @@ public class SearchMain {
 			FileComparison.main(Arrays.copyOfRange(args, 1, args.length));
 			return;
 		}
-			
-		double WINDOW_STEP = 0.05; 
-		double MIN_WINDOW = 0.8;
-		double MAX_WINDOW = 1.2;
-		double threshold = 0.5;
-		boolean verbose = false;
-		FileType filetype = FileType.JAVA;
-		ArrayList<String> sourceDirs = new ArrayList<>();
-		Compressor compressor = null;
+
+		SearchMain instance = new SearchMain(args);
+		if (instance.isValidConfiguration()) {
+			instance.execute();
+		} else {
+			System.err.println("Could not execute a search.");
+			instance.printConfig();
+		}
+	}
+
+	public boolean isValidConfiguration() {
+		assert compressor != null;
+		
+		return queryTokens != null && 
+				sourceDirs.size() > 0;
+	}
+
+	
+	public SearchMain(String[] args) {
 		String queryFilename = null;
+		ArrayList<String> queryArgs = new ArrayList<>();
 		
 		int idx = 0;
 		while (idx < args.length) {
@@ -77,7 +100,7 @@ public class SearchMain {
 				if (idx < args.length) {
 					FileType t = TokenReaderFactory.getFileType("." + args[idx++]);
 					if (TokenReaderFactory.isSupported(t)) {
-						filetype = t;
+						queryFileType = t;
 					}
 				}
 			} else if (args[idx].equals(ARG_VERBOSE)) {
@@ -93,6 +116,11 @@ public class SearchMain {
 				if (idx < args.length) {
 					queryFilename = args[idx++];
 				}
+			} else if (args[idx].equals(ARG_QUERY_DIRECT)) {
+				idx++;
+				while (idx < args.length) {
+					queryArgs.add(args[idx++]);
+				}
 			} else {
 				sourceDirs.add(args[idx++]);
 			}
@@ -104,26 +132,34 @@ public class SearchMain {
 		if (queryFilename != null) {
 			try {
 				File f = new File(queryFilename);
-				reader = TokenReaderFactory.create(filetype, Files.readAllBytes(f.toPath())); 
+				reader = TokenReaderFactory.create(queryFileType, Files.readAllBytes(f.toPath())); 
 			} catch (IOException e) {
 				e.printStackTrace();
 				System.err.println("Could not read " + queryFilename + " as a query.");
 				return;
 			}
+		} else if (queryArgs.size() > 0) {
+			reader = TokenReaderFactory.create(queryFileType, new StringReader(concat(queryArgs)));
 		} else {
-			reader = TokenReaderFactory.create(filetype, new InputStreamReader(System.in)); 
+			reader = TokenReaderFactory.create(queryFileType, new InputStreamReader(System.in)); 
 		}
 		
-		TokenSequence queryTokens = new TokenSequence(reader); 
-		
+		queryTokens = new TokenSequence(reader); 
+	}
+	
+	public void printConfig() {
 		System.err.println("Configuration: ");
 		System.err.println(" Compressor: " + compressor.name());
 		System.err.println(" Min window size ratio: " + MIN_WINDOW);
 		System.err.println(" Max window size ratio: " + MAX_WINDOW);
 		System.err.println(" threshold: " + threshold);
-		System.err.println(" File type: " + filetype.name());
+		System.err.println(" File type: " + queryFileType.name());
 		System.err.println(" Query size: " + queryTokens.size());
 		System.err.println(" Search path: " + Arrays.toString(sourceDirs.toArray()));
+	}
+	
+	public void execute() {
+		if (verbose) printConfig();
 		
 		TDoubleArrayList windowRatio = new TDoubleArrayList();
 		for (double start = 1.0; start >= MIN_WINDOW; start -= WINDOW_STEP) {
@@ -145,8 +181,6 @@ public class SearchMain {
 		
 
 		NormalizedCompressionDistance ncd = new NormalizedCompressionDistance(queryTokens, Compressor.createInstance(compressor));
-		final FileType queryFileType = filetype;
-		final boolean showProgress = verbose;
 
 		for (String dir: sourceDirs) {
 			DirectoryScan.scan(new File(dir), new DirectoryScan.Action() {
@@ -158,7 +192,7 @@ public class SearchMain {
 						
 						FileType filetype = TokenReaderFactory.getFileType(f.getAbsolutePath());
 						if (queryFileType == filetype) {
-							if (showProgress) System.err.println(f.getAbsolutePath());
+							if (verbose) System.err.println(f.getAbsolutePath());
 							TokenSequence fileTokens = new TokenSequence(TokenReaderFactory.create(filetype, Files.readAllBytes(f.toPath())));
 							
 							int[] positions = fileTokens.getLineHeadTokenPositions();
@@ -202,6 +236,16 @@ public class SearchMain {
 		}
 		ncd.close();
 	}
+
+	
+	public static String concat(ArrayList<String> queryArgs) {
+		StringBuilder b = new StringBuilder();
+		for (String arg: queryArgs) {
+			b.append(arg);
+			b.append(" ");
+		}
+		return b.toString();
+	}
 	
 	public static double value(double[][] array, int idx1, int idx2) {
 		if (idx1 < 0 || array.length <= idx1) {
@@ -228,103 +272,4 @@ public class SearchMain {
 				v <= value(array, p+1, w+1);
 	}
 	
-	private static class Fragment implements Comparable<Fragment> {
-
-		private String filename;
-		private int startPos;
-		private int endPos;
-		private double distance;
-		
-		/**
-		 * @param filename
-		 * @param startPos
-		 * @param endPos exclusive.
-		 * @param distance
-		 */
-		public Fragment(String filename, int startPos, int endPos, double distance) {
-			this.filename = filename;
-			this.startPos = startPos;
-			this.endPos = endPos;
-			this.distance = distance;
-			assert this.startPos < this.endPos: "Zero-length fragment is not allowed.";
-		}
-		
-		public void printString(TokenSequence fileTokens) {
-			System.out.println(filename + "," + 
-		                       fileTokens.getLine(startPos) + "," + 
-					           fileTokens.getCharPositionInLine(startPos) + "," + 
-		                       fileTokens.getLine(endPos-1) + "," + 
-					           (fileTokens.getCharPositionInLine(endPos-1) + fileTokens.getToken(endPos-1).length()) + "," + 
-		                       distance);
-		}
-		
-		public boolean overlapWith(Fragment another) {
-			return !(this.endPos <= another.startPos ||
-				another.endPos <= this.startPos);
-		}
-		
-		/**
-		 * Compare two overlapping fragments and select a better one.
-		 * @param another
-		 * @return true if this object is better for output. 
-		 * False if another is better.
-		 */
-		public boolean isBetterThan(Fragment another) {
-			assert this.overlapWith(another);
-			// Distance: Lower is better
-			if (this.distance < another.distance) return true;
-			else if (this.distance > another.distance) return false;
-			else {
-				// Longer is better
-				int thislen = this.endPos - this.startPos;
-				int anotherlen = another.endPos - another.startPos;
-				if (thislen > anotherlen) return true;
-				else if (thislen < anotherlen) return false;
-				else {
-					return this.startPos < another.startPos;
-				}
-			}
-		}
-		
-		/**
-		 * Sort fragments by their starting positions in the ascending order.
-		 */
-		@Override
-		public int compareTo(Fragment another) {
-			return this.startPos - another.startPos;
-		}
-		
-		/**
-		 * Remove redundant elements.
-		 * @param fragments a list of fragments to be processed.  
-		 * This collection is modified by this method.
-		 * @return a filtered list of fragments.
-		 */
-		public static ArrayList<Fragment> filter(ArrayList<Fragment> fragments) {
-			for (int i=0; i<fragments.size(); i++) {
-				Fragment f1 = fragments.get(i);
-				if (f1 == null) continue;
-				for (int j=i+1; j<fragments.size(); j++) {
-					Fragment f2 = fragments.get(j);
-					if (f2 == null) continue;
-					if (f1.overlapWith(f2)) {
-						if (f1.isBetterThan(f2)) {
-							fragments.set(j, null);
-						} else {
-							fragments.set(i, null);
-							break;
-						}
-					}
-				}
-			}
-			ArrayList<Fragment> result = new ArrayList<>();
-			for (int i=0; i<fragments.size(); i++) {
-				if (fragments.get(i) != null) {
-					result.add(fragments.get(i));
-				}
-			}
-			Collections.sort(result);
-			return result;
-		}
-	}
 }

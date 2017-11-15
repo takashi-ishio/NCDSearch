@@ -27,6 +27,7 @@ public class SearchMain {
 	public static final String ARG_LANGUAGE = "-lang";
 	public static final String ARG_VERBOSE = "-v";
 	public static final String ARG_COMPRESSOR = "-c";
+	public static final String ARG_FULLSCAN = "-full";
 	public static final String ARG_QUERY = "-q";
 	public static final String ARG_QUERY_DIRECT = "-e";
 
@@ -34,12 +35,14 @@ public class SearchMain {
 	private double MIN_WINDOW = 0.8;
 	private double MAX_WINDOW = 1.2;
 	private double threshold = 0.5;
+	private boolean fullscan = false;
 	private boolean verbose = false;
 
 	private TokenSequence queryTokens;
 	private ArrayList<String> sourceDirs = new ArrayList<>();
 	private FileType queryFileType = FileType.JAVA;
 	private Compressor compressor = null;
+	private TIntArrayList windowSize;
 
 	
 	public static void main(String[] args) {
@@ -61,7 +64,8 @@ public class SearchMain {
 		assert compressor != null;
 		
 		return queryTokens != null && 
-				sourceDirs.size() > 0;
+				sourceDirs.size() > 0 &&
+				windowSize.size() > 0;
 	}
 
 	
@@ -106,6 +110,9 @@ public class SearchMain {
 			} else if (args[idx].equals(ARG_VERBOSE)) {
 				idx++;
 				verbose = true;
+			} else if (args[idx].equals(ARG_FULLSCAN)) {
+				idx++;
+				fullscan = true;
 			} else if (args[idx].equals(ARG_COMPRESSOR)) {
 				idx++;
 				if (idx < args.length) {
@@ -145,21 +152,6 @@ public class SearchMain {
 		}
 		
 		queryTokens = new TokenSequence(reader); 
-	}
-	
-	public void printConfig() {
-		System.err.println("Configuration: ");
-		System.err.println(" Compressor: " + compressor.name());
-		System.err.println(" Min window size ratio: " + MIN_WINDOW);
-		System.err.println(" Max window size ratio: " + MAX_WINDOW);
-		System.err.println(" threshold: " + threshold);
-		System.err.println(" File type: " + queryFileType.name());
-		System.err.println(" Query size: " + queryTokens.size());
-		System.err.println(" Search path: " + Arrays.toString(sourceDirs.toArray()));
-	}
-	
-	public void execute() {
-		if (verbose) printConfig();
 		
 		TDoubleArrayList windowRatio = new TDoubleArrayList();
 		for (double start = 1.0; start >= MIN_WINDOW; start -= WINDOW_STEP) {
@@ -170,14 +162,31 @@ public class SearchMain {
 		}
 		windowRatio.sort();
 		
-		TIntArrayList windowSize = new TIntArrayList();
+		windowSize = new TIntArrayList();
 		for (int i=0; i<windowRatio.size(); i++) {
 			int w = (int)Math.ceil(queryTokens.size() * windowRatio.get(i));
 			if (i == 0 || windowSize.get(windowSize.size()-1) != w) {
 				windowSize.add(w);
 			}
 		}
-		final double th = threshold; // for compiler aid
+
+	}
+	
+	public void printConfig() {
+		System.err.println("Configuration: ");
+		System.err.println(" Compressor: " + compressor.name());
+		System.err.println(" Min window size ratio: " + MIN_WINDOW);
+		System.err.println(" Max window size ratio: " + MAX_WINDOW);
+		System.err.println(" Window size: " + concat(windowSize));
+		System.err.println(" threshold: " + threshold);
+		System.err.println(" File type: " + queryFileType.name());
+		System.err.println(" Query size: " + queryTokens.size());
+		System.err.println(" Search path: " + Arrays.toString(sourceDirs.toArray()));
+	}
+	
+	public void execute() {
+		if (verbose) printConfig();
+		
 		
 
 		NormalizedCompressionDistance ncd = new NormalizedCompressionDistance(queryTokens, Compressor.createInstance(compressor));
@@ -195,7 +204,12 @@ public class SearchMain {
 							if (verbose) System.err.println(f.getAbsolutePath());
 							TokenSequence fileTokens = new TokenSequence(TokenReaderFactory.create(filetype, Files.readAllBytes(f.toPath())));
 							
-							int[] positions = fileTokens.getLineHeadTokenPositions();
+							int[] positions;
+							if (fullscan) {
+								positions = fileTokens.getFullPositions(queryTokens.size());
+							} else {
+								positions = fileTokens.getLineHeadTokenPositions();
+							}
 
 							// Compute similarity values
 							double[][] distance = new double[positions.length][windowSize.size()];
@@ -213,7 +227,7 @@ public class SearchMain {
 							// Report local maximum values
 							for (int p=0; p<positions.length; p++) {
 								for (int w=0; w<windowSize.size(); w++) {
-									if (distance[p][w] < th && isLocalMinimum(distance, p, w)) {
+									if (distance[p][w] < threshold && isLocalMinimum(distance, p, w)) {
 										Fragment fragment = new Fragment(f.getAbsolutePath(), positions[p], positions[p]+windowSize.get(w), distance[p][w]); 
 										fragments.add(fragment);
 									}
@@ -246,7 +260,16 @@ public class SearchMain {
 		}
 		return b.toString();
 	}
-	
+
+	public static String concat(TIntArrayList list) {
+		StringBuilder b = new StringBuilder();
+		for (int i=0; i<list.size(); i++) {
+			if (i>0) b.append(", ");
+			b.append(list.get(i));
+		}
+		return b.toString();
+	}
+
 	public static double value(double[][] array, int idx1, int idx2) {
 		if (idx1 < 0 || array.length <= idx1) {
 			return Double.MAX_VALUE;

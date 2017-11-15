@@ -154,6 +154,15 @@ public class TokenSequence {
 		return result.toArray();
 	}
 	
+	public int[] getFullPositions(int querySize) {
+		int length = size() - querySize + 1;
+		int[] result = new int[length];
+		for (int i=0; i<result.length; i++) {
+			result[i] = i;
+		}
+		return result;
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder();

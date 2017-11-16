@@ -9,8 +9,8 @@ Normalized Compression Distance (https://en.wikipedia.org/wiki/Normalized_compre
 where Z(x), Z(y), and Z(xy) are data size obtained by a data compression algorithm (Deflate in our implementation).
 If two data `x` and `y` are similar, then NCD(x, y) results in a small value.
 
-For example, given an identifier `ARG_MIN_WINDOW` in this tool source code, the tool reports occurrences of `ARG_MIN_WINDOW`, `ARG_MAX_WINDOW`, `MIN_WINDOW`, and `MAX_WINDOW`.
-
+For example, if a line `if (this.distance < another.distance) return true;` (in source code of the tool) is given as a query, the tool reports similar lines such as 
+`if (this.distance > another.distance) return false;` and `if (thislen > anotherlen) return true;`.
 The tool assumes that either a long identifier or a few lines of code as a query.
 
 
@@ -39,8 +39,8 @@ The tool accepts file extensions: `java` (Java), `c` (C/C++), `cs` (C#), and `js
 
 ### Full Scan Mode
 
-For efficiency, the tool compares a query with sampled lines of code.
-If you want to search a single token, you should specify `-full` option that checks all tokens.
+For efficiency, the tool compares a query with sampled lines of code by default.  It is fast, but may result in false negatives.
+If your query is small enough, you should specify `-full` option that checks all tokens so that you can get more results.
         java -jar ncdsearch.jar dir_or_file -lang java -full -e identifier
 
 

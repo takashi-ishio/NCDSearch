@@ -19,6 +19,9 @@ The tool assumes that either a long identifier or a few lines of code as a query
 The repository includes Eclipse project file and `pom.xml` for dependencies. 
 The main class is `ncdsearch.SearchMain`.
 
+In addition to dependencies, the repository is dependent on sarf-lexer component (https://github.com/takashi-ishio/sarf-lexer).
+You must import the component to build the tool on your environment.
+
 
 ## Usage
 

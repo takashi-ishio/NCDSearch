@@ -14,6 +14,11 @@ For example, if a line `if (this.distance < another.distance) return true;` (in 
 The tool assumes that either a long identifier or a few lines of code as a query.
 
 
+## Build Information
+
+The repository includes Eclipse project file and `pom.xml` for dependencies. 
+The main class is `ncdsearch.SearchMain`.
+
 
 ## Usage
 
@@ -28,7 +33,25 @@ You can input code fragments using STDIN, a query file, or command line argument
 Note that all the arguments after `-e` are regarded as a query code snippet.
 
 You can specify multiple directories or files to be searched.
+
         java -jar ncdsearch.jar dir1 dir2 -lang java < query
+
+### Output Format
+
+The tool reports a result in a CSV format.
+For example, an execution with a query:
+
+        java -jar ncdsearch.jar -lang java -e "if (this.distance < another.distance) return true;"
+
+would report in a line like this:
+
+        path/to/src/ncdsearch/Fragment.java,51,2,51,52,0.05357142857142857
+
+Each line represents a similar source code fragment detected by the tool.
+  * The first column is the file name including the code fragment. 
+  * The second and third columns indicate the position of the first token (line number and char position in the line) of the fragment. 
+  * The fourth and fifth columns are the position of the last token of the fragment.
+  * The last column indicates the normalized compression distance between the query and the code fragment.  Since it is a distance, more similar code fragments have smaller values.
 
 
 ### Programming Language

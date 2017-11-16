@@ -41,12 +41,14 @@ The tool accepts file extensions: `java` (Java), `c` (C/C++), `cs` (C#), and `js
 
 For efficiency, the tool compares a query with sampled lines of code by default.  It is fast, but may result in false negatives.
 If your query is small enough, you should specify `-full` option that checks all tokens so that you can get more results.
+
         java -jar ncdsearch.jar dir_or_file -lang java -full -e identifier
 
 
 ### Verbose Mode
 
 If a result is different from your expectation, you can try `-v` to see the configuration and progress of the search.
+
         java -jar ncdsearch.jar dir_or_file -lang java -v < query
 
 

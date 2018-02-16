@@ -190,8 +190,15 @@ public class TokenSequence {
 		return result.toArray();
 	}
 	
-	public int[] getFullPositions(int querySize) {
-		int length = size() - querySize + 1;
+	/**
+	 * @param windowSize
+	 * @return every token positions to be compared with a query. 
+	 * If windowSize is larger than the token sequence,
+	 * the entire token sequence is compared. 
+	 */
+	public int[] getFullPositions(int windowSize) {
+		int length = size() - windowSize + 1;
+		if (length < 1) length = 1;
 		int[] result = new int[length];
 		for (int i=0; i<result.length; i++) {
 			result[i] = i;

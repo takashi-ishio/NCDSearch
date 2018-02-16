@@ -104,9 +104,9 @@ public class TokenSequence {
 	 * @return tokens.  The method returns null if invalid parameters are specified. 
 	 */
 	public TokenSequence substring(int start, int end) {
-		if (0 <= start && start < tokens.size() &&
-			start < end && end <= tokens.size()) {
-			return new TokenSequence(this, start, end);
+		if (0 <= start && start < size() &&
+			start < end && end <= size()) {
+			return new TokenSequence(this, this.start + start, this.start + end);
 		} else {
 			return null;
 		}
@@ -171,7 +171,7 @@ public class TokenSequence {
 		byte[] b = toByteArray();
 		int anotherLen = another.bytepos.get(another.end)-another.bytepos.get(another.start); 
 		byte[] result = new byte[b.length + anotherLen];
-		System.arraycopy(b, 0, result, 0, bytes.length);
+		System.arraycopy(b, 0, result, 0, b.length);
 		System.arraycopy(another.bytes, another.bytepos.get(another.start), result, b.length, anotherLen);
 		return result;
 	}

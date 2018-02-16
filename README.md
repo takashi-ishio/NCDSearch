@@ -35,9 +35,13 @@ You can input code fragments using STDIN, a query file, or command line argument
 
         java -jar ncdsearch.jar dir_or_file -lang java < query
         java -jar ncdsearch.jar dir_or_file -lang java -q query.txt
+        java -jar ncdsearch.jar dir_or_file -lang java -q query.txt -sline 10 -eline 20
         java -jar ncdsearch.jar dir_or_file -lang java -e my code fragments
 
-Note that all the arguments after `-e` are regarded as a query code snippet.
+ - The program reads a source code fragment from STDIN by default.
+ - The `-q` option specifies a file for a code fragment.  `-sline` and `-eline` specifies lines of code in a file as a query.  In the third example, lines 10 through 20 of the query.txt file are selected as a query.  
+ - The `-e` option directly specifies a code fragment in command line arguments.
+   Note that all the arguments after `-e` are regarded as a query code snippet.
 
 You can specify multiple directories or files to be searched.
 

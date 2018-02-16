@@ -12,6 +12,7 @@ import gnu.trove.list.array.TDoubleArrayList;
 import gnu.trove.list.array.TIntArrayList;
 import ncdsearch.eval.FileComparison;
 import ncdsearch.ncd.Compressor;
+import ncdsearch.normalizer.CPP14Normalizer;
 import sarf.lexer.DirectoryScan;
 import sarf.lexer.FileType;
 import sarf.lexer.TokenReader;
@@ -30,6 +31,8 @@ public class SearchMain {
 	public static final String ARG_FULLSCAN = "-full";
 	public static final String ARG_QUERY = "-q";
 	public static final String ARG_QUERY_DIRECT = "-e";
+	public static final String ARG_NORMALIZE = "-normalize";
+	public static final String ARG_LCS = "-lcs";
 
 	private double WINDOW_STEP = 0.05; 
 	private double MIN_WINDOW = 0.8;
@@ -43,6 +46,8 @@ public class SearchMain {
 	private FileType queryFileType = FileType.JAVA;
 	private Compressor compressor = null;
 	private TIntArrayList windowSize;
+	private boolean normalization = false;
+	private boolean useLCS = false;
 
 	
 	public static void main(String[] args) {
@@ -128,6 +133,12 @@ public class SearchMain {
 				while (idx < args.length) {
 					queryArgs.add(args[idx++]);
 				}
+			} else if (args[idx].equals(ARG_NORMALIZE)) {
+				idx++;
+				normalization = true;
+			} else if (args[idx].equals(ARG_LCS)) {
+				idx++;
+				useLCS = true;
 			} else {
 				sourceDirs.add(args[idx++]);
 			}
@@ -150,6 +161,8 @@ public class SearchMain {
 		} else {
 			reader = TokenReaderFactory.create(queryFileType, new InputStreamReader(System.in)); 
 		}
+		
+		if (normalization) reader = wrapNormalizer(reader, queryFileType);
 		
 		queryTokens = new TokenSequence(reader); 
 		
@@ -188,69 +201,76 @@ public class SearchMain {
 		if (verbose) printConfig();
 		
 		
-
-		NormalizedCompressionDistance ncd = new NormalizedCompressionDistance(queryTokens, Compressor.createInstance(compressor));
-
-		for (String dir: sourceDirs) {
-			DirectoryScan.scan(new File(dir), new DirectoryScan.Action() {
-				
-				@Override
-				public void process(File f) {
-					try {
-						ArrayList<Fragment> fragments = new ArrayList<>();
-						
-						FileType filetype = TokenReaderFactory.getFileType(f.getAbsolutePath());
-						if (queryFileType == filetype) {
-							if (verbose) System.err.println(f.getAbsolutePath());
-							TokenSequence fileTokens = new TokenSequence(TokenReaderFactory.create(filetype, Files.readAllBytes(f.toPath())));
+		try (ICodeDistanceStrategy similarityStrategy = createStrategy()) {
+			for (String dir: sourceDirs) {
+				DirectoryScan.scan(new File(dir), new DirectoryScan.Action() {
+					
+					@Override
+					public void process(File f) {
+						try {
+							ArrayList<Fragment> fragments = new ArrayList<>();
 							
-							int[] positions;
-							if (fullscan) {
-								positions = fileTokens.getFullPositions(queryTokens.size());
-							} else {
-								positions = fileTokens.getLineHeadTokenPositions();
-							}
-
-							// Compute similarity values
-							double[][] distance = new double[positions.length][windowSize.size()];
-							for (int p=0; p<positions.length; p++) {
-								for (int w=0; w<windowSize.size(); w++) {
-									TokenSequence window = fileTokens.substring(positions[p], positions[p]+windowSize.get(w));
-									if (window != null) {
-										distance[p][w] = ncd.ncd(window);
-									} else {
-										distance[p][w] = Double.MAX_VALUE;
+							FileType filetype = TokenReaderFactory.getFileType(f.getAbsolutePath());
+							if (queryFileType == filetype) {
+								if (verbose) System.err.println(f.getAbsolutePath());
+								TokenReader reader = TokenReaderFactory.create(filetype, Files.readAllBytes(f.toPath()));
+								if (normalization) reader = wrapNormalizer(reader, queryFileType);
+								TokenSequence fileTokens = new TokenSequence(reader);
+								
+								int[] positions;
+								if (fullscan) {
+									positions = fileTokens.getFullPositions(queryTokens.size());
+								} else {
+									positions = fileTokens.getLineHeadTokenPositions();
+								}
+	
+								// Compute similarity values
+								double[][] distance = new double[positions.length][windowSize.size()];
+								for (int p=0; p<positions.length; p++) {
+									for (int w=0; w<windowSize.size(); w++) {
+										TokenSequence window = fileTokens.substring(positions[p], positions[p]+windowSize.get(w));
+										if (window != null) {
+											distance[p][w] = similarityStrategy.computeDistance(window);
+										} else {
+											distance[p][w] = Double.MAX_VALUE;
+										}
 									}
+								}
+								
+								// Report local maximum values
+								for (int p=0; p<positions.length; p++) {
+									for (int w=0; w<windowSize.size(); w++) {
+										if (distance[p][w] <= threshold && isLocalMinimum(distance, p, w)) {
+											Fragment fragment = new Fragment(f.getAbsolutePath(), positions[p], positions[p]+windowSize.get(w), distance[p][w]); 
+											fragments.add(fragment);
+										}
+									}
+								}
+								
+								// Remove redundant elements
+								ArrayList<Fragment> result = Fragment.filter(fragments);
+								for (Fragment fragment: result) {
+									fragment.printString(fileTokens);
 								}
 							}
 							
-							// Report local maximum values
-							for (int p=0; p<positions.length; p++) {
-								for (int w=0; w<windowSize.size(); w++) {
-									if (distance[p][w] < threshold && isLocalMinimum(distance, p, w)) {
-										Fragment fragment = new Fragment(f.getAbsolutePath(), positions[p], positions[p]+windowSize.get(w), distance[p][w]); 
-										fragments.add(fragment);
-									}
-								}
-							}
 							
-							// Remove redundant elements
-							ArrayList<Fragment> result = Fragment.filter(fragments);
-							for (Fragment fragment: result) {
-								fragment.printString(fileTokens);
-							}
+						} catch (IOException e) {
+							return;
 						}
-						
-						
-					} catch (IOException e) {
-						return;
 					}
-				}
-			});
+				});
+			}
 		}
-		ncd.close();
 	}
 
+	public ICodeDistanceStrategy createStrategy() {
+		if (useLCS) {
+			return new LCSSimilarity(queryTokens);
+		} else {
+			return new NormalizedCompressionDistance(queryTokens, Compressor.createInstance(compressor));
+		}
+	}
 	
 	public static String concat(ArrayList<String> queryArgs) {
 		StringBuilder b = new StringBuilder();
@@ -293,6 +313,15 @@ public class SearchMain {
 				v <= value(array, p+1, w-1) &&
 				v <= value(array, p+1, w) &&
 				v <= value(array, p+1, w+1);
+	}
+	
+	private TokenReader wrapNormalizer(TokenReader r, FileType t) {
+		switch (t) {
+		case CPP:
+			return new CPP14Normalizer(r);
+		default:
+			return r;
+		}
 	}
 	
 }

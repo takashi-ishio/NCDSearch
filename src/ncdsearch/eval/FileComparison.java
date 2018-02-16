@@ -59,7 +59,7 @@ public class FileComparison {
 		TokenSequence tokens2 = read(target);
 
 		try (NormalizedCompressionDistance ncd = new NormalizedCompressionDistance(tokens1, Compressor.createInstance(c))) {
-			return ncd.ncd(tokens2);
+			return ncd.computeDistance(tokens2);
 		}
 	}
 	
@@ -72,7 +72,7 @@ public class FileComparison {
 			for (int i=0; i<tokens.size(); i++) {
 				for (int j=i+1; j<=tokens.size(); j++) {
 					TokenSequence sub = tokens.substring(i, j);
-					double value = ncd.ncd(sub);
+					double value = ncd.computeDistance(sub);
 					if (value < min) min = value;
 				}
 			}

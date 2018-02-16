@@ -30,6 +30,8 @@ public class SearchMain {
 	public static final String ARG_COMPRESSOR = "-c";
 	public static final String ARG_FULLSCAN = "-full";
 	public static final String ARG_QUERY = "-q";
+	public static final String ARG_QUERY_START_LINE = "-sline";
+	public static final String ARG_QUERY_END_LINE = "-eline";
 	public static final String ARG_QUERY_DIRECT = "-e";
 	public static final String ARG_NORMALIZE = "-normalize";
 	public static final String ARG_LCS = "-lcs";
@@ -76,7 +78,10 @@ public class SearchMain {
 	
 	public SearchMain(String[] args) {
 		String queryFilename = null;
+		int queryStartLine = 0;
+		int queryEndLine = Integer.MAX_VALUE;
 		ArrayList<String> queryArgs = new ArrayList<>();
+		
 		
 		int idx = 0;
 		while (idx < args.length) {
@@ -128,6 +133,16 @@ public class SearchMain {
 				if (idx < args.length) {
 					queryFilename = args[idx++];
 				}
+			} else if (args[idx].equals(ARG_QUERY_START_LINE)) {
+				idx++;
+				if (idx < args.length) {
+					queryStartLine = Integer.parseInt(args[idx++]);
+				}
+			} else if (args[idx].equals(ARG_QUERY_END_LINE)) {
+				idx++;
+				if (idx < args.length) {
+					queryEndLine = Integer.parseInt(args[idx++]);
+				}
 			} else if (args[idx].equals(ARG_QUERY_DIRECT)) {
 				idx++;
 				while (idx < args.length) {
@@ -166,6 +181,14 @@ public class SearchMain {
 		
 		queryTokens = new TokenSequence(reader); 
 		
+		if (queryFilename != null) {
+			queryTokens = queryTokens.substringByLine(queryStartLine, queryEndLine);
+			if (queryTokens == null) {
+				System.err.println("No tokens exist in lines " + queryStartLine + " through " + queryEndLine);
+				return;
+			}
+		}
+		 
 		TDoubleArrayList windowRatio = new TDoubleArrayList();
 		for (double start = 1.0; start >= MIN_WINDOW; start -= WINDOW_STEP) {
 			windowRatio.add(start);

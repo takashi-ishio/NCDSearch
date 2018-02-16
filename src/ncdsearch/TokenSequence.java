@@ -111,6 +111,36 @@ public class TokenSequence {
 			return null;
 		}
 	}
+	
+	public TokenSequence substringByLine(int startLine, int endLine) {
+		int startPos;
+		if (startLine > endLine) {
+			return null;
+		}
+		int pos;
+		if (startLine <= getLine(0)) { 
+			startPos = 0;
+			pos = 1;
+		} else {
+			pos = 1;
+			while (pos<size()) {
+				if (getLine(pos-1) < startLine && startLine <= getLine(pos)) {
+					break;
+				}
+				pos++;
+			}
+			if (pos < size()) startPos = pos;
+			else return null;
+		}
+		
+		while (pos<size()) {
+			if (getLine(pos-1) <= endLine && endLine < getLine(pos)) {
+				break;
+			}
+			pos++;
+		}
+		return new TokenSequence(this, startPos, pos);
+	}
 
 	/**
 	 * Return a byte array including tokens.

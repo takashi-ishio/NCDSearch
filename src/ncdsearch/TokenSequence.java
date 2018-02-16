@@ -112,6 +112,12 @@ public class TokenSequence {
 		}
 	}
 	
+	/**
+	 * Extract a substring of tokens between the specifid lines.
+	 * @param startLine specifies the start line of tokens.
+	 * @param endLine specifies the end line of tokens.  Differently from substring method, the line is included in the substring.
+	 * @return tokens.  The method returns null if invalid lines are specifid (e.g. startLine is greater than endLine).
+	 */
 	public TokenSequence substringByLine(int startLine, int endLine) {
 		int startPos;
 		if (startLine > endLine) {

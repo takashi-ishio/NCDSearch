@@ -71,6 +71,7 @@ public class SearchMain {
 		assert compressor != null;
 		
 		return queryTokens != null && 
+				windowSize != null && 
 				sourceDirs.size() > 0 &&
 				windowSize.size() > 0;
 	}
@@ -167,8 +168,7 @@ public class SearchMain {
 				File f = new File(queryFilename);
 				reader = TokenReaderFactory.create(queryFileType, Files.readAllBytes(f.toPath())); 
 			} catch (IOException e) {
-				e.printStackTrace();
-				System.err.println("Could not read " + queryFilename + " as a query.");
+				System.err.println("Error: Failed to read " + queryFilename + " as a query.");
 				return;
 			}
 		} else if (queryArgs.size() > 0) {
@@ -213,10 +213,18 @@ public class SearchMain {
 		System.err.println(" Compressor: " + compressor.name());
 		System.err.println(" Min window size ratio: " + MIN_WINDOW);
 		System.err.println(" Max window size ratio: " + MAX_WINDOW);
-		System.err.println(" Window size: " + concat(windowSize));
+		if (windowSize != null) {
+			System.err.println(" Window size: " + concat(windowSize));
+		} else {
+			System.err.println(" Window size: (unavailable)");
+		}
 		System.err.println(" threshold: " + threshold);
 		System.err.println(" File type: " + queryFileType.name());
-		System.err.println(" Query size: " + queryTokens.size());
+		if (queryTokens != null) {
+			System.err.println(" Query size: " + queryTokens.size());
+		} else {
+			System.err.println(" Query size: (unavailable)");
+		}
 		System.err.println(" Search path: " + Arrays.toString(sourceDirs.toArray()));
 	}
 	

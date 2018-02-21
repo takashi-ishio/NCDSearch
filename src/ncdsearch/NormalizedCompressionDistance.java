@@ -7,7 +7,7 @@ import ncdsearch.ncd.ICompressionStrategy;
 public class NormalizedCompressionDistance implements ICodeDistanceStrategy {
 
 	private ICompressionStrategy strategy;
-	private TokenSequence query;
+	private byte[] baseBytes;
 	private long baseSize;
 	
 	/**
@@ -20,11 +20,10 @@ public class NormalizedCompressionDistance implements ICodeDistanceStrategy {
 	}
 
 	public NormalizedCompressionDistance(TokenSequence query, ICompressionStrategy strategy) {
-		this.query = query;
 		this.strategy = strategy;
 		
-		byte[] b = query.toByteArray();
-		baseSize = strategy.getDataSize(b, 0, b.length);
+		baseBytes = query.toByteArray();
+		baseSize = strategy.getDataSize(baseBytes, 0, baseBytes.length);
 	}
 	
 	/**
@@ -40,9 +39,13 @@ public class NormalizedCompressionDistance implements ICodeDistanceStrategy {
 	 */
 	@Override
     public double computeDistance(TokenSequence target) {
-    	byte[] b = query.concat(target);
-    	long c1and2 = strategy.getDataSize(b, 0, b.length);
-    	long c2 = strategy.getDataSize(b, query.toByteArray().length, b.length - query.toByteArray().length);
+    	byte[] targetBytes = target.toByteArray(); 
+   		byte[] result = new byte[baseBytes.length + targetBytes.length];
+    	System.arraycopy(baseBytes, 0, result, 0, baseBytes.length);
+    	System.arraycopy(targetBytes, 0, result, baseBytes.length, targetBytes.length);
+
+    	long c1and2 = strategy.getDataSize(result, 0, result.length);
+    	long c2 = strategy.getDataSize(targetBytes, 0, targetBytes.length);
         return (c1and2 - Math.min(baseSize, c2)) * 1.0 / Math.max(baseSize, c2);
     }
     

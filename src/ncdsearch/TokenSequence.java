@@ -163,20 +163,6 @@ public class TokenSequence {
 	}
 
 	/**
-	 * Create a byte array including two token sequence data.
-	 * @param another token sequence.
-	 * @return a single byte array including two token sequences.
-	 */
-	public byte[] concat(TokenSequence another) {
-		byte[] b = toByteArray();
-		int anotherLen = another.bytepos.get(another.end)-another.bytepos.get(another.start); 
-		byte[] result = new byte[b.length + anotherLen];
-		System.arraycopy(b, 0, result, 0, b.length);
-		System.arraycopy(another.bytes, another.bytepos.get(another.start), result, b.length, anotherLen);
-		return result;
-	}
-	
-	/**
 	 * @return token positions that are the first tokens of lines, 
 	 * i.e. each pos in the resultant array satisfies: getLine(pos-1) < getLine(pos).
 	 */

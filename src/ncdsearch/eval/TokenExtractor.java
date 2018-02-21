@@ -1,5 +1,7 @@
 package ncdsearch.eval;
 
+import java.util.Arrays;
+
 import ncdsearch.SearchMain;
 import ncdsearch.TokenSequence;
 
@@ -15,6 +17,8 @@ public class TokenExtractor {
 			for (int i=0; i<seq.size(); i++) {
 				System.out.println(seq.getToken(i));
 			}
+			byte[] buf = seq.toByteArray();
+			System.out.println(Arrays.toString(buf));
 		}
 	}
 

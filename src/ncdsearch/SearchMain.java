@@ -294,7 +294,7 @@ public class SearchMain {
 			}
 		}
 	}
-
+	
 	public ICodeDistanceStrategy createStrategy() {
 		if (useLCS) {
 			return new LCSSimilarity(queryTokens);
@@ -354,5 +354,9 @@ public class SearchMain {
 			return r;
 		}
 	}
-	
+
+	public TokenSequence getQueryTokens() {
+		return queryTokens;
+	}
+
 }

@@ -230,6 +230,7 @@ public class SearchMain {
 	
 	public void execute() {
 		if (verbose) printConfig();
+		long t = System.currentTimeMillis();
 		
 		
 		try (ICodeDistanceStrategy similarityStrategy = createStrategy()) {
@@ -292,6 +293,11 @@ public class SearchMain {
 					}
 				});
 			}
+		}
+		
+		if (verbose) {
+			long time = System.currentTimeMillis() - t;
+			System.err.println("Time (ms): " + time);
 		}
 	}
 	

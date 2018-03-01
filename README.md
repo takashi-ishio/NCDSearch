@@ -52,17 +52,22 @@ You can specify multiple directories or files to be searched.
 The tool reports a result in a CSV format.
 For example, an execution with a query:
 
-        java -jar ncdsearch.jar -lang java -e "if (this.distance < another.distance) return true;"
+        java -jar ncdsearch.jar -lang java -e "if (this.distance > another.distance) return true;"
 
-would report in a line like this:
+would report a line like this:
 
-        path/to/src/ncdsearch/Fragment.java,51,2,51,52,0.05357142857142857
+        path/to/src/ncdsearch/Fragment.java,81,81,0.10714285714285714
 
-Each line represents a similar source code fragment detected by the tool.
+Each line of an output represents a similar source code fragment detected by the tool.
   * The first column is the file name including the code fragment. 
-  * The second and third columns indicate the position of the first token (line number and char position in the line) of the fragment. 
-  * The fourth and fifth columns are the position of the last token of the fragment.
+  * The second and third columns indicate the lines of the first and last tokens of the fragment. 
+    * You may specify `-pos` option to extract char positions in the lines.  In the case, it reports 
   * The last column indicates the normalized compression distance between the query and the code fragment.  Since it is a distance, more similar code fragments have smaller values.
+
+According to the report, you may find a similar line of code in a file. For example:
+
+        81:   if (this.distance < another.distance) return true;
+
 
 
 ### Programming Language

@@ -35,6 +35,7 @@ public class SearchMain {
 	public static final String ARG_QUERY_DIRECT = "-e";
 	public static final String ARG_NORMALIZE = "-normalize";
 	public static final String ARG_LCS = "-lcs";
+	public static final String ARG_POSITION_DETAIL = "-pos";
 
 	private double WINDOW_STEP = 0.05; 
 	private double MIN_WINDOW = 0.8;
@@ -42,6 +43,7 @@ public class SearchMain {
 	private double threshold = 0.5;
 	private boolean fullscan = false;
 	private boolean verbose = false;
+	private boolean reportPositionDetail = false;
 
 	private TokenSequence queryTokens;
 	private ArrayList<String> sourceDirs = new ArrayList<>();
@@ -155,6 +157,9 @@ public class SearchMain {
 			} else if (args[idx].equals(ARG_LCS)) {
 				idx++;
 				useLCS = true;
+			} else if (args[idx].equals(ARG_POSITION_DETAIL)) {
+				idx++;
+				reportPositionDetail = true;
 			} else {
 				sourceDirs.add(args[idx++]);
 			}
@@ -282,7 +287,11 @@ public class SearchMain {
 								// Remove redundant elements and print the result.
 								ArrayList<Fragment> result = Fragment.filter(fragments);
 								for (Fragment fragment: result) {
-									System.out.println(fragment.toLongString());
+									if (reportPositionDetail) {
+										System.out.println(fragment.toLongString());
+									} else {
+										System.out.println(fragment.toString());
+									}
 								}
 							}
 							

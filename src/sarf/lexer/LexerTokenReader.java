@@ -39,14 +39,21 @@ public class LexerTokenReader implements TokenReader {
 		}
 	}
 
+	/**
+	 * @return the index of the line.  1 is returned for the first line of a file. 
+	 */
 	@Override
 	public int getLine() {
 		return token.getLine();
 	}
 	
+	/**
+	 * 
+	 * @return 1 for the first (left-most) character in the line.
+	 */
 	@Override
 	public int getCharPositionInLine() {
-		return token.getCharPositionInLine();
+		return token.getCharPositionInLine() + 1;
 	}
 	
 	@Override

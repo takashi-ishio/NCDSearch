@@ -273,16 +273,16 @@ public class SearchMain {
 								for (int p=0; p<positions.length; p++) {
 									for (int w=0; w<windowSize.size(); w++) {
 										if (distance[p][w] <= threshold && isLocalMinimum(distance, p, w)) {
-											Fragment fragment = new Fragment(f.getAbsolutePath(), positions[p], positions[p]+windowSize.get(w), distance[p][w]); 
+											Fragment fragment = new Fragment(f.getAbsolutePath(), fileTokens, positions[p], positions[p]+windowSize.get(w), distance[p][w]); 
 											fragments.add(fragment);
 										}
 									}
 								}
 								
-								// Remove redundant elements
+								// Remove redundant elements and print the result.
 								ArrayList<Fragment> result = Fragment.filter(fragments);
 								for (Fragment fragment: result) {
-									fragment.printString(fileTokens);
+									System.out.println(fragment.toLongString());
 								}
 							}
 							

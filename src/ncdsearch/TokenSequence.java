@@ -83,9 +83,21 @@ public class TokenSequence {
 	 * Get the character position in the line of a specified token. 
 	 * @param pos index of a token.
 	 * @return a char position in a line. 
+	 * The value may be different from a visible position in an editor, 
+	 * because it regards any UNICODE character (including a tab) as one character.
 	 */
 	public int getCharPositionInLine(int pos) {
 		return charpos.get(pos + start);
+	}
+	
+	/**
+	 * Get the last character position in the line of a specified token.
+	 * Exclusive.
+	 * @param pos
+	 * @return
+	 */
+	public int getEndCharPositionInLine(int pos) {
+		return charpos.get(pos + start) + getToken(pos).length();
 	}
 	
 	/**

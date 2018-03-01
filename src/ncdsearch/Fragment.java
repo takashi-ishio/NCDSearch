@@ -6,7 +6,10 @@ import java.util.Collections;
 
 public class Fragment implements Comparable<Fragment> {
 
+	private static final String SEPARATOR = ",";
+
 	private String filename;
+	private TokenSequence tokens;
 	private int startPos;
 	private int endPos;
 	private double distance;
@@ -17,21 +20,48 @@ public class Fragment implements Comparable<Fragment> {
 	 * @param endPos exclusive.
 	 * @param distance
 	 */
-	public Fragment(String filename, int startPos, int endPos, double distance) {
+	public Fragment(String filename, TokenSequence tokens, int startPos, int endPos, double distance) {
 		this.filename = filename;
+		this.tokens = tokens;
 		this.startPos = startPos;
 		this.endPos = endPos;
 		this.distance = distance;
 		assert this.startPos < this.endPos: "Zero-length fragment is not allowed.";
 	}
 	
-	public void printString(TokenSequence fileTokens) {
-		System.out.println(filename + "," + 
-	                       fileTokens.getLine(startPos) + "," + 
-				           fileTokens.getCharPositionInLine(startPos) + "," + 
-	                       fileTokens.getLine(endPos-1) + "," + 
-				           (fileTokens.getCharPositionInLine(endPos-1) + fileTokens.getToken(endPos-1).length()) + "," + 
-	                       distance);
+	/**
+	 * @return a string represenation of the position and the distance.
+	 */
+	public String toString() {
+		StringBuilder b = new StringBuilder();
+		b.append(filename);
+		b.append(SEPARATOR);
+		b.append(tokens.getLine(startPos));
+		b.append(SEPARATOR);
+		b.append(tokens.getLine(endPos-1));
+		b.append(SEPARATOR);
+        b.append(distance);
+        return b.toString();
+	}
+	
+	/**
+	 * @return a string represenation of the position and the distance.
+	 * It includes character positions in lines to analyze details.
+	 */
+	public String toLongString() {
+		StringBuilder b = new StringBuilder();
+		b.append(filename);
+		b.append(SEPARATOR);
+		b.append(tokens.getLine(startPos));
+		b.append(SEPARATOR);
+        b.append(tokens.getCharPositionInLine(startPos)); 
+		b.append(SEPARATOR);
+		b.append(tokens.getLine(endPos-1));
+		b.append(SEPARATOR);
+        b.append(tokens.getEndCharPositionInLine(endPos-1)); 
+		b.append(SEPARATOR);
+        b.append(distance);
+        return b.toString();
 	}
 	
 	public boolean overlapWith(Fragment another) {

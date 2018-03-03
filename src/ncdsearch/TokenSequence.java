@@ -23,7 +23,7 @@ public class TokenSequence {
 	 * Create an object including all tokens obtained from a reader.
 	 * @param r specifies a TokenReader.
 	 */
-	public TokenSequence(TokenReader r) {
+	public TokenSequence(TokenReader r, boolean normalization) {
 		tokens = new ArrayList<>();
 		lines = new TIntArrayList();
 		charpos = new TIntArrayList();
@@ -31,12 +31,18 @@ public class TokenSequence {
 		ByteArrayOutputStream s = new ByteArrayOutputStream(65536);
 		try {
 			while (r.next()) {
-				tokens.add(r.getToken());
+				bytepos.add(s.size());
+				if (normalization) {
+					tokens.add(r.getNormalizedToken());
+					s.write(r.getNormalizedToken().getBytes());
+					s.write(0);
+				} else {
+					tokens.add(r.getToken());
+					s.write(r.getToken().getBytes());
+					s.write(0);
+				}
 				lines.add(r.getLine());
 				charpos.add(r.getCharPositionInLine());
-				bytepos.add(s.size());
-				s.write(r.getToken().getBytes());
-				s.write(0);
 			}
 			bytepos.add(s.size());
 		} catch (IOException e) {

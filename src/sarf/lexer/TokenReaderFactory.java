@@ -9,6 +9,7 @@ import java.util.HashMap;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 
+import ncdsearch.normalizer.CPP14Normalizer;
 import sarf.lexer.lang.CPP14Lexer;
 import sarf.lexer.lang.CSharpLexer;
 import sarf.lexer.lang.ECMAScriptLexer;
@@ -40,6 +41,11 @@ public class TokenReaderFactory {
 		filetype.put("js", FileType.ECMASCRIPT);
 
 		filetype.put("cs", FileType.CSHARP);
+		
+		filetype.put("ccfx", FileType.CCFINDERX);
+		filetype.put("ccfinderx", FileType.CCFINDERX);
+		filetype.put("ccfxprep", FileType.CCFINDERX);
+		
 	}
 	
 
@@ -115,7 +121,10 @@ public class TokenReaderFactory {
 				
 			case CSHARP:
 				return new LexerTokenReader(filetype, new CSharpLexer(createStream(buf)));
-				
+
+			case CCFINDERX:
+				return new CCFinderXLexer(buf);
+
 			case UNSUPPORTED:
 			default:
 				return null;
@@ -137,7 +146,9 @@ public class TokenReaderFactory {
 		try {
 			switch (filetype) {
 			case CPP:
-				return new LexerTokenReader(filetype, new CPP14Lexer(CharStreams.fromReader(reader)));
+				LexerTokenReader r = new LexerTokenReader(filetype, new CPP14Lexer(CharStreams.fromReader(reader)));
+				r.setNormalizer(new CPP14Normalizer());
+				return r;
 	
 			case JAVA:
 				return new LexerTokenReader(filetype, new Java8Lexer(CharStreams.fromReader(reader)));
@@ -147,6 +158,9 @@ public class TokenReaderFactory {
 
 			case CSHARP:
 				return new LexerTokenReader(filetype, new CSharpLexer(CharStreams.fromReader(reader)));
+
+			case CCFINDERX:
+				return new CCFinderXLexer(reader);
 
 			case UNSUPPORTED:
 			default:

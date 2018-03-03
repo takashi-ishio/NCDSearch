@@ -13,7 +13,7 @@ public class TokenSequenceTest {
 	@Test
 	public void testSubstring() {
 		TokenReader reader = TokenReaderFactory.create(FileType.JAVA, "class C { \n int x = 0; \n int y = \t 1; \n}\n".getBytes());
-		TokenSequence sequence = new TokenSequence(reader);
+		TokenSequence sequence = new TokenSequence(reader, false);
 		Assert.assertEquals(14, sequence.size());
 		Assert.assertEquals("class", sequence.getToken(0));
 		Assert.assertEquals(1, sequence.getLine(0));

@@ -85,7 +85,7 @@ public class FileComparison {
 			FileType t = TokenReaderFactory.getFileType(f.getAbsolutePath());
 			if (t != FileType.UNSUPPORTED) {
 				TokenReader reader = TokenReaderFactory.create(t, Files.readAllBytes(f.toPath()));
-				return new TokenSequence(reader);
+				return new TokenSequence(reader, false);
 			} else {
 				return null;
 			}

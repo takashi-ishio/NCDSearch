@@ -1,18 +1,15 @@
 package ncdsearch.normalizer;
 
 
-import sarf.lexer.TokenReader;
+import org.antlr.v4.runtime.Token;
+
 import sarf.lexer.lang.CPP14Lexer;
 
-public class CPP14Normalizer extends DefaultNormalizer {
+public class CPP14Normalizer implements Normalizer {
 
-	public CPP14Normalizer(TokenReader r) {
-		super(r);
-	}
-	
 	@Override
-	public String getToken() {
-		switch (getTokenType()) {
+	public String normalize(Token t) {
+		switch (t.getType()) {
 		case CPP14Lexer.Identifier:
 		case CPP14Lexer.Binaryliteral:
 		case CPP14Lexer.Characterliteral:
@@ -28,6 +25,6 @@ public class CPP14Normalizer extends DefaultNormalizer {
 		case CPP14Lexer.Userdefinedstringliteral:
 			return "$p";
 		}
-		return super.getToken();
+		return t.getText();
 	}
 }

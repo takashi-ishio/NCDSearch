@@ -4,6 +4,8 @@ package sarf.lexer;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Token;
 
+import ncdsearch.normalizer.Normalizer;
+
 
 /**
  * An implementation of TokenReader that wraps an ANTLR lexer.
@@ -13,6 +15,7 @@ public class LexerTokenReader implements TokenReader {
 	private FileType filetype;
 	private Lexer lexer;
 	private Token token;
+	private Normalizer normalizer;
 	
 	/**
 	 * 
@@ -22,6 +25,10 @@ public class LexerTokenReader implements TokenReader {
 	public LexerTokenReader(FileType filetype, Lexer lexer) {
 		this.filetype = filetype;
 		this.lexer = lexer;
+	}
+	
+	public void setNormalizer(Normalizer n) {
+		normalizer = n;
 	}
 	
 	@Override
@@ -57,10 +64,14 @@ public class LexerTokenReader implements TokenReader {
 	}
 	
 	@Override
-	public int getTokenType() {
-		return token.getType();
+	public String getNormalizedToken() {
+		if (normalizer != null) {
+			return normalizer.normalize(token);
+		} else {
+			return getToken();
+		}
 	}
-	
+
 	@Override
 	public FileType getFileType() {
 		return filetype;

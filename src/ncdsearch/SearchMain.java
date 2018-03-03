@@ -12,7 +12,6 @@ import gnu.trove.list.array.TDoubleArrayList;
 import gnu.trove.list.array.TIntArrayList;
 import ncdsearch.eval.FileComparison;
 import ncdsearch.ncd.Compressor;
-import ncdsearch.normalizer.CPP14Normalizer;
 import sarf.lexer.DirectoryScan;
 import sarf.lexer.FileType;
 import sarf.lexer.TokenReader;
@@ -182,9 +181,7 @@ public class SearchMain {
 			reader = TokenReaderFactory.create(queryFileType, new InputStreamReader(System.in)); 
 		}
 		
-		if (normalization) reader = wrapNormalizer(reader, queryFileType);
-		
-		queryTokens = new TokenSequence(reader); 
+		queryTokens = new TokenSequence(reader, normalization); 
 		
 		if (queryFilename != null) {
 			queryTokens = queryTokens.substringByLine(queryStartLine, queryEndLine);
@@ -251,8 +248,7 @@ public class SearchMain {
 							if (queryFileType == filetype) {
 								if (verbose) System.err.println(f.getAbsolutePath());
 								TokenReader reader = TokenReaderFactory.create(filetype, Files.readAllBytes(f.toPath()));
-								if (normalization) reader = wrapNormalizer(reader, queryFileType);
-								TokenSequence fileTokens = new TokenSequence(reader);
+								TokenSequence fileTokens = new TokenSequence(reader, normalization);
 								
 								int[] positions;
 								if (fullscan) {
@@ -361,14 +357,6 @@ public class SearchMain {
 				v <= value(array, p+1, w+1);
 	}
 	
-	private TokenReader wrapNormalizer(TokenReader r, FileType t) {
-		switch (t) {
-		case CPP:
-			return new CPP14Normalizer(r);
-		default:
-			return r;
-		}
-	}
 
 	public TokenSequence getQueryTokens() {
 		return queryTokens;

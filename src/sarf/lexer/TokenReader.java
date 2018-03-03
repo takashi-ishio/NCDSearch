@@ -16,6 +16,11 @@ public interface TokenReader {
 	 * @return the current token.  This method returns null if the reader reached EOF (next() returned false).
 	 */
 	public String getToken();
+
+	/**
+	 * @return a normalized text of the current token. 
+	 */
+	public String getNormalizedToken();
 	
 	/**
 	 * @return the line of the current token.
@@ -26,12 +31,7 @@ public interface TokenReader {
 	 * @return the position of the current token.
 	 */
 	public int getCharPositionInLine();
-	
-	/**
-	 * @return the token type.  The value is dependent on the implementation.
-	 */
-	public int getTokenType();
-	
+
 	/**
 	 * @return file type.
 	 */

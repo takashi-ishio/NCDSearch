@@ -26,7 +26,7 @@ public class LCSSimilarity implements ICodeDistanceStrategy {
 	    		maxScore = Math.max(maxScore, score[i][j]);
 	    	}
 	    }
-		return Math.max(code.size(), query.size()) - maxScore;
+		return code.size() + query.size() - maxScore;
 	}
 	
 	@Override

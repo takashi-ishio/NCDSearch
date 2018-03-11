@@ -200,11 +200,21 @@ public class SearchMain {
 		}
 		windowRatio.sort();
 		
-		windowSize = new TIntArrayList();
-		for (int i=0; i<windowRatio.size(); i++) {
-			int w = (int)Math.ceil(queryTokens.size() * windowRatio.get(i));
-			if (i == 0 || windowSize.get(windowSize.size()-1) != w) {
-				windowSize.add(w);
+		if (useLCS) {
+			windowSize = new TIntArrayList();
+			windowSize.add(queryTokens.size());
+			for (int i=1; i<=threshold; i++) {
+				windowSize.add(queryTokens.size() + i);
+				windowSize.add(queryTokens.size() - i);
+			}
+			windowSize.sort();
+		} else {
+			windowSize = new TIntArrayList();
+			for (int i=0; i<windowRatio.size(); i++) {
+				int w = (int)Math.ceil(queryTokens.size() * windowRatio.get(i));
+				if (i == 0 || windowSize.get(windowSize.size()-1) != w) {
+					windowSize.add(w);
+				}
 			}
 		}
 

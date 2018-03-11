@@ -111,7 +111,9 @@ public class TokenReaderFactory {
 		try {
 			switch (filetype) {
 			case CPP:
-				return new LexerTokenReader(filetype, new CPP14Lexer(createStream(buf)));
+				LexerTokenReader r = new LexerTokenReader(filetype, new CPP14Lexer(createStream(buf)));
+				r.setNormalizer(new CPP14Normalizer());
+				return r;
 	
 			case JAVA:
 				return new LexerTokenReader(filetype, new Java8Lexer(createStream(buf)));

@@ -46,7 +46,7 @@ public class SearchMain {
 
 	private TokenSequence queryTokens;
 	private ArrayList<String> sourceDirs = new ArrayList<>();
-	private FileType queryFileType = FileType.JAVA;
+	private FileType queryFileType = null;
 	private Compressor compressor = null;
 	private TIntArrayList windowSize;
 	private boolean normalization = false;
@@ -134,6 +134,10 @@ public class SearchMain {
 				idx++;
 				if (idx < args.length) {
 					queryFilename = args[idx++];
+					FileType t = TokenReaderFactory.getFileType(queryFilename);
+					if (TokenReaderFactory.isSupported(t) && queryFileType == null) {
+						queryFileType = t;
+					}
 				}
 			} else if (args[idx].equals(ARG_QUERY_START_LINE)) {
 				idx++;
@@ -165,6 +169,7 @@ public class SearchMain {
 		}
 		if (sourceDirs.size() == 0) sourceDirs.add(".");
 		if (compressor == null) compressor = Compressor.ZIP;
+		if (queryFileType == null) queryFileType = FileType.JAVA;
 		
 		TokenReader reader;
 		if (queryFilename != null) {

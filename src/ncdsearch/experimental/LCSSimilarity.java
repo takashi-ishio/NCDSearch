@@ -1,4 +1,7 @@
-package ncdsearch;
+package ncdsearch.experimental;
+
+import ncdsearch.ICodeDistanceStrategy;
+import ncdsearch.TokenSequence;
 
 public class LCSSimilarity implements ICodeDistanceStrategy {
 

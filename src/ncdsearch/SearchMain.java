@@ -11,6 +11,10 @@ import java.util.Arrays;
 import gnu.trove.list.array.TDoubleArrayList;
 import gnu.trove.list.array.TIntArrayList;
 import ncdsearch.eval.FileComparison;
+import ncdsearch.experimental.ByteLCSDistance;
+import ncdsearch.experimental.LCSSimilarity;
+import ncdsearch.experimental.NgramDistance;
+import ncdsearch.experimental.NgramSetDistance;
 import ncdsearch.ncd.Compressor;
 import sarf.lexer.DirectoryScan;
 import sarf.lexer.FileType;
@@ -35,6 +39,7 @@ public class SearchMain {
 	public static final String ARG_NORMALIZE = "-normalize";
 	public static final String ARG_LCS = "-lcs";
 	public static final String ARG_POSITION_DETAIL = "-pos";
+	public static final String ARG_ALGORITHM = "-a";
 
 	private double WINDOW_STEP = 0.05; 
 	private double MIN_WINDOW = 0.8;
@@ -43,6 +48,8 @@ public class SearchMain {
 	private boolean fullscan = false;
 	private boolean verbose = false;
 	private boolean reportPositionDetail = false;
+
+	private String algorithm = "";
 
 	private TokenSequence queryTokens;
 	private ArrayList<String> sourceDirs = new ArrayList<>();
@@ -160,6 +167,9 @@ public class SearchMain {
 			} else if (args[idx].equals(ARG_LCS)) {
 				idx++;
 				useLCS = true;
+			} else if (args[idx].equals(ARG_ALGORITHM)) {
+				idx++;
+				algorithm = args[idx++];
 			} else if (args[idx].equals(ARG_POSITION_DETAIL)) {
 				idx++;
 				reportPositionDetail = true;
@@ -325,6 +335,15 @@ public class SearchMain {
 		if (useLCS) {
 			return new LCSSimilarity(queryTokens);
 		} else {
+			if (algorithm.startsWith("blcs")) {
+				return new ByteLCSDistance(queryTokens);
+			} else if (algorithm.startsWith("bngram")) {
+				int n = Integer.parseInt(algorithm.substring("bngram".length()));
+				return new NgramDistance(queryTokens, n);
+			} else if (algorithm.startsWith("setbngram")) {
+				int n = Integer.parseInt(algorithm.substring("setbngram".length()));
+				return new NgramSetDistance(queryTokens, n);
+			}
 			return new NormalizedCompressionDistance(queryTokens, Compressor.createInstance(compressor));
 		}
 	}

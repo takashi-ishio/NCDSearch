@@ -3,6 +3,7 @@ package ncdsearch.ncd;
 import java.io.IOException;
 
 import org.tukaani.xz.LZMA2Options;
+import org.tukaani.xz.UnsupportedOptionsException;
 import org.tukaani.xz.XZOutputStream;
 
 public class XzStrategy implements ICompressionStrategy {
@@ -13,13 +14,18 @@ public class XzStrategy implements ICompressionStrategy {
 	
 	public XzStrategy() {
 		sizeRecorder = new DataSizeRecordStream();
-		xzOptions = new LZMA2Options();
+		try {
+			xzOptions = new LZMA2Options(0);
+		} catch (UnsupportedOptionsException e) {
+		}
 	}
 	
 	@Override
 	public long getDataSize(byte[] buf, int start, int length) {
 		sizeRecorder.reset();
 		try {
+			//XZCompressorOutputStream stream = new XZCompressorOutputStream(sizeRecorder);
+			//LZMACompressorOutputStream stream = new LZMACompressorOutputStream(sizeRecorder);
 			XZOutputStream stream = new XZOutputStream(sizeRecorder, xzOptions);
 			stream.write(buf, start, length);
 			stream.close();

@@ -15,6 +15,11 @@ public class DeflateStrategy implements ICompressionStrategy {
 		sizeRecorder = new DataSizeRecordStream();
 	}
 	
+	public DeflateStrategy(int level) {
+		deflater = new Deflater(level);
+		sizeRecorder = new DataSizeRecordStream();
+	}
+	
 	@Override
 	public void close() {
 		deflater.end();

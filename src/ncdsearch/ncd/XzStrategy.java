@@ -8,12 +8,10 @@ import org.tukaani.xz.XZOutputStream;
 
 public class XzStrategy implements ICompressionStrategy {
 
-	private DataSizeRecordStream sizeRecorder;
 	private LZMA2Options xzOptions;
 	
 	
 	public XzStrategy() {
-		sizeRecorder = new DataSizeRecordStream();
 		try {
 			xzOptions = new LZMA2Options(0);
 		} catch (UnsupportedOptionsException e) {
@@ -22,7 +20,7 @@ public class XzStrategy implements ICompressionStrategy {
 	
 	@Override
 	public long getDataSize(byte[] buf, int start, int length) {
-		sizeRecorder.reset();
+		DataSizeRecordStream sizeRecorder = new DataSizeRecordStream();
 		try {
 			//XZCompressorOutputStream stream = new XZCompressorOutputStream(sizeRecorder);
 			//LZMACompressorOutputStream stream = new LZMACompressorOutputStream(sizeRecorder);

@@ -12,10 +12,11 @@ import java.util.Arrays;
 import gnu.trove.list.array.TDoubleArrayList;
 import gnu.trove.list.array.TIntArrayList;
 import ncdsearch.eval.FileComparison;
-import ncdsearch.experimental.ByteLCSDistance;
-import ncdsearch.experimental.LCSSimilarity;
+import ncdsearch.experimental.ByteLevenshteinDistance;
+import ncdsearch.experimental.TokenLevenshteinDistance;
 import ncdsearch.experimental.NgramDistance;
 import ncdsearch.experimental.NgramSetDistance;
+import ncdsearch.experimental.NormalizedTokenLevenshteinDistance;
 import ncdsearch.ncd.Compressor;
 import sarf.lexer.DirectoryScan;
 import sarf.lexer.FileType;
@@ -326,11 +327,17 @@ public class SearchMain {
 								
 								// Report local maximum values
 								for (int p=0; p<positions.length; p++) {
+									int minIndex = -1;
+									double minValue = Double.MAX_VALUE;
 									for (int w=0; w<windowSize.size(); w++) {
-										if (distance[p][w] <= threshold && isLocalMinimum(distance, p, w)) {
-											Fragment fragment = new Fragment(f.getAbsolutePath(), fileTokens, positions[p], positions[p]+windowSize.get(w), distance[p][w]); 
-											fragments.add(fragment);
+										if (minValue > distance[p][w]) {
+											minValue = distance[p][w];
+											minIndex = w;
 										}
+									}
+									if (minIndex >= 0 && minValue <= threshold) {
+										Fragment fragment = new Fragment(f.getAbsolutePath(), fileTokens, positions[p], positions[p]+windowSize.get(minIndex), minValue); 
+										fragments.add(fragment);
 									}
 								}
 								
@@ -362,10 +369,12 @@ public class SearchMain {
 	
 	public ICodeDistanceStrategy createStrategy() {
 		if (useLCS) {
-			return new LCSSimilarity(queryTokens);
+			return new TokenLevenshteinDistance(queryTokens);
 		} else {
 			if (algorithm.startsWith("blcs")) {
-				return new ByteLCSDistance(queryTokens);
+				return new ByteLevenshteinDistance(queryTokens);
+			} else if (algorithm.startsWith("tlcs")) {
+				return new NormalizedTokenLevenshteinDistance(queryTokens);
 			} else if (algorithm.startsWith("bngram")) {
 				int n = Integer.parseInt(algorithm.substring("bngram".length()));
 				return new NgramDistance(queryTokens, n);

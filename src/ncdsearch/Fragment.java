@@ -81,11 +81,11 @@ public class Fragment implements Comparable<Fragment> {
 		if (this.distance < another.distance) return true;
 		else if (this.distance > another.distance) return false;
 		else {
-			// Longer is better
+			// Shorter is better
 			int thislen = this.endPos - this.startPos;
 			int anotherlen = another.endPos - another.startPos;
-			if (thislen > anotherlen) return true;
-			else if (thislen < anotherlen) return false;
+			if (thislen < anotherlen) return true;
+			else if (thislen > anotherlen) return false;
 			else {
 				return this.startPos < another.startPos;
 			}

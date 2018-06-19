@@ -17,6 +17,7 @@ import ncdsearch.experimental.TokenLevenshteinDistance;
 import ncdsearch.experimental.NgramDistance;
 import ncdsearch.experimental.NgramSetDistance;
 import ncdsearch.experimental.NormalizedTokenLevenshteinDistance;
+import ncdsearch.experimental.PredictionFilter;
 import ncdsearch.ncd.Compressor;
 import sarf.lexer.DirectoryScan;
 import sarf.lexer.FileType;
@@ -43,6 +44,7 @@ public class SearchMain {
 	public static final String ARG_POSITION_DETAIL = "-pos";
 	public static final String ARG_ALGORITHM = "-a";
 	public static final String ARG_THREADS = "-threads";
+	public static final String ARG_PREDICTION_FILTER = "-prefilter";
 
 	private double WINDOW_STEP = 0.05; 
 	private double MIN_WINDOW = 0.8;
@@ -62,6 +64,7 @@ public class SearchMain {
 	private TIntArrayList windowSize;
 	private boolean normalization = false;
 	private boolean useLCS = false;
+	private PredictionFilter prefilter = null;
 
 	
 	public static void main(String[] args) {
@@ -180,6 +183,11 @@ public class SearchMain {
 			} else if (args[idx].equals(ARG_THREADS)) {
 				idx++;
 				threads = Integer.parseInt(args[idx++]);
+			} else if (args[idx].equals(ARG_PREDICTION_FILTER)) {
+				idx++;
+				if (idx < args.length) {
+					prefilter = new PredictionFilter(args[idx++]);
+				}
 			} else {
 				sourceDirs.add(args[idx++]);
 			}
@@ -211,6 +219,10 @@ public class SearchMain {
 				System.err.println("No tokens exist in lines " + queryStartLine + " through " + queryEndLine);
 				return;
 			}
+		}
+		
+		if (prefilter != null) {
+			prefilter.setQuery(queryTokens);
 		}
 		 
 		TDoubleArrayList windowRatio = new TDoubleArrayList();
@@ -282,74 +294,77 @@ public class SearchMain {
 								TokenReader reader = TokenReaderFactory.create(filetype, Files.readAllBytes(f.toPath()));
 								TokenSequence fileTokens = new TokenSequence(reader, normalization);
 								
-								int[] positions;
-								if (fullscan) {
-									positions = fileTokens.getFullPositions(queryTokens.size());
-								} else {
-									positions = fileTokens.getLineHeadTokenPositions();
-								}
-	
-								// Compute similarity values
-								double[][] distance = new double[positions.length][windowSize.size()];
-								if (threads < 2) {
-									for (int p=0; p<positions.length; p++) {
-										for (int w=0; w<windowSize.size(); w++) {
-											TokenSequence window = fileTokens.substring(positions[p], positions[p]+windowSize.get(w));
-											if (window != null) {
-												distance[p][w] = similarityStrategy.computeDistance(window);
-											} else {
-												distance[p][w] = Double.MAX_VALUE;
-											}
-										}
-									}
-								} else {
-									Concurrent c = new Concurrent(threads, null);
-									for (int p=0; p<positions.length; p++) {
-										final int positionIndex = p;
-										for (int w=0; w<windowSize.size(); w++) {
-											final int wIndex = w;
-											final TokenSequence window = fileTokens.substring(positions[p], positions[p]+windowSize.get(w));
-											if (window != null) {
-												c.execute(new Concurrent.Task() {
-													@Override
-													public boolean run(OutputStream out) throws IOException {
-														distance[positionIndex][wIndex] = similarityStrategy.computeDistance(window);
-														return true;
-													}
-												});
-											} else {
-												distance[p][w] = Double.MAX_VALUE;
-											}
-										}
-									}
-									c.waitComplete();
-								}
-								
-								// Report local maximum values
-								for (int p=0; p<positions.length; p++) {
-									int minIndex = -1;
-									double minValue = Double.MAX_VALUE;
-									for (int w=0; w<windowSize.size(); w++) {
-										if (minValue > distance[p][w]) {
-											minValue = distance[p][w];
-											minIndex = w;
-										}
-									}
-									if (minIndex >= 0 && minValue <= threshold) {
-										Fragment fragment = new Fragment(f.getAbsolutePath(), fileTokens, positions[p], positions[p]+windowSize.get(minIndex), minValue); 
-										fragments.add(fragment);
-									}
-								}
-								
-								// Remove redundant elements and print the result.
-								ArrayList<Fragment> result = Fragment.filter(fragments);
-								for (Fragment fragment: result) {
-									if (reportPositionDetail) {
-										System.out.println(fragment.toLongString());
+								if (prefilter == null || prefilter.shouldSearch(fileTokens)) {
+									int[] positions;
+									if (fullscan) {
+										positions = fileTokens.getFullPositions(queryTokens.size());
 									} else {
-										System.out.println(fragment.toString());
+										positions = fileTokens.getLineHeadTokenPositions();
+									}
+		
+									// Compute similarity values
+									double[][] distance = new double[positions.length][windowSize.size()];
+									if (threads < 2) {
+										for (int p=0; p<positions.length; p++) {
+											for (int w=0; w<windowSize.size(); w++) {
+												TokenSequence window = fileTokens.substring(positions[p], positions[p]+windowSize.get(w));
+												if (window != null) {
+													distance[p][w] = similarityStrategy.computeDistance(window);
+												} else {
+													distance[p][w] = Double.MAX_VALUE;
+												}
+											}
+										}
+									} else {
+										Concurrent c = new Concurrent(threads, null);
+										for (int p=0; p<positions.length; p++) {
+											final int positionIndex = p;
+											for (int w=0; w<windowSize.size(); w++) {
+												final int wIndex = w;
+												final TokenSequence window = fileTokens.substring(positions[p], positions[p]+windowSize.get(w));
+												if (window != null) {
+													c.execute(new Concurrent.Task() {
+														@Override
+														public boolean run(OutputStream out) throws IOException {
+															distance[positionIndex][wIndex] = similarityStrategy.computeDistance(window);
+															return true;
+														}
+													});
+												} else {
+													distance[p][w] = Double.MAX_VALUE;
+												}
+											}
+										}
+										c.waitComplete();
+									}
+									
+									// Report local maximum values
+									for (int p=0; p<positions.length; p++) {
+										int minIndex = -1;
+										double minValue = Double.MAX_VALUE;
+										for (int w=0; w<windowSize.size(); w++) {
+											if (minValue > distance[p][w]) {
+												minValue = distance[p][w];
+												minIndex = w;
+											}
+										}
+										if (minIndex >= 0 && minValue <= threshold) {
+											Fragment fragment = new Fragment(f.getAbsolutePath(), fileTokens, positions[p], positions[p]+windowSize.get(minIndex), minValue); 
+											fragments.add(fragment);
+										}
+									}
+									
+									// Remove redundant elements and print the result.
+									ArrayList<Fragment> result = Fragment.filter(fragments);
+									for (Fragment fragment: result) {
+										if (reportPositionDetail) {
+											System.out.println(fragment.toLongString());
+										} else {
+											System.out.println(fragment.toString());
+										}
 									}
 								}
+								
 							}
 							
 							

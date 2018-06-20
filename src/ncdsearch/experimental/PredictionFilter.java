@@ -14,11 +14,21 @@ public class PredictionFilter {
 		queryNgrams = NgramDistance.createNgram(query.toByteArray(), 5);
 	}
 	
+	private static final int N = 5; 
 	public boolean shouldSearch(TokenSequence file) {
-		TLongArrayList fileNgrams = NgramDistance.createNgram(file.toByteArray(), 5);
-		int intersection = NgramDistance.computeIntersection(queryNgrams, fileNgrams);
-		double overlap = intersection * 1.0 / queryNgrams.size();
-		return overlap >= 0.5;
+		try {
+			byte[] buf = file.toByteArray();
+			if (buf.length >= N) {
+				TLongArrayList fileNgrams = NgramDistance.createNgram(buf, N);
+				int intersection = NgramDistance.computeIntersection(queryNgrams, fileNgrams);
+				double overlap = intersection * 1.0 / queryNgrams.size();
+				return overlap >= 0.5;
+			} else {
+				return false;
+			}
+		} catch (Throwable t) {
+			return true;
+		}
 	}
 
 }

@@ -122,3 +122,7 @@ This project uses the following components.
  - ANTLR4 (http://www.antlr.org/license.html): BSD License 
  - XZ (https://tukaani.org/xz/java.html): public domain 
  - ZStd (https://github.com/luben/zstd-jni): 3-clause BSD License 
+
+Grammar files for ANTLR4 are available in another repository.
+C/C++ grammars are slightly edited so that the tool can recognize macro directives as tokens.
+ - https://github.com/takashi-ishio/sarf-lexer

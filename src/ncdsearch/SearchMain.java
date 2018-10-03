@@ -45,7 +45,7 @@ public class SearchMain {
 	public static final String ARG_QUERY_DIRECT = "-e";
 	public static final String ARG_NORMALIZE = "-normalize";
 	public static final String ARG_POSITION_DETAIL = "-pos";
-	public static final String ARG_THREADS = "-threads";
+	public static final String ARG_THREADS = "-thread";
 	public static final String ARG_PREDICTION_FILTER = "-prefilter";
 	
 	
@@ -183,7 +183,7 @@ public class SearchMain {
 			} else if (args[idx].equals(ARG_POSITION_DETAIL)) {
 				idx++;
 				reportPositionDetail = true;
-			} else if (args[idx].equals(ARG_THREADS)) {
+			} else if (args[idx].startsWith(ARG_THREADS)) {
 				idx++;
 				threads = Integer.parseInt(args[idx++]);
 			} else if (args[idx].equals(ARG_PREDICTION_FILTER)) {
@@ -272,6 +272,11 @@ public class SearchMain {
 		}
 		System.err.println(" threshold: " + threshold);
 		System.err.println(" File type: " + queryFileType.name());
+		if (threads > 0) {
+			System.err.println(" Multi-threading: Enabled (" + threads + " worker threads)");
+		} else {
+			System.err.println(" Multi-threading: Disabled");
+		}
 		if (queryTokens != null) {
 			System.err.println(" Query size: " + queryTokens.size());
 		} else {

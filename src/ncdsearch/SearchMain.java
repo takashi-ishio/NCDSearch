@@ -14,7 +14,8 @@ import java.util.List;
 import gnu.trove.list.array.TDoubleArrayList;
 import gnu.trove.list.array.TIntArrayList;
 import ncdsearch.eval.FileComparison;
-import ncdsearch.experimental.ByteLevenshteinDistance;
+import ncdsearch.experimental.ByteLCSDistance;
+import ncdsearch.experimental.NormalizedByteLevenshteinDistance;
 import ncdsearch.experimental.TokenLevenshteinDistance;
 import ncdsearch.experimental.NgramDistance;
 import ncdsearch.experimental.NgramSetDistance;
@@ -35,6 +36,7 @@ public class SearchMain {
 	public static final String ARG_THRESHOLD = "-th";
 	public static final String ARG_LANGUAGE = "-lang";
 	public static final String ARG_VERBOSE = "-v";
+	public static final String ARG_ALGORITHM = "-a";
 	public static final String ARG_COMPRESSOR = "-c";
 	public static final String ARG_FULLSCAN = "-full";
 	public static final String ARG_QUERY = "-q";
@@ -42,11 +44,11 @@ public class SearchMain {
 	public static final String ARG_QUERY_END_LINE = "-eline";
 	public static final String ARG_QUERY_DIRECT = "-e";
 	public static final String ARG_NORMALIZE = "-normalize";
-	public static final String ARG_LCS = "-lcs";
 	public static final String ARG_POSITION_DETAIL = "-pos";
-	public static final String ARG_ALGORITHM = "-a";
 	public static final String ARG_THREADS = "-threads";
 	public static final String ARG_PREDICTION_FILTER = "-prefilter";
+	
+	
 
 	private double WINDOW_STEP = 0.05; 
 	private double MIN_WINDOW = 0.8;
@@ -57,15 +59,13 @@ public class SearchMain {
 	private boolean reportPositionDetail = false;
 	private int threads = 0;
 
-	private String algorithm = "";
+	private String algorithm = "zip";
 
 	private TokenSequence queryTokens;
 	private ArrayList<String> sourceDirs = new ArrayList<>();
 	private FileType queryFileType = null;
-	private Compressor compressor = null;
 	private TIntArrayList windowSize;
 	private boolean normalization = false;
-	private boolean useLCS = false;
 	private PredictionFilter prefilter = null;
 
 	
@@ -84,15 +84,17 @@ public class SearchMain {
 		}
 	}
 
+	/**
+	 * @return true if arguments are valid and also a query is specified.
+	 */
 	public boolean isValidConfiguration() {
-		assert compressor != null;
-		
 		return queryTokens != null && 
 				windowSize != null && 
+				isValidAlgorithmName(algorithm) &&
 				sourceDirs.size() > 0 &&
 				windowSize.size() > 0;
 	}
-
+	
 	
 	public SearchMain(String[] args) {
 		String queryFilename = null;
@@ -144,7 +146,7 @@ public class SearchMain {
 			} else if (args[idx].equals(ARG_COMPRESSOR)) {
 				idx++;
 				if (idx < args.length) {
-					compressor = Compressor.valueOf(args[idx++].toUpperCase());
+					algorithm = args[idx++];
 				}
 			} else if (args[idx].equals(ARG_QUERY)) {
 				idx++;
@@ -173,12 +175,11 @@ public class SearchMain {
 			} else if (args[idx].equals(ARG_NORMALIZE)) {
 				idx++;
 				normalization = true;
-			} else if (args[idx].equals(ARG_LCS)) {
-				idx++;
-				useLCS = true;
 			} else if (args[idx].equals(ARG_ALGORITHM)) {
 				idx++;
-				algorithm = args[idx++];
+				if (idx < args.length) {
+					algorithm = args[idx++];
+				}
 			} else if (args[idx].equals(ARG_POSITION_DETAIL)) {
 				idx++;
 				reportPositionDetail = true;
@@ -195,7 +196,6 @@ public class SearchMain {
 			}
 		}
 		if (sourceDirs.size() == 0) sourceDirs.add(".");
-		if (compressor == null) compressor = Compressor.ZIP;
 		if (queryFileType == null) queryFileType = FileType.JAVA;
 		
 		TokenReader reader;
@@ -236,7 +236,7 @@ public class SearchMain {
 		}
 		windowRatio.sort();
 		
-		if (useLCS) {
+		if (algorithm.startsWith("tld")) {
 			windowSize = new TIntArrayList();
 			windowSize.add(queryTokens.size());
 			for (int i=1; i<=threshold; i++) {
@@ -258,7 +258,11 @@ public class SearchMain {
 	
 	public void printConfig() {
 		System.err.println("Configuration: ");
-		System.err.println(" Compressor: " + compressor.name());
+		if (isValidAlgorithmName(algorithm)) {
+			System.err.println(" Strategy: " + algorithm);
+		} else {
+			System.err.println(" Strategy: " + algorithm + " (invalid name)");
+		}
 		System.err.println(" Min window size ratio: " + MIN_WINDOW);
 		System.err.println(" Max window size ratio: " + MAX_WINDOW);
 		if (windowSize != null) {
@@ -373,21 +377,44 @@ public class SearchMain {
 	}
 	
 	public ICodeDistanceStrategy createStrategy() {
-		if (useLCS) {
+		if (algorithm.startsWith("tld")) {
 			return new TokenLevenshteinDistance(queryTokens);
-		} else {
-			if (algorithm.startsWith("blcs")) {
-				return new ByteLevenshteinDistance(queryTokens);
-			} else if (algorithm.startsWith("tlcs")) {
-				return new NormalizedTokenLevenshteinDistance(queryTokens);
-			} else if (algorithm.startsWith("bngram")) {
-				int n = Integer.parseInt(algorithm.substring("bngram".length()));
-				return new NgramDistance(queryTokens, n);
-			} else if (algorithm.startsWith("setbngram")) {
-				int n = Integer.parseInt(algorithm.substring("setbngram".length()));
-				return new NgramSetDistance(queryTokens, n);
-			}
-			return new NormalizedCompressionDistance(queryTokens, Compressor.createInstance(compressor));
+		} else if (algorithm.startsWith("blcs")) {
+			return new ByteLCSDistance(queryTokens);
+		} else if (algorithm.startsWith("nbld")) {
+			return new NormalizedByteLevenshteinDistance(queryTokens);
+		} else if (algorithm.startsWith("ntld")) {
+			return new NormalizedTokenLevenshteinDistance(queryTokens);
+		} else if (algorithm.startsWith("bngram")) {
+			int n = Integer.parseInt(algorithm.substring("bngram".length()));
+			return new NgramDistance(queryTokens, n);
+		} else if (algorithm.startsWith("setbngram")) {
+			int n = Integer.parseInt(algorithm.substring("setbngram".length()));
+			return new NgramSetDistance(queryTokens, n);
+		}
+
+		Compressor c = Compressor.ZIP;
+		try {
+			c = Compressor.valueOf(algorithm.toUpperCase());
+		} catch (IllegalArgumentException e) {
+		}
+		return new NormalizedCompressionDistance(queryTokens, Compressor.createInstance(c));
+	}
+	
+	public boolean isValidAlgorithmName(String name) {
+		if (algorithm.startsWith("lcs") || 
+			algorithm.startsWith("blcs") ||
+			algorithm.startsWith("tlcs") ||
+			algorithm.startsWith("bngram") || 
+			algorithm.startsWith("setbngram")) {
+			return true;
+		}
+
+		try {
+			Compressor c = Compressor.valueOf(algorithm.toUpperCase());
+			return c != null;
+		} catch (IllegalArgumentException e) {
+			return false;
 		}
 	}
 	

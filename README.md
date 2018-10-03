@@ -99,17 +99,21 @@ If a result is different from your expectation, you can try `-v` to see the conf
 
 #### NCD with another compression algorithm
 You can choose a compression algorithm other than Deflate.
-The tool accepts `XZ` and `ZSTD` that are corresponding to Xz and Zstd algorithms.
+The tool accepts `-a XZ` and `-a ZSTD` that are corresponding to Xz and Zstd algorithms.
 
-        java -jar ncdsearch.jar dir_or_file -lang java -c XZ < query
+        java -jar ncdsearch.jar dir_or_file -lang java -a XZ < query
 
 The feature is experimental to see the dependency of compression algorithms.
 
-#### Longest common subsequence
+#### Token-level Levenshtein Distance
 
-The `-lcs` option to use the longest common subsequence algorithm instead of normalized compression distance.
-The option compares tokens and reports a token sequence whose edit distance is at most a given threshold.
-For example, `-q "a < b" -th 1 -full` matches `a > b` and  `a < c`.  
+The `-a ntld` option uses Normalized Levenshtein Distance on tokens, i.e. the ratio of added, removed, and modified tokens, as a distance metric.
+
+The `-a tld` option uses Levenshtein Distance on tokens without normalization.
+It simply counts the number of added, removed, and modified tokens and reports a code fragment whose distance is at most a given threshold.
+For example, `-q "a < b" -th 1 -full` matches `a > b` and  `a < c`.
+
+
 
 
 ## License

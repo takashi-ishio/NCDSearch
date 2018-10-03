@@ -53,7 +53,7 @@ public class SearchMain {
 	private boolean fullscan = false;
 	private boolean verbose = false;
 	private boolean reportPositionDetail = false;
-	private int threads = 1;
+	private int threads = 0;
 
 	private String algorithm = "";
 
@@ -279,7 +279,17 @@ public class SearchMain {
 		long t = System.currentTimeMillis();
 		
 		
-		try (ICodeDistanceStrategy similarityStrategy = createStrategy()) {
+		//try (ICodeDistanceStrategy similarityStrategy = createStrategy()) {
+		final ArrayList<ICodeDistanceStrategy> createdStrategies = new ArrayList<>();
+		try {
+			ThreadLocal<ICodeDistanceStrategy> strategies = new ThreadLocal<ICodeDistanceStrategy>() {
+				@Override
+				protected ICodeDistanceStrategy initialValue() {
+					ICodeDistanceStrategy similarityStrategy = createStrategy();
+					createdStrategies.add(similarityStrategy); 
+					return similarityStrategy;
+				}
+			};
 			for (String dir: sourceDirs) {
 				DirectoryScan.scan(new File(dir), new DirectoryScan.Action() {
 					
@@ -304,39 +314,41 @@ public class SearchMain {
 		
 									// Compute similarity values
 									double[][] distance = new double[positions.length][windowSize.size()];
-									if (threads < 2) {
-										for (int p=0; p<positions.length; p++) {
-											for (int w=0; w<windowSize.size(); w++) {
-												TokenSequence window = fileTokens.substring(positions[p], positions[p]+windowSize.get(w));
-												if (window != null) {
-													distance[p][w] = similarityStrategy.computeDistance(window);
-												} else {
-													distance[p][w] = Double.MAX_VALUE;
-												}
+//									if (threads < 2) {
+//										for (int p=0; p<positions.length; p++) {
+//											for (int w=0; w<windowSize.size(); w++) {
+//												TokenSequence window = fileTokens.substring(positions[p], positions[p]+windowSize.get(w));
+//												if (window != null) {
+//													distance[p][w] = similarityStrategy.computeDistance(window);
+//												} else {
+//													distance[p][w] = Double.MAX_VALUE;
+//												}
+//											}
+//										}
+//									} else {
+									final Concurrent c = new Concurrent(threads, null);
+									for (int p=0; p<positions.length; p++) {
+										final int positionIndex = p;
+										for (int w=0; w<windowSize.size(); w++) {
+											final int wIndex = w;
+											final TokenSequence window = fileTokens.substring(positions[p], positions[p]+windowSize.get(w));
+											if (window != null) {
+												c.execute(new Concurrent.Task() {
+													@Override
+													public boolean run(OutputStream out) throws IOException {
+														ICodeDistanceStrategy similarityStrategy = strategies.get();
+														distance[positionIndex][wIndex] = similarityStrategy.computeDistance(window);
+														return true;
+													}
+												});
+											} else {
+												distance[p][w] = Double.MAX_VALUE;
 											}
 										}
-									} else {
-										Concurrent c = new Concurrent(threads, null);
-										for (int p=0; p<positions.length; p++) {
-											final int positionIndex = p;
-											for (int w=0; w<windowSize.size(); w++) {
-												final int wIndex = w;
-												final TokenSequence window = fileTokens.substring(positions[p], positions[p]+windowSize.get(w));
-												if (window != null) {
-													c.execute(new Concurrent.Task() {
-														@Override
-														public boolean run(OutputStream out) throws IOException {
-															distance[positionIndex][wIndex] = similarityStrategy.computeDistance(window);
-															return true;
-														}
-													});
-												} else {
-													distance[p][w] = Double.MAX_VALUE;
-												}
-											}
-										}
-										c.waitComplete();
 									}
+									c.waitComplete();
+
+//									}
 									
 									// Report local maximum values
 									for (int p=0; p<positions.length; p++) {
@@ -374,8 +386,12 @@ public class SearchMain {
 					}
 				});
 			}
+//		}
+		} finally {
+			for (ICodeDistanceStrategy s: createdStrategies) {
+				s.close();
+			}
 		}
-		
 		if (verbose) {
 			long time = System.currentTimeMillis() - t;
 			System.err.println("Time (ms): " + time);

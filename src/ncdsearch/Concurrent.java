@@ -11,58 +11,56 @@ public class Concurrent {
 
 	private ExecutorService executor;
 	private OutputStream commonOutputStream;
-	private boolean closeOnComplete;
-
-	public Concurrent(OutputStream out) {
-		this(Integer.parseInt(System.getProperty("sarf.threads", "0")), out);		
-	}
 	
 	/**
-	 * Close a given output stream after completion of all tasks and "onComplete" task. 
-	 * @param value
+	 * Create a concurrent executor that uses a specified number of worker threads.
+	 * If a thread is 0, this object directly executes tasks in a single thread.  
+	 * @param thread
+	 * @param out
 	 */
-	public void setAutoCloseOnComplete(boolean value) {
-		this.closeOnComplete = value;
-	}
-	
-
 	public Concurrent(int thread, OutputStream out) {
-		if (thread <= 0) {
-			thread = Runtime.getRuntime().availableProcessors();	
-			if (thread > 4) {
-				thread = thread - 2; // don't occupy all the processors
-			}
+		if (thread > 0) {
+			executor = Executors.newFixedThreadPool(thread);
 		}
-		executor = Executors.newFixedThreadPool(thread);
 		this.commonOutputStream = out;
 	}
 		
+	/**
+	 * Start a task using a working thread (or this thread).
+	 * @param task
+	 */
 	public void execute(Task task) {
-		executor.execute(new TaskExecution(task));
+		if (executor != null) {
+			executor.execute(new TaskExecution(task));
+		} else {
+			try {
+				task.run(commonOutputStream);
+			} catch (IOException e) {
+			}
+		}
 	}
 	
+	/**
+	 * Wait completion of all tasks.
+	 */
 	public void waitComplete() {
 		waitComplete(null);
 	}
 	
 	/**
-	 * Wait completion of all tasks and then execute a clean up action.
-	 * @param onComplete
+	 * Wait completion of all tasks and then execute a clean-up action.
+	 * @param onComplete specifies the clean-up action.
 	 */
 	public void waitComplete(Runnable onComplete) {
-		try {
-			executor.shutdown();
-			executor.awaitTermination(1, TimeUnit.DAYS);
-			if (onComplete != null) onComplete.run();
-			if (closeOnComplete) {
-				try {
-					commonOutputStream.close();
-				} catch (IOException e) {
-				}
+		if (executor != null) {
+			try {
+				executor.shutdown();
+				executor.awaitTermination(1, TimeUnit.DAYS);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
 		}
+		if (onComplete != null) onComplete.run();
 	}
 	
 	private class TaskExecution implements Runnable {

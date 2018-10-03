@@ -41,6 +41,7 @@ public class Fragment implements Comparable<Fragment> {
 		b.append(tokens.getLine(endPos-1));
 		b.append(SEPARATOR);
         b.append(distance);
+        b.append("\n");
         return b.toString();
 	}
 	
@@ -61,6 +62,7 @@ public class Fragment implements Comparable<Fragment> {
         b.append(tokens.getEndCharPositionInLine(endPos-1)); 
 		b.append(SEPARATOR);
         b.append(distance);
+        b.append("\n");
         return b.toString();
 	}
 	

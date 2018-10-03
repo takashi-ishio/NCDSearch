@@ -291,13 +291,12 @@ public class SearchMain {
 					return similarityStrategy;
 				}
 			};
-			final Concurrent c = new Concurrent(threads, null);
+			final Concurrent c = new Concurrent(threads, System.out);
 			for (String dir: sourceDirs) {
 				DirectoryScan.scan(new File(dir), new DirectoryScan.Action() {
 					
 					@Override
 					public void process(File f) {
-						ArrayList<Fragment> fragments = new ArrayList<>();
 						
 						FileType filetype = TokenReaderFactory.getFileType(f.getAbsolutePath());
 						if (queryFileType == filetype) {
@@ -319,6 +318,7 @@ public class SearchMain {
 										}
 
 										// Identify a similar code fragment for each position (if exists)
+										ArrayList<Fragment> fragments = new ArrayList<>();
 										ICodeDistanceStrategy similarityStrategy = strategies.get();
 										for (int p=0; p<positions.length; p++) {
 											
@@ -343,12 +343,12 @@ public class SearchMain {
 								
 										// Remove redundant elements and print the result.
 										ArrayList<Fragment> result = Fragment.filter(fragments);
-										synchronized (System.out) {
+										if (result.size() > 0) {
 											for (Fragment fragment: result) {
 												if (reportPositionDetail) {
-													System.out.println(fragment.toLongString());
+													out.write(fragment.toLongString().getBytes());
 												} else {
-													System.out.println(fragment.toString());
+													out.write(fragment.toString().getBytes());
 												}
 											}
 										}

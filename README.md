@@ -100,6 +100,9 @@ The program uses N working threads if `-thread N` option is provided.
 The multi-threading execution processes N files in parallel.
 File locations in the output may be differently ordered in each execution.
 
+Although N can be an arbitrary number (e.g. 2, 4, or 8), an effective value of N is dependent on available CPU resources. 
+A larger amount of memory is also required to store N files in memory at once.
+
 
 ### Algorithm Option
 

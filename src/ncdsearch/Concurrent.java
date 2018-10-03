@@ -78,7 +78,7 @@ public class Concurrent {
 				if (task.run(buffer)) {
 					if (commonOutputStream != null) {
 						synchronized(commonOutputStream) {
-								buffer.writeTo(commonOutputStream);
+							buffer.writeTo(commonOutputStream);
 						}
 					}
 				}

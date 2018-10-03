@@ -8,6 +8,8 @@ import java.io.StringReader;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import gnu.trove.list.array.TDoubleArrayList;
 import gnu.trove.list.array.TIntArrayList;
@@ -279,114 +281,86 @@ public class SearchMain {
 		long t = System.currentTimeMillis();
 		
 		
-		//try (ICodeDistanceStrategy similarityStrategy = createStrategy()) {
-		final ArrayList<ICodeDistanceStrategy> createdStrategies = new ArrayList<>();
+		final List<ICodeDistanceStrategy> createdStrategies = Collections.synchronizedList(new ArrayList<ICodeDistanceStrategy>());
 		try {
 			ThreadLocal<ICodeDistanceStrategy> strategies = new ThreadLocal<ICodeDistanceStrategy>() {
 				@Override
 				protected ICodeDistanceStrategy initialValue() {
 					ICodeDistanceStrategy similarityStrategy = createStrategy();
-					createdStrategies.add(similarityStrategy); 
+					createdStrategies.add(similarityStrategy);
 					return similarityStrategy;
 				}
 			};
+			final Concurrent c = new Concurrent(threads, null);
 			for (String dir: sourceDirs) {
 				DirectoryScan.scan(new File(dir), new DirectoryScan.Action() {
 					
 					@Override
 					public void process(File f) {
-						try {
-							ArrayList<Fragment> fragments = new ArrayList<>();
-							
-							FileType filetype = TokenReaderFactory.getFileType(f.getAbsolutePath());
-							if (queryFileType == filetype) {
-								if (verbose) System.err.println(f.getAbsolutePath());
-								TokenReader reader = TokenReaderFactory.create(filetype, Files.readAllBytes(f.toPath()));
-								TokenSequence fileTokens = new TokenSequence(reader, normalization);
-								
-								if (prefilter == null || prefilter.shouldSearch(fileTokens)) {
-									int[] positions;
-									if (fullscan) {
-										positions = fileTokens.getFullPositions(queryTokens.size());
-									} else {
-										positions = fileTokens.getLineHeadTokenPositions();
-									}
-		
-									// Compute similarity values
-									double[][] distance = new double[positions.length][windowSize.size()];
-//									if (threads < 2) {
-//										for (int p=0; p<positions.length; p++) {
-//											for (int w=0; w<windowSize.size(); w++) {
-//												TokenSequence window = fileTokens.substring(positions[p], positions[p]+windowSize.get(w));
-//												if (window != null) {
-//													distance[p][w] = similarityStrategy.computeDistance(window);
-//												} else {
-//													distance[p][w] = Double.MAX_VALUE;
-//												}
-//											}
-//										}
-//									} else {
-									final Concurrent c = new Concurrent(threads, null);
-									for (int p=0; p<positions.length; p++) {
-										final int positionIndex = p;
-										for (int w=0; w<windowSize.size(); w++) {
-											final int wIndex = w;
-											final TokenSequence window = fileTokens.substring(positions[p], positions[p]+windowSize.get(w));
-											if (window != null) {
-												c.execute(new Concurrent.Task() {
-													@Override
-													public boolean run(OutputStream out) throws IOException {
-														ICodeDistanceStrategy similarityStrategy = strategies.get();
-														distance[positionIndex][wIndex] = similarityStrategy.computeDistance(window);
-														return true;
-													}
-												});
-											} else {
-												distance[p][w] = Double.MAX_VALUE;
-											}
-										}
-									}
-									c.waitComplete();
+						ArrayList<Fragment> fragments = new ArrayList<>();
+						
+						FileType filetype = TokenReaderFactory.getFileType(f.getAbsolutePath());
+						if (queryFileType == filetype) {
+							if (verbose) System.err.println(f.getAbsolutePath());
 
-//									}
-									
-									// Report local maximum values
-									for (int p=0; p<positions.length; p++) {
-										int minIndex = -1;
-										double minValue = Double.MAX_VALUE;
-										for (int w=0; w<windowSize.size(); w++) {
-											if (minValue > distance[p][w]) {
-												minValue = distance[p][w];
-												minIndex = w;
+							c.execute(new Concurrent.Task() {
+								@Override
+								public boolean run(OutputStream out) throws IOException {
+
+									TokenReader reader = TokenReaderFactory.create(filetype, Files.readAllBytes(f.toPath()));
+									TokenSequence fileTokens = new TokenSequence(reader, normalization);
+							
+									if (prefilter == null || prefilter.shouldSearch(fileTokens)) {
+										int[] positions;
+										if (fullscan) {
+											positions = fileTokens.getFullPositions(queryTokens.size());
+										} else {
+											positions = fileTokens.getLineHeadTokenPositions();
+										}
+
+										// Identify a similar code fragment for each position (if exists)
+										ICodeDistanceStrategy similarityStrategy = strategies.get();
+										for (int p=0; p<positions.length; p++) {
+											
+											double minDistance = Double.MAX_VALUE;
+											int minWindowSize = -1;
+											for (int w=0; w<windowSize.size(); w++) {
+												final TokenSequence window = fileTokens.substring(positions[p], positions[p]+windowSize.get(w));
+												if (window != null) {
+													double d = similarityStrategy.computeDistance(window);
+													if (d < minDistance) {
+														minDistance = d;
+														minWindowSize = windowSize.get(w);
+													}
+												}
+											}
+											
+											if (minDistance <= threshold) {
+												Fragment fragment = new Fragment(f.getAbsolutePath(), fileTokens, positions[p], positions[p]+minWindowSize, minDistance); 
+												fragments.add(fragment);
 											}
 										}
-										if (minIndex >= 0 && minValue <= threshold) {
-											Fragment fragment = new Fragment(f.getAbsolutePath(), fileTokens, positions[p], positions[p]+windowSize.get(minIndex), minValue); 
-											fragments.add(fragment);
-										}
-									}
-									
-									// Remove redundant elements and print the result.
-									ArrayList<Fragment> result = Fragment.filter(fragments);
-									for (Fragment fragment: result) {
-										if (reportPositionDetail) {
-											System.out.println(fragment.toLongString());
-										} else {
-											System.out.println(fragment.toString());
-										}
-									}
-								}
 								
-							}
-							
-							
-						} catch (IOException e) {
-							return;
+										// Remove redundant elements and print the result.
+										ArrayList<Fragment> result = Fragment.filter(fragments);
+										synchronized (System.out) {
+											for (Fragment fragment: result) {
+												if (reportPositionDetail) {
+													System.out.println(fragment.toLongString());
+												} else {
+													System.out.println(fragment.toString());
+												}
+											}
+										}
+									}
+									return true;
+								}
+							});
 						}
 					}
 				});
 			}
-//		}
+			c.waitComplete();
 		} finally {
 			for (ICodeDistanceStrategy s: createdStrategies) {
 				s.close();
@@ -434,33 +408,7 @@ public class SearchMain {
 		}
 		return b.toString();
 	}
-
-	public static double value(double[][] array, int idx1, int idx2) {
-		if (idx1 < 0 || array.length <= idx1) {
-			return Double.MAX_VALUE;
-		} else {
-			double[] second = array[idx1];
-			if (idx2 < 0 || second.length <= idx2) {
-				return Double.MAX_VALUE;
-			} else {
-				return second[idx2];
-			}
-		}
-	}
-
-	public static boolean isLocalMinimum(double[][] array, int p, int w) {
-		double v = array[p][w];
-		return v <= value(array, p-1, w-1) && 
-				v <= value(array, p-1, w) &&
-				v <= value(array, p-1, w+1) &&
-				v <= value(array, p, w-1) &&
-				v <= value(array, p, w+1) &&
-				v <= value(array, p+1, w-1) &&
-				v <= value(array, p+1, w) &&
-				v <= value(array, p+1, w+1);
-	}
 	
-
 	public TokenSequence getQueryTokens() {
 		return queryTokens;
 	}

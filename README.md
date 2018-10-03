@@ -94,6 +94,12 @@ If a result is different from your expectation, you can try `-v` to see the conf
 
         java -jar ncdsearch.jar dir_or_file -lang java -v < query
 
+### Multi-threading
+
+The program uses N working threads if `-thread N` option is provided.
+The multi-threading execution processes N files in parallel.
+File locations in the output may be differently ordered in each execution.
+
 
 ### Algorithm Option
 

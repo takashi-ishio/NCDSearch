@@ -136,6 +136,5 @@ This project uses the following components.
  - XZ (https://tukaani.org/xz/java.html): public domain 
  - ZStd (https://github.com/luben/zstd-jni): 3-clause BSD License 
 
-Grammar files for ANTLR4 are available in another repository.
-C/C++ grammars are slightly edited so that the tool can recognize macro directives as tokens.
- - https://github.com/takashi-ishio/sarf-lexer
+Grammar files for ANTLR4 come from https://github.com/antlr/grammars-v4/.
+C/C++ grammars are slightly edited so that the tool can recognize macro directives as tokens (see the header comment).

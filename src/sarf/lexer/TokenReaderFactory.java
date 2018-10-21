@@ -14,6 +14,7 @@ import sarf.lexer.lang.CPP14Lexer;
 import sarf.lexer.lang.CSharpLexer;
 import sarf.lexer.lang.ECMAScriptLexer;
 import sarf.lexer.lang.Java8Lexer;
+import sarf.lexer.lang.Python3Lexer;
 
 public class TokenReaderFactory {
 	
@@ -45,7 +46,9 @@ public class TokenReaderFactory {
 		filetype.put("ccfx", FileType.CCFINDERX);
 		filetype.put("ccfinderx", FileType.CCFINDERX);
 		filetype.put("ccfxprep", FileType.CCFINDERX);
-		
+
+		filetype.put("py", FileType.PYTHON);
+
 	}
 	
 
@@ -124,6 +127,9 @@ public class TokenReaderFactory {
 			case CSHARP:
 				return new LexerTokenReader(filetype, new CSharpLexer(createStream(buf)));
 
+			case PYTHON:
+				return new LexerTokenReader(filetype, new Python3Lexer(createStream(buf)));
+
 			case CCFINDERX:
 				return new CCFinderXLexer(buf);
 
@@ -161,6 +167,9 @@ public class TokenReaderFactory {
 			case CSHARP:
 				return new LexerTokenReader(filetype, new CSharpLexer(CharStreams.fromReader(reader)));
 
+			case PYTHON:
+				return new LexerTokenReader(filetype, new Python3Lexer(CharStreams.fromReader(reader)));
+				
 			case CCFINDERX:
 				return new CCFinderXLexer(reader);
 

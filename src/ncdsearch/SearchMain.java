@@ -21,6 +21,7 @@ import ncdsearch.experimental.NgramDistance;
 import ncdsearch.experimental.NgramSetDistance;
 import ncdsearch.experimental.NormalizedTokenLevenshteinDistance;
 import ncdsearch.experimental.PredictionFilter;
+import ncdsearch.experimental.TfidfCosineDistance;
 import ncdsearch.ncd.Compressor;
 import sarf.lexer.DirectoryScan;
 import sarf.lexer.FileType;
@@ -47,6 +48,18 @@ public class SearchMain {
 	public static final String ARG_POSITION_DETAIL = "-pos";
 	public static final String ARG_THREADS = "-thread";
 	public static final String ARG_PREDICTION_FILTER = "-prefilter";
+	
+	private static final String ALGORITHM_TOKEN_LEVENSHTEIN_DISTANCE = "tld";
+	private static final String ALGORITHM_BYTE_LCS_DISTANCE = "blcs";
+	private static final String ALGORITHM_NORMALIZED_BYTE_LEVENSHTEIN_DISTANCE = "nbld";
+	private static final String ALGORITHM_NORMALIZED_TOKEN_LEVENSHTEIN_DISTANCE = "ntld";
+	private static final String ALGORITHM_BYTE_NGRAM_MULTISET = "bngram";
+	private static final String ALGORITHM_BYTE_NGRAM_SET = "setbngram";
+	private static final String ALGORITHM_TFIDF = "tfidf";
+	private static final String[] ALGORITHMS = {ALGORITHM_TOKEN_LEVENSHTEIN_DISTANCE,
+			ALGORITHM_BYTE_LCS_DISTANCE, ALGORITHM_NORMALIZED_BYTE_LEVENSHTEIN_DISTANCE,
+			ALGORITHM_NORMALIZED_TOKEN_LEVENSHTEIN_DISTANCE, ALGORITHM_BYTE_NGRAM_MULTISET,
+			ALGORITHM_BYTE_NGRAM_SET, ALGORITHM_TFIDF};
 	
 	
 
@@ -236,7 +249,7 @@ public class SearchMain {
 		}
 		windowRatio.sort();
 		
-		if (algorithm.startsWith("tld")) {
+		if (algorithm.startsWith(ALGORITHM_TOKEN_LEVENSHTEIN_DISTANCE)) {
 			windowSize = new TIntArrayList();
 			windowSize.add(queryTokens.size());
 			for (int i=1; i<=threshold; i++) {
@@ -382,20 +395,22 @@ public class SearchMain {
 	}
 	
 	public ICodeDistanceStrategy createStrategy() {
-		if (algorithm.startsWith("tld")) {
+		if (algorithm.startsWith(ALGORITHM_TOKEN_LEVENSHTEIN_DISTANCE)) {
 			return new TokenLevenshteinDistance(queryTokens);
-		} else if (algorithm.startsWith("blcs")) {
+		} else if (algorithm.startsWith(ALGORITHM_BYTE_LCS_DISTANCE)) {
 			return new ByteLCSDistance(queryTokens);
-		} else if (algorithm.startsWith("nbld")) {
+		} else if (algorithm.startsWith(ALGORITHM_NORMALIZED_BYTE_LEVENSHTEIN_DISTANCE)) {
 			return new NormalizedByteLevenshteinDistance(queryTokens);
-		} else if (algorithm.startsWith("ntld")) {
+		} else if (algorithm.startsWith(ALGORITHM_NORMALIZED_TOKEN_LEVENSHTEIN_DISTANCE)) {
 			return new NormalizedTokenLevenshteinDistance(queryTokens);
-		} else if (algorithm.startsWith("bngram")) {
-			int n = Integer.parseInt(algorithm.substring("bngram".length()));
+		} else if (algorithm.startsWith(ALGORITHM_BYTE_NGRAM_MULTISET)) {
+			int n = Integer.parseInt(algorithm.substring(ALGORITHM_BYTE_NGRAM_MULTISET.length()));
 			return new NgramDistance(queryTokens, n);
-		} else if (algorithm.startsWith("setbngram")) {
-			int n = Integer.parseInt(algorithm.substring("setbngram".length()));
+		} else if (algorithm.startsWith(ALGORITHM_BYTE_NGRAM_SET)) {
+			int n = Integer.parseInt(algorithm.substring(ALGORITHM_BYTE_NGRAM_SET.length()));
 			return new NgramSetDistance(queryTokens, n);
+		} else if (algorithm.startsWith(ALGORITHM_TFIDF)) {
+			return new TfidfCosineDistance(sourceDirs, queryFileType, queryTokens);
 		}
 
 		Compressor c = Compressor.ZIP;
@@ -407,16 +422,12 @@ public class SearchMain {
 	}
 	
 	public boolean isValidAlgorithmName(String name) {
-		if (algorithm.startsWith("lcs") || 
-			algorithm.startsWith("blcs") ||
-			algorithm.startsWith("tlcs") ||
-			algorithm.startsWith("bngram") || 
-			algorithm.startsWith("setbngram")) {
-			return true;
+		for (String al: ALGORITHMS) {
+			if (name.startsWith(al)) return true; 
 		}
 
 		try {
-			Compressor c = Compressor.valueOf(algorithm.toUpperCase());
+			Compressor c = Compressor.valueOf(name.toUpperCase());
 			return c != null;
 		} catch (IllegalArgumentException e) {
 			return false;

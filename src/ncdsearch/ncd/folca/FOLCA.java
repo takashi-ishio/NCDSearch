@@ -1,6 +1,7 @@
 package ncdsearch.ncd.folca;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * An implementation of FOLCA algorithm.
@@ -123,5 +124,10 @@ public class FOLCA {
 	public int getDictionarySize() {
 		return d.size();
 	}
+	
+	public HashSet<String> getStringSet() {
+		return d.getStrings();
+	}
+
 }
 

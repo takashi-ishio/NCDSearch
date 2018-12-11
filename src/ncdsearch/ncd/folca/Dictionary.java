@@ -1,6 +1,7 @@
 package ncdsearch.ncd.folca;
 
 import java.io.ByteArrayOutputStream;
+import java.util.HashSet;
 
 import gnu.trove.list.array.TLongArrayList;
 import gnu.trove.map.hash.TLongIntHashMap;
@@ -87,6 +88,12 @@ public class Dictionary {
 		return buf.toByteArray();
 	}
 	
+	public byte[] decode(int symbol) {
+		ByteArrayOutputStream buf = new ByteArrayOutputStream();
+		decode(buf, symbol);
+		return buf.toByteArray();
+	}
+	
 	private void decode(ByteArrayOutputStream buf, int symbol) { 
 		if (isTerminal(symbol)) {
 			buf.write(symbol);
@@ -101,4 +108,14 @@ public class Dictionary {
 	public int size() {
 		return tree.size();
 	}
+	
+	public HashSet<String> getStrings() {
+		HashSet<String> set = new HashSet<>();
+		for (int i=0; i<tree.size(); i++) {
+			String k = new String(decode(i + SYMBOL_START));
+			set.add(k);
+		}
+		return set;
+	}
+	
 }

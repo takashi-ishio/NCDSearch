@@ -5,11 +5,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Map;
 
 import gnu.trove.map.hash.TObjectDoubleHashMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
-import gnu.trove.procedure.TObjectIntProcedure;
 import ncdsearch.ICodeDistanceStrategy;
 import ncdsearch.TokenSequence;
 import sarf.lexer.DirectoryScan;
@@ -24,29 +22,31 @@ public class TfidfCosineDistance implements ICodeDistanceStrategy {
 	
 	
 	private static synchronized void computeDocumentFrequency(ArrayList<String> sourceDirs, FileType queryFileType, TokenSequence query) {
-		dfMap = new TObjectIntHashMap<>();
-		for (String dir: sourceDirs) {
-			DirectoryScan.scan(new File(dir), new DirectoryScan.Action() {
-				@Override
-				public void process(File f) {
-					FileType type = TokenReaderFactory.getFileType(f.getAbsolutePath());
-					if (type == queryFileType) {
-						try {
-							HashSet<String> tokens = new HashSet<>(65536);
-							TokenReader r = TokenReaderFactory.create(type, Files.readAllBytes(f.toPath()));
-							while (r.next()) {
-								tokens.add(r.getToken());
+		if (dfMap == null) {			
+			dfMap = new TObjectIntHashMap<>();
+			for (String dir: sourceDirs) {
+				DirectoryScan.scan(new File(dir), new DirectoryScan.Action() {
+					@Override
+					public void process(File f) {
+						FileType type = TokenReaderFactory.getFileType(f.getAbsolutePath());
+						if (type == queryFileType) {
+							try {
+								HashSet<String> tokens = new HashSet<>(65536);
+								TokenReader r = TokenReaderFactory.create(type, Files.readAllBytes(f.toPath()));
+								while (r.next()) {
+									tokens.add(r.getToken());
+								}
+								for (String t: tokens) {
+									dfMap.adjustOrPutValue(t, 1, 1);
+								}
+							} catch (IOException e) {
 							}
-							for (String t: tokens) {
-								dfMap.adjustOrPutValue(t, 1, 1);
-							}
-						} catch (IOException e) {
 						}
 					}
-				}
-			});
+				});
+			}
+			queryTFIDF = new TFIDFVector(query);
 		}
-		queryTFIDF = new TFIDFVector(query);
 	}
 	
 	/**

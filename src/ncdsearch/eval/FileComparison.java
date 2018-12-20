@@ -9,6 +9,7 @@ import ncdsearch.ICodeDistanceStrategy;
 import ncdsearch.NormalizedCompressionDistance;
 import ncdsearch.SearchMain;
 import ncdsearch.TokenSequence;
+import ncdsearch.experimental.LZJDistance;
 import ncdsearch.experimental.NormalizedTokenLevenshteinDistance;
 import ncdsearch.ncd.Compressor;
 import sarf.lexer.FileType;
@@ -25,6 +26,7 @@ public class FileComparison {
 		int idx = 0;
 		boolean searchBest = false;
 		boolean useNormalizedTokenLD = false;
+		boolean useLZJD = false;
 		ArrayList<File> files = new ArrayList<>();
 		Compressor compressor = null;
 		while (idx < args.length) {
@@ -38,6 +40,9 @@ public class FileComparison {
 				}
 			} else if (args[idx].equals("-ntld")) {
 				useNormalizedTokenLD = true;
+				idx++;
+			} else if (args[idx].equals("-lzjd")) {
+				useLZJD = true;
 				idx++;
 			} else {
 				files.add(new File(args[idx++]));
@@ -64,7 +69,9 @@ public class FileComparison {
 			ICodeDistanceStrategy strategy = null;
 			if (useNormalizedTokenLD) {
 				strategy = new NormalizedTokenLevenshteinDistance(tokens1);
-			} else {			
+			} else if (useLZJD) {
+				strategy = new LZJDistance(tokens1);
+			} else {
 				strategy = new NormalizedCompressionDistance(tokens1, Compressor.createInstance(compressor));
 			}
 			

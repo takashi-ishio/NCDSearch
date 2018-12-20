@@ -181,6 +181,17 @@ public class TokenSequence {
 			return Arrays.copyOfRange(bytes, bytepos.get(start), bytepos.get(end));
 		}
 	}
+	
+	/**
+	 * @return an array of token positions in a byte array returned by toByteArray().
+	 * This array includes an additional position indicating the end position of the last token.
+	 */
+	public int[] getBytePositions() {
+		if (start == 0 && end == tokens.size()) {
+			return bytepos.toArray();
+		}
+		return bytepos.toArray(start, end-start+1);
+	}
 
 	/**
 	 * @return token positions that are the first tokens of lines, 

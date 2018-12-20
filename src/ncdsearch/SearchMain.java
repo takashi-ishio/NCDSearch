@@ -15,6 +15,7 @@ import gnu.trove.list.array.TDoubleArrayList;
 import gnu.trove.list.array.TIntArrayList;
 import ncdsearch.eval.FileComparison;
 import ncdsearch.experimental.ByteLCSDistance;
+import ncdsearch.experimental.LZJDistance;
 import ncdsearch.experimental.NormalizedByteLevenshteinDistance;
 import ncdsearch.experimental.TokenLevenshteinDistance;
 import ncdsearch.experimental.NgramDistance;
@@ -56,10 +57,12 @@ public class SearchMain {
 	private static final String ALGORITHM_BYTE_NGRAM_MULTISET = "bngram";
 	private static final String ALGORITHM_BYTE_NGRAM_SET = "setbngram";
 	private static final String ALGORITHM_TFIDF = "tfidf";
+	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE = "lzjd";
+	
 	private static final String[] ALGORITHMS = {ALGORITHM_TOKEN_LEVENSHTEIN_DISTANCE,
 			ALGORITHM_BYTE_LCS_DISTANCE, ALGORITHM_NORMALIZED_BYTE_LEVENSHTEIN_DISTANCE,
 			ALGORITHM_NORMALIZED_TOKEN_LEVENSHTEIN_DISTANCE, ALGORITHM_BYTE_NGRAM_MULTISET,
-			ALGORITHM_BYTE_NGRAM_SET, ALGORITHM_TFIDF};
+			ALGORITHM_BYTE_NGRAM_SET, ALGORITHM_TFIDF, ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE};
 	
 	
 
@@ -343,22 +346,8 @@ public class SearchMain {
 										ArrayList<Fragment> fragments = new ArrayList<>();
 										ICodeDistanceStrategy similarityStrategy = strategies.get();
 										for (int p=0; p<positions.length; p++) {
-											
-											double minDistance = Double.MAX_VALUE;
-											int minWindowSize = -1;
-											for (int w=0; w<windowSize.size(); w++) {
-												final TokenSequence window = fileTokens.substring(positions[p], positions[p]+windowSize.get(w));
-												if (window != null) {
-													double d = similarityStrategy.computeDistance(window);
-													if (d < minDistance) {
-														minDistance = d;
-														minWindowSize = windowSize.get(w);
-													}
-												}
-											}
-											
-											if (minDistance <= threshold) {
-												Fragment fragment = new Fragment(f.getAbsolutePath(), fileTokens, positions[p], positions[p]+minWindowSize, minDistance); 
+											Fragment fragment = checkPosition(f, fileTokens, positions[p], similarityStrategy);
+											if (fragment != null) {
 												fragments.add(fragment);
 											}
 										}
@@ -394,6 +383,43 @@ public class SearchMain {
 		}
 	}
 	
+	/**
+	 * Compare source code of a particular position with a query 
+	 * @return the best code fragment 
+	 */
+	private Fragment checkPosition(File f, TokenSequence fileTokens, int startPos, ICodeDistanceStrategy similarityStrategy) {
+		if (similarityStrategy instanceof LZJDistance) {
+			// special treatment
+			LZJDistance lzjd = (LZJDistance)similarityStrategy;
+			int endPos = startPos + windowSize.get(windowSize.size()-1);
+			double[] result = lzjd.findBestMatch(fileTokens, startPos, endPos);
+			if (result[0] <= threshold) {
+				return new Fragment(f.getAbsolutePath(), fileTokens, startPos, startPos+(int)result[1], result[0]); 
+			} else {
+				return null;
+			}
+		}  else {
+			double minDistance = Double.MAX_VALUE;
+			int minWindowSize = -1;
+			for (int w=0; w<windowSize.size(); w++) {
+				final TokenSequence window = fileTokens.substring(startPos, startPos+windowSize.get(w));
+				if (window != null) {
+					double d = similarityStrategy.computeDistance(window);
+					if (d < minDistance) {
+						minDistance = d;
+						minWindowSize = windowSize.get(w);
+					}
+				}
+			}
+			
+			if (minDistance <= threshold) {
+				return new Fragment(f.getAbsolutePath(), fileTokens, startPos, startPos+minWindowSize, minDistance); 
+			} else {
+				return null;
+			}
+		}
+	}
+	
 	public ICodeDistanceStrategy createStrategy() {
 		if (algorithm.startsWith(ALGORITHM_TOKEN_LEVENSHTEIN_DISTANCE)) {
 			return new TokenLevenshteinDistance(queryTokens);
@@ -411,6 +437,8 @@ public class SearchMain {
 			return new NgramSetDistance(queryTokens, n);
 		} else if (algorithm.startsWith(ALGORITHM_TFIDF)) {
 			return new TfidfCosineDistance(sourceDirs, queryFileType, queryTokens);
+		} else if (algorithm.startsWith(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE)) {
+			return new LZJDistance(queryTokens);
 		}
 
 		Compressor c = Compressor.ZIP;
@@ -455,5 +483,6 @@ public class SearchMain {
 	public TokenSequence getQueryTokens() {
 		return queryTokens;
 	}
+	
 
 }

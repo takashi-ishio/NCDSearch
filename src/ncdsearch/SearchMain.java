@@ -58,11 +58,13 @@ public class SearchMain {
 	private static final String ALGORITHM_BYTE_NGRAM_SET = "setbngram";
 	private static final String ALGORITHM_TFIDF = "tfidf";
 	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE = "lzjd";
+	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT = "lzjd-strict";
 	
 	private static final String[] ALGORITHMS = {ALGORITHM_TOKEN_LEVENSHTEIN_DISTANCE,
 			ALGORITHM_BYTE_LCS_DISTANCE, ALGORITHM_NORMALIZED_BYTE_LEVENSHTEIN_DISTANCE,
 			ALGORITHM_NORMALIZED_TOKEN_LEVENSHTEIN_DISTANCE, ALGORITHM_BYTE_NGRAM_MULTISET,
-			ALGORITHM_BYTE_NGRAM_SET, ALGORITHM_TFIDF, ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE};
+			ALGORITHM_BYTE_NGRAM_SET, ALGORITHM_TFIDF, ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE, 
+			ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT};
 	
 	
 
@@ -439,6 +441,8 @@ public class SearchMain {
 			return new TfidfCosineDistance(sourceDirs, queryFileType, queryTokens);
 		} else if (algorithm.startsWith(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE)) {
 			return new LZJDistance(queryTokens);
+		} else if (algorithm.startsWith(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT)) {
+			return new LZJDistance(queryTokens, true);
 		}
 
 		Compressor c = Compressor.ZIP;

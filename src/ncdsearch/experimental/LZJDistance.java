@@ -2,7 +2,7 @@ package ncdsearch.experimental;
 
 import java.util.HashSet;
 
-import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.set.hash.TIntHashSet;
 import ncdsearch.ICodeDistanceStrategy;
 import ncdsearch.TokenSequence;
 import ncdsearch.ncd.folca.FOLCA;
@@ -10,6 +10,8 @@ import ncdsearch.ncd.folca.FOLCA;
 public class LZJDistance implements ICodeDistanceStrategy {
 	
 	private HashSet<String> querySet;
+	private TIntHashSet queryHashSet;
+
 	
 	public static void main(String[] args) {
 		for (String arg: args) {
@@ -37,7 +39,14 @@ public class LZJDistance implements ICodeDistanceStrategy {
 	}
 
 	public LZJDistance(TokenSequence query) {
+		this(query, false);
+	}
+	
+	public LZJDistance(TokenSequence query, boolean strict) {
 		querySet = toLZSet(query.toByteArray());
+		if (!strict) {
+			queryHashSet = toHashLZSet(query.toByteArray());
+		}
 	}
 	
 	private static HashSet<String> toFOLCASet(byte[] b) {
@@ -61,8 +70,24 @@ public class LZJDistance implements ICodeDistanceStrategy {
 		}
 		return s;
 	}
-	
+
+	private static TIntHashSet toHashLZSet(byte[] b) {
+		TIntHashSet s = new TIntHashSet();
+		int start = 0;
+		int end = 1;
+		while (end <= b.length) {
+			int hash = MurmurHash3.murmurhash3_x86_32(b, start, end-start, 0);
+			boolean modified = s.add(hash);
+			if (modified) {
+				start = end;
+			}
+			end++;
+		}
+		return s;
+	}
+
 	/**
+	 * 
 	 * Find the best LZJD value and its window size
 	 * @param code specifies an entire file 
 	 * @param startPos specifies the first token index of LZSets
@@ -76,35 +101,66 @@ public class LZJDistance implements ICodeDistanceStrategy {
 		int[] positions = slidingWindow.getBytePositions();
 		assert positions.length == slidingWindow.size()+1;
 
-		byte[] buf = code.toByteArray();
-		HashSet<String> s = new HashSet<>();
 		double bestLZJD = Double.MAX_VALUE;
 		int bestWindow = 0;
 		int intersection = 0;
 		int start = 0;
 		int end = 1;
-		// For each token position, update LZSet and LZJD 
-		for (int t=0; t<slidingWindow.size(); t++) {			
-			while (end <= positions[t+1]-positions[0]) {
-				String bs = new String(buf, positions[0] + start, end - start);
-				boolean modified = s.add(bs);
-				if (modified) {
-					start = end;
-					if (querySet.contains(bs)) {
-						intersection++;
-					}
-				}
-				end++;
-			}
+
+		byte[] buf = code.toByteArray();
+		
+		int byteCount = positions[positions.length-1]-positions[0];
+		
+		if (queryHashSet != null) {
+			TIntHashSet s = new TIntHashSet(2 * byteCount);
 			
-			int unionSize = querySet.size() + s.size() - intersection;
-			double lzjd = (unionSize - intersection) * 1.0 / unionSize;
-			if (lzjd < bestLZJD) {
-				bestLZJD = lzjd;
-				bestWindow = t;
+			// For each token position, update LZSet and LZJD 
+			for (int t=0; t<slidingWindow.size(); t++) {			
+				while (end <= positions[t+1]-positions[0]) {
+					int hash = MurmurHash3.murmurhash3_x86_32(buf, positions[0] + start, end-start, 0);
+					boolean modified = s.add(hash);
+					if (modified) {
+						start = end;
+						if (queryHashSet.contains(hash)) {
+							intersection++;
+						}
+					}
+					end++;
+				}
+				
+				int unionSize = queryHashSet.size() + s.size() - intersection;
+				double lzjd = (unionSize - intersection) * 1.0 / unionSize;
+				if (lzjd < bestLZJD) {
+					bestLZJD = lzjd;
+					bestWindow = t;
+				}
+			}
+
+		} else {
+			HashSet<String> s = new HashSet<>(2 * byteCount);
+			
+			// For each token position, update LZSet and LZJD 
+			for (int t=0; t<slidingWindow.size(); t++) {			
+				while (end <= positions[t+1]-positions[0]) {
+					String text = new String(buf, positions[0] + start, end - start);
+					boolean modified = s.add(text);
+					if (modified) {
+						start = end;
+						if (querySet.contains(text)) {
+							intersection++;
+						}
+					}
+					end++;
+				}
+				
+				int unionSize = querySet.size() + s.size() - intersection;
+				double lzjd = (unionSize - intersection) * 1.0 / unionSize;
+				if (lzjd < bestLZJD) {
+					bestLZJD = lzjd;
+					bestWindow = t;
+				}
 			}
 		}
-
 		return new double[] {bestLZJD, bestWindow}; 
 	}
 	

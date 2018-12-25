@@ -2,39 +2,76 @@ package ncdsearch.experimental;
 
 import java.util.HashSet;
 
-import gnu.trove.set.hash.TIntHashSet;
 import ncdsearch.ICodeDistanceStrategy;
 import ncdsearch.TokenSequence;
-import ncdsearch.ncd.folca.FOLCA;
 
 public class LZJDistance implements ICodeDistanceStrategy {
 	
-	private HashSet<String> querySet;
-	private TIntHashSet queryHashSet;
-
+	private HashSet<ByteArrayFragment> querySet;
+	private boolean strict;
+	
+	private class ByteArrayFragment {
+		
+		private byte[] buf;
+		private int start;
+		private int length;
+		private int hash;
+		
+		public ByteArrayFragment(byte[] buf, int start, int length) {
+			this.buf = buf;
+			this.start = start;
+			this.length = length;
+			this.hash = MurmurHash3.murmurhash3_x86_32(buf, start, length, 0);
+		}
+		
+		@Override
+		public int hashCode() {
+			return hash;
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (obj != null && obj instanceof ByteArrayFragment) {
+				ByteArrayFragment another = (ByteArrayFragment)obj;
+				if (this.hash == another.hash) {
+					if (this.length == another.length) {
+						if (strict) {
+							for (int i=0; i<this.length; i++) {
+								if (this.buf[i+start] != another.buf[i+another.start]) {
+									return false;
+								}
+							}
+						}
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+		
+		/**
+		 * A string representation of the byte sub-sequence.
+		 * This may return a broken sub-string for multibyte text.
+		 */
+		@Override
+		public String toString() {
+			return new String(buf, start, length);
+		}
+	}
 	
 	public static void main(String[] args) {
 		for (String arg: args) {
-			HashSet<String> lzset = toLZSet(arg.getBytes());
+			LZJDistance d = new LZJDistance(true);
+			HashSet<ByteArrayFragment> lzset = d.toLZSet(arg.getBytes());
 			System.err.println(arg);
 			System.err.print("->");
-			for (String element: lzset) {
+			for (ByteArrayFragment element: lzset) {
 				System.err.print(" `");
-				System.err.print(element);
+				System.err.print(element.toString());
 				System.err.print("'");
 			}
 			System.err.println();
-
-			HashSet<String> lzset2 = toFOLCASet(arg.getBytes());
-			System.err.println(arg);
-			System.err.print("->");
-			for (String element: lzset2) {
-				System.err.print(" `");
-				System.err.print(element);
-				System.err.print("'");
-			}
-			System.err.println();
-
+			d.close();
 		}
 	}
 
@@ -43,41 +80,26 @@ public class LZJDistance implements ICodeDistanceStrategy {
 	}
 	
 	public LZJDistance(TokenSequence query, boolean strict) {
+		this.strict = strict;
 		querySet = toLZSet(query.toByteArray());
-		if (!strict) {
-			queryHashSet = toHashLZSet(query.toByteArray());
-		}
 	}
 	
-	private static HashSet<String> toFOLCASet(byte[] b) {
-		FOLCA f = new FOLCA();
-		f.process(b);
-		f.finish();
-		return f.getStringSet();
+	/**
+	 * For testing purpose
+	 * @param strict
+	 */
+	private LZJDistance(boolean strict) {
+		this.querySet = new HashSet<>();
+		this.strict = strict;
 	}
 	
-	private static HashSet<String> toLZSet(byte[] b) {
-		HashSet<String> s = new HashSet<>();
+	private HashSet<ByteArrayFragment> toLZSet(byte[] b) {
+		HashSet<ByteArrayFragment> s = new HashSet<>();
 		int start = 0;
 		int end = 1;
 		while (end <= b.length) {
-			String bs = new String(b, start, end-start);
+			ByteArrayFragment bs = new ByteArrayFragment(b, start, end-start);
 			boolean modified = s.add(bs);
-			if (modified) {
-				start = end;
-			}
-			end++;
-		}
-		return s;
-	}
-
-	private static TIntHashSet toHashLZSet(byte[] b) {
-		TIntHashSet s = new TIntHashSet();
-		int start = 0;
-		int end = 1;
-		while (end <= b.length) {
-			int hash = MurmurHash3.murmurhash3_x86_32(b, start, end-start, 0);
-			boolean modified = s.add(hash);
 			if (modified) {
 				start = end;
 			}
@@ -111,54 +133,27 @@ public class LZJDistance implements ICodeDistanceStrategy {
 		
 		int byteCount = positions[positions.length-1]-positions[0];
 		
-		if (queryHashSet != null) {
-			TIntHashSet s = new TIntHashSet(2 * byteCount);
-			
-			// For each token position, update LZSet and LZJD 
-			for (int t=0; t<slidingWindow.size(); t++) {			
-				while (end <= positions[t+1]-positions[0]) {
-					int hash = MurmurHash3.murmurhash3_x86_32(buf, positions[0] + start, end-start, 0);
-					boolean modified = s.add(hash);
-					if (modified) {
-						start = end;
-						if (queryHashSet.contains(hash)) {
-							intersection++;
-						}
+		HashSet<ByteArrayFragment> s = new HashSet<>(2 * byteCount);
+		
+		// For each token position, update LZSet and LZJD 
+		for (int t=0; t<slidingWindow.size(); t++) {			
+			while (end <= positions[t+1]-positions[0]) {
+				ByteArrayFragment text = new ByteArrayFragment(buf, positions[0] + start, end - start);
+				boolean modified = s.add(text);
+				if (modified) {
+					start = end;
+					if (querySet.contains(text)) {
+						intersection++;
 					}
-					end++;
 				}
-				
-				int unionSize = queryHashSet.size() + s.size() - intersection;
-				double lzjd = (unionSize - intersection) * 1.0 / unionSize;
-				if (lzjd < bestLZJD) {
-					bestLZJD = lzjd;
-					bestWindow = t;
-				}
+				end++;
 			}
-
-		} else {
-			HashSet<String> s = new HashSet<>(2 * byteCount);
 			
-			// For each token position, update LZSet and LZJD 
-			for (int t=0; t<slidingWindow.size(); t++) {			
-				while (end <= positions[t+1]-positions[0]) {
-					String text = new String(buf, positions[0] + start, end - start);
-					boolean modified = s.add(text);
-					if (modified) {
-						start = end;
-						if (querySet.contains(text)) {
-							intersection++;
-						}
-					}
-					end++;
-				}
-				
-				int unionSize = querySet.size() + s.size() - intersection;
-				double lzjd = (unionSize - intersection) * 1.0 / unionSize;
-				if (lzjd < bestLZJD) {
-					bestLZJD = lzjd;
-					bestWindow = t;
-				}
+			int unionSize = querySet.size() + s.size() - intersection;
+			double lzjd = (unionSize - intersection) * 1.0 / unionSize;
+			if (lzjd < bestLZJD) {
+				bestLZJD = lzjd;
+				bestWindow = t;
 			}
 		}
 		return new double[] {bestLZJD, bestWindow}; 
@@ -167,7 +162,7 @@ public class LZJDistance implements ICodeDistanceStrategy {
 	
 	@Override
 	public double computeDistance(TokenSequence code) {
-		HashSet<String> codeSet = toLZSet(code.toByteArray());
+		HashSet<ByteArrayFragment> codeSet = toLZSet(code.toByteArray());
 		int codeSetSize = codeSet.size();
 		codeSet.retainAll(querySet);
 		int intersectionSize = codeSet.size();

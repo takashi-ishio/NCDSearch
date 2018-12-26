@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,6 +52,7 @@ public class SearchMain {
 	public static final String ARG_POSITION_DETAIL = "-pos";
 	public static final String ARG_THREADS = "-thread";
 	public static final String ARG_PREDICTION_FILTER = "-prefilter";
+	public static final String ARG_ENCODING = "-encoding";
 	
 	private static final String ALGORITHM_TOKEN_LEVENSHTEIN_DISTANCE = "tld";
 	private static final String ALGORITHM_BYTE_LCS_DISTANCE = "blcs";
@@ -85,6 +89,9 @@ public class SearchMain {
 	private TIntArrayList windowSize;
 	private boolean normalization = false;
 	private PredictionFilter prefilter = null;
+	
+	private Charset charset;
+	private String charsetError;
 
 	
 	public static void main(String[] args) {
@@ -204,6 +211,16 @@ public class SearchMain {
 			} else if (args[idx].startsWith(ARG_THREADS)) {
 				idx++;
 				threads = Integer.parseInt(args[idx++]);
+			} else if (args[idx].startsWith(ARG_ENCODING)) {
+				idx++;
+				String charsetName = args[idx++];
+				try {
+					charset = Charset.forName(charsetName);
+				} catch (IllegalCharsetNameException e) {
+					charsetError = "Unsupported charset name " + charsetName;
+				} catch (Exception e) {
+					charsetError = "Invalid parameter " + charsetName;
+				}
 			} else if (args[idx].equals(ARG_PREDICTION_FILTER)) {
 				idx++;
 				if (idx < args.length) {
@@ -215,12 +232,13 @@ public class SearchMain {
 		}
 		if (sourceDirs.size() == 0) sourceDirs.add(".");
 		if (queryFileType == null) queryFileType = FileType.JAVA;
+		if (charset == null) charset = StandardCharsets.UTF_8;
 		
 		TokenReader reader;
 		if (queryFilename != null) {
 			try {
 				File f = new File(queryFilename);
-				reader = TokenReaderFactory.create(queryFileType, Files.readAllBytes(f.toPath())); 
+				reader = TokenReaderFactory.create(queryFileType, Files.readAllBytes(f.toPath()), charset); 
 			} catch (IOException e) {
 				System.err.println("Error: Failed to read " + queryFilename + " as a query.");
 				return;
@@ -300,6 +318,11 @@ public class SearchMain {
 		} else {
 			System.err.println(" Query size: (unavailable)");
 		}
+		if (charsetError != null) {
+			System.err.println(" Charset: " + charsetError + " (" + charset.displayName() + " is used)");
+		} else {
+			System.err.println(" Charset: " + charset.displayName());
+		}
 		System.err.println(" Search path: " + Arrays.toString(sourceDirs.toArray()));
 	}
 	
@@ -333,7 +356,7 @@ public class SearchMain {
 								@Override
 								public boolean run(OutputStream out) throws IOException {
 
-									TokenReader reader = TokenReaderFactory.create(filetype, Files.readAllBytes(f.toPath()));
+									TokenReader reader = TokenReaderFactory.create(filetype, Files.readAllBytes(f.toPath()), charset);
 									TokenSequence fileTokens = new TokenSequence(reader, normalization);
 							
 									if (prefilter == null || prefilter.shouldSearch(fileTokens)) {
@@ -439,7 +462,7 @@ public class SearchMain {
 			int n = Integer.parseInt(algorithm.substring(ALGORITHM_BYTE_NGRAM_SET.length()));
 			return new NgramSetDistance(queryTokens, n);
 		} else if (algorithm.startsWith(ALGORITHM_TFIDF)) {
-			return new TfidfCosineDistance(sourceDirs, queryFileType, queryTokens);
+			return new TfidfCosineDistance(sourceDirs, queryFileType, queryTokens, charset);
 		} else if (algorithm.startsWith(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE)) {
 			return new LZJDistance(queryTokens);
 		} else if (algorithm.startsWith(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT)) {

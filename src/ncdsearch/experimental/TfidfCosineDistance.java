@@ -2,6 +2,7 @@ package ncdsearch.experimental;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -21,7 +22,7 @@ public class TfidfCosineDistance implements ICodeDistanceStrategy {
 	private static TFIDFVector queryTFIDF;
 	
 	
-	private static synchronized void computeDocumentFrequency(ArrayList<String> sourceDirs, FileType queryFileType, TokenSequence query) {
+	private static synchronized void computeDocumentFrequency(ArrayList<String> sourceDirs, FileType queryFileType, TokenSequence query, Charset charset) {
 		if (dfMap == null) {			
 			dfMap = new TObjectIntHashMap<>();
 			for (String dir: sourceDirs) {
@@ -32,7 +33,7 @@ public class TfidfCosineDistance implements ICodeDistanceStrategy {
 						if (type == queryFileType) {
 							try {
 								HashSet<String> tokens = new HashSet<>(65536);
-								TokenReader r = TokenReaderFactory.create(type, Files.readAllBytes(f.toPath()));
+								TokenReader r = TokenReaderFactory.create(type, Files.readAllBytes(f.toPath()), charset);
 								while (r.next()) {
 									tokens.add(r.getToken());
 								}
@@ -52,8 +53,8 @@ public class TfidfCosineDistance implements ICodeDistanceStrategy {
 	/**
 	 * Build IDF from source files   
 	 */
-	public TfidfCosineDistance(ArrayList<String> sourceDirs, FileType queryFileType, TokenSequence query) {
-		computeDocumentFrequency(sourceDirs, queryFileType, query);
+	public TfidfCosineDistance(ArrayList<String> sourceDirs, FileType queryFileType, TokenSequence query, Charset charset) {
+		computeDocumentFrequency(sourceDirs, queryFileType, query, charset);
 	}
 	
 	/**

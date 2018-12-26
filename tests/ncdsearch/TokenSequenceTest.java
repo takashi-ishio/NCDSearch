@@ -1,6 +1,9 @@
 package ncdsearch;
 
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -38,6 +41,24 @@ public class TokenSequenceTest {
 		
 		Assert.assertArrayEquals(("class\0C\0{\0int\0x\0=\0" + "0\0;\0int\0y\0=\0" + "1\0;\0}\0").getBytes(), sequence.toByteArray());
 		Assert.assertArrayEquals("C\0{\0int\0".getBytes(), sub.toByteArray());
+	}
+
+	@Test
+	public void testEncoding() {
+		Charset charset = StandardCharsets.UTF_16;
+		TokenReader reader = TokenReaderFactory.create(FileType.JAVA, "class C { \n int x = 0; \n int y = \t 1; \n}\n".getBytes(charset), charset);
+		TokenSequence sequence = new TokenSequence(reader, false);
+		Assert.assertEquals(14, sequence.size());
+
+		TokenReader reader2 = TokenReaderFactory.create(FileType.JAVA, "class C { \n int x = 0; \n int y = \t 1; \n}\n".getBytes(StandardCharsets.UTF_16BE), charset);
+		TokenSequence sequence2 = new TokenSequence(reader2, false);
+		Assert.assertEquals(14, sequence2.size());
+
+		String sourceWithBOM = new String(new byte[]{(byte)0xEF, (byte)0xBB, (byte)0xBF}) + "class C { \n int x = 0; \n int y = \t 1; \n}\n";
+		TokenReader reader3 = TokenReaderFactory.create(FileType.JAVA, sourceWithBOM.getBytes(), StandardCharsets.UTF_8);
+		TokenSequence sequence3 = new TokenSequence(reader3, false);
+		Assert.assertEquals(14, sequence3.size());
+
 	}
 
 }

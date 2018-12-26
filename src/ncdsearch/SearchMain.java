@@ -394,9 +394,10 @@ public class SearchMain {
 			// special treatment
 			LZJDistance lzjd = (LZJDistance)similarityStrategy;
 			int endPos = startPos + windowSize.get(windowSize.size()-1);
-			double[] result = lzjd.findBestMatch(fileTokens, startPos, endPos);
-			if (result[0] <= threshold) {
-				return new Fragment(f.getAbsolutePath(), fileTokens, startPos, startPos+(int)result[1], result[0]); 
+			double distance = lzjd.findBestMatch(fileTokens, startPos, endPos, threshold);
+			if (distance <= threshold) {
+				int w = lzjd.getBestWindowSize();
+				return new Fragment(f.getAbsolutePath(), fileTokens, startPos, startPos+w, distance); 
 			} else {
 				return null;
 			}

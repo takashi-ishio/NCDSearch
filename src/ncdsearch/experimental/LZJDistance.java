@@ -9,6 +9,7 @@ public class LZJDistance implements ICodeDistanceStrategy {
 	
 	private HashSet<ByteArrayFragment> querySet;
 	private boolean strict;
+	private int bestWindowSize;
 	
 	private class ByteArrayFragment {
 		
@@ -81,7 +82,8 @@ public class LZJDistance implements ICodeDistanceStrategy {
 	
 	public LZJDistance(TokenSequence query, boolean strict) {
 		this.strict = strict;
-		querySet = toLZSet(query.toByteArray());
+		byte[] queryBytes = query.toByteArray();
+		querySet = toLZSet(queryBytes);
 	}
 	
 	/**
@@ -113,10 +115,10 @@ public class LZJDistance implements ICodeDistanceStrategy {
 	 * Find the best LZJD value and its window size
 	 * @param code specifies an entire file 
 	 * @param startPos specifies the first token index of LZSets
-	 * @param endPos specifies the last token index of the search
+	 * @param maxEndPos specifies the last token index of the search
 	 * @return
 	 */
-	public double[] findBestMatch(TokenSequence code, int startPos, int endPos) {
+	public double findBestMatch(TokenSequence code, int startPos, int endPos, double threshold) {
 		// Extract token positions between start--end (max window size)
 		if (endPos > code.size()) endPos = code.size();
 		TokenSequence slidingWindow = code.substring(startPos, endPos);
@@ -124,21 +126,26 @@ public class LZJDistance implements ICodeDistanceStrategy {
 		assert positions.length == slidingWindow.size()+1;
 
 		double bestLZJD = Double.MAX_VALUE;
-		int bestWindow = 0;
+		bestWindowSize = 0;
 		int intersection = 0;
 		int start = 0;
 		int end = 1;
+		
+		int firstTokenPos = positions[0];
 
 		byte[] buf = code.toByteArray();
 		
-		int byteCount = positions[positions.length-1]-positions[0];
+		int byteCount = positions[positions.length-1]-firstTokenPos;
 		
 		HashSet<ByteArrayFragment> s = new HashSet<>(2 * byteCount);
-		
+
+		int allowedMaxUnmatched = 1+(int)(threshold * querySet.size() * 1.0 / (1 - threshold));
+
 		// For each token position, update LZSet and LZJD 
-		for (int t=0; t<slidingWindow.size(); t++) {			
-			while (end <= positions[t+1]-positions[0]) {
-				ByteArrayFragment text = new ByteArrayFragment(buf, positions[0] + start, end - start);
+		for (int t=0; t<slidingWindow.size(); t++) {
+			
+			while (end <= positions[t+1]-firstTokenPos) {
+				ByteArrayFragment text = new ByteArrayFragment(buf, firstTokenPos + start, end - start);
 				boolean modified = s.add(text);
 				if (modified) {
 					start = end;
@@ -153,10 +160,21 @@ public class LZJDistance implements ICodeDistanceStrategy {
 			double lzjd = (unionSize - intersection) * 1.0 / unionSize;
 			if (lzjd < bestLZJD) {
 				bestLZJD = lzjd;
-				bestWindow = t;
+				bestWindowSize = t;
+			}
+			
+			// Terminate the loop early, if no chance 
+			int unmatched = s.size() - intersection;
+			if (unmatched > allowedMaxUnmatched) {
+				break;
 			}
 		}
-		return new double[] {bestLZJD, bestWindow}; 
+
+		return bestLZJD;
+	}
+	
+	public int getBestWindowSize() {
+		return bestWindowSize;
 	}
 	
 	

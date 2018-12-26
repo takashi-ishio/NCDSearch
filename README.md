@@ -72,6 +72,13 @@ According to the report, you may find a similar line of code in a file. For exam
         81:   if (this.distance < another.distance) return true;
 
 
+### Source File Encoding
+
+The tool assumes UTF-8 by default.
+Please specify `-encoding` option to choose a charset, e.g. `-encoding UTF-16`.
+A list of supported encodings is dependent on a platform.  
+A list for Oracle Java SE is available at: <https://docs.oracle.com/javase/jp/8/docs/technotes/guides/intl/encoding.doc.html>
+
 
 ### Programming Language
 

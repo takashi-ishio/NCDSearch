@@ -2,6 +2,7 @@ package ncdsearch.eval;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 
@@ -102,7 +103,7 @@ public class FileComparison {
 		try {
 			FileType t = TokenReaderFactory.getFileType(f.getAbsolutePath());
 			if (t != FileType.UNSUPPORTED) {
-				TokenReader reader = TokenReaderFactory.create(t, Files.readAllBytes(f.toPath()));
+				TokenReader reader = TokenReaderFactory.create(t, Files.readAllBytes(f.toPath()), StandardCharsets.UTF_8);
 				return new TokenSequence(reader, false);
 			} else {
 				return null;

@@ -2,6 +2,7 @@ package sarf.lexer;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 
@@ -41,7 +42,7 @@ public class LexerMain {
 			if (TokenReaderFactory.isSupported(filetype)) {
 				try {
 					File f = new File(filename);
-					TokenReader t = TokenReaderFactory.create(filetype, Files.readAllBytes(f.toPath()));
+					TokenReader t = TokenReaderFactory.create(filetype, Files.readAllBytes(f.toPath()), StandardCharsets.UTF_8);
 					while (t.next()) {
 						if (showTokens) {
 							System.out.print(filename);

@@ -2,6 +2,7 @@ package ncdsearch.eval;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 
@@ -65,7 +66,7 @@ public class SourceFileList {
 					(langFilter == null || langFilter == t)) {
 					try {
 						byte[] buf = Files.readAllBytes(f.toPath());
-						TokenReader r = TokenReaderFactory.create(t, buf);
+						TokenReader r = TokenReaderFactory.create(t, buf, StandardCharsets.UTF_8);
 						if (r != null) {
 							int line = 0;
 							int lastLine = -1;

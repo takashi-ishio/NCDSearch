@@ -62,7 +62,7 @@ public class SearchMain {
 	private static final String ALGORITHM_BYTE_NGRAM_SET = "setbngram";
 	private static final String ALGORITHM_TFIDF = "tfidf";
 	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE = "lzjd";
-	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT = "lzjd-strict";
+	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT = "strict-lzjd";
 	
 	private static final String[] ALGORITHMS = {ALGORITHM_TOKEN_LEVENSHTEIN_DISTANCE,
 			ALGORITHM_BYTE_LCS_DISTANCE, ALGORITHM_NORMALIZED_BYTE_LEVENSHTEIN_DISTANCE,

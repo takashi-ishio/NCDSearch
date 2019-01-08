@@ -1,6 +1,8 @@
 package ncdsearch;
 
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -54,10 +56,16 @@ public class TokenSequenceTest {
 		TokenSequence sequence2 = new TokenSequence(reader2, false);
 		Assert.assertEquals(14, sequence2.size());
 
-		String sourceWithBOM = new String(new byte[]{(byte)0xEF, (byte)0xBB, (byte)0xBF}) + "class C { \n int x = 0; \n int y = \t 1; \n}\n";
-		TokenReader reader3 = TokenReaderFactory.create(FileType.JAVA, sourceWithBOM.getBytes(), StandardCharsets.UTF_8);
-		TokenSequence sequence3 = new TokenSequence(reader3, false);
-		Assert.assertEquals(14, sequence3.size());
+		try {
+			ByteArrayOutputStream withBOM = new ByteArrayOutputStream();
+			withBOM.write(new byte[]{(byte)0xEF, (byte)0xBB, (byte)0xBF});
+			withBOM.write("class C { \n int x = 0; \n int y = \t 1; \n}\n".getBytes());
+			TokenReader reader3 = TokenReaderFactory.create(FileType.JAVA, withBOM.toByteArray(), StandardCharsets.UTF_8);
+			TokenSequence sequence3 = new TokenSequence(reader3, false);
+			Assert.assertEquals(14, sequence3.size());
+		} catch (IOException e) {
+			Assert.fail();
+		}
 
 	}
 

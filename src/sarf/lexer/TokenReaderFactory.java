@@ -139,7 +139,7 @@ public class TokenReaderFactory {
 				return new LexerTokenReader(filetype, new ECMAScriptLexer(createStream(buf, charset)));
 				
 			case CSHARP:
-				return new LexerTokenReader(filetype, new CSharpLexer(createStream(buf, charset)));
+				return new CSharpLexerTokenReader(filetype, new CSharpLexer(createStream(buf, charset)));
 
 			case PYTHON:
 				return new LexerTokenReader(filetype, new Python3Lexer(createStream(buf, charset)));
@@ -179,7 +179,7 @@ public class TokenReaderFactory {
 				return new LexerTokenReader(filetype, new ECMAScriptLexer(CharStreams.fromReader(reader)));
 
 			case CSHARP:
-				return new LexerTokenReader(filetype, new CSharpLexer(CharStreams.fromReader(reader)));
+				return new CSharpLexerTokenReader(filetype, new CSharpLexer(CharStreams.fromReader(reader)));
 
 			case PYTHON:
 				return new LexerTokenReader(filetype, new Python3Lexer(CharStreams.fromReader(reader)));

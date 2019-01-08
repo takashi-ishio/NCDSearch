@@ -13,8 +13,8 @@ import ncdsearch.normalizer.Normalizer;
 public class LexerTokenReader implements TokenReader {
 
 	private FileType filetype;
-	private Lexer lexer;
-	private Token token;
+	protected Lexer lexer;
+	protected Token token;
 	private Normalizer normalizer;
 	
 	/**

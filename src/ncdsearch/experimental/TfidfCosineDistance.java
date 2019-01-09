@@ -9,6 +9,7 @@ import java.util.HashSet;
 
 import gnu.trove.map.hash.TObjectDoubleHashMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
+import gnu.trove.procedure.TObjectDoubleProcedure;
 import ncdsearch.ICodeDistanceStrategy;
 import ncdsearch.TokenSequence;
 import sarf.lexer.DirectoryScan;
@@ -25,28 +26,32 @@ public class TfidfCosineDistance implements ICodeDistanceStrategy {
 	private static synchronized void computeDocumentFrequency(ArrayList<String> sourceDirs, FileType queryFileType, TokenSequence query, Charset charset) {
 		if (dfMap == null) {			
 			dfMap = new TObjectIntHashMap<>();
-			for (String dir: sourceDirs) {
-				DirectoryScan.scan(new File(dir), new DirectoryScan.Action() {
-					@Override
-					public void process(File f) {
-						FileType type = TokenReaderFactory.getFileType(f.getAbsolutePath());
-						if (type == queryFileType) {
-							try {
-								HashSet<String> tokens = new HashSet<>(65536);
-								TokenReader r = TokenReaderFactory.create(type, Files.readAllBytes(f.toPath()), charset);
-								while (r.next()) {
-									tokens.add(r.getToken());
+			try {
+				for (String dir: sourceDirs) {
+					DirectoryScan.scan(new File(dir), new DirectoryScan.Action() {
+						@Override
+						public void process(File f) {
+							FileType type = TokenReaderFactory.getFileType(f.getAbsolutePath());
+							if (type == queryFileType) {
+								try {
+									HashSet<String> tokens = new HashSet<>(65536);
+									TokenReader r = TokenReaderFactory.create(type, Files.readAllBytes(f.toPath()), charset);
+									while (r.next()) {
+										tokens.add(r.getToken());
+									}
+									for (String t: tokens) {
+										dfMap.adjustOrPutValue(t, 1, 1);
+									}
+								} catch (IOException e) {
 								}
-								for (String t: tokens) {
-									dfMap.adjustOrPutValue(t, 1, 1);
-								}
-							} catch (IOException e) {
 							}
 						}
-					}
-				});
+					});
+				}
+			} finally {
+				// Initialize a query vector even if dfMap is not properly initialized
+				queryTFIDF = new TFIDFVector(query);
 			}
-			queryTFIDF = new TFIDFVector(query);
 		}
 	}
 	
@@ -88,16 +93,15 @@ public class TfidfCosineDistance implements ICodeDistanceStrategy {
 			for (int i=0; i<tokens.size(); i++) {
 				vec.adjustOrPutValue(tokens.getToken(i), 1, 1);
 			}
+			// Translate tf vector to tf-idf vector
 			double squareSum = 0;
 			for (String t: vec.keySet()) {
+				double tf = vec.get(t);
 				int df = dfMap.get(t);
-				if (df > 0) {
-					double tfidf = vec.get(t) * 1.0 / dfMap.get(t);
-					vec.put(t, tfidf);
-					squareSum += tfidf * tfidf; 
-				} else {
-					vec.remove(t);
-				}
+				// assume IDF == 1 if the term does not appear in documents
+				double tfidf = (df > 0) ? (tf / dfMap.get(t)) : tf; 
+				vec.put(t, tfidf);
+				squareSum += tfidf * tfidf; 
 			}
 			absolute = Math.sqrt(squareSum);
 		}

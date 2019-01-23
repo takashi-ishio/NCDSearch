@@ -2,7 +2,6 @@ package ncdsearch.eval;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.LineNumberReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;

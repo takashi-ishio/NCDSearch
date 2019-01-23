@@ -24,10 +24,11 @@ public class TfidfTest {
 		TokenSequence c2 = new TokenSequence(TokenReaderFactory.create(FileType.JAVA, "int y;".getBytes()), false);
 		TokenSequence c3 = new TokenSequence(TokenReaderFactory.create(FileType.JAVA, "long x;".getBytes()), false);
 		
-		TfidfCosineDistance d = new TfidfCosineDistance(map, q);
-		Assert.assertEquals(0, d.computeDistance(c), 0.0001);
-		Assert.assertEquals(1-(0.02/1.02), d.computeDistance(c2), 0.005);
-		Assert.assertEquals(1-(1.01/1.02), d.computeDistance(c3), 0.005);
+		try (TfidfCosineDistance d = new TfidfCosineDistance(map, q)) {
+			Assert.assertEquals(0, d.computeDistance(c), 0.0001);
+			Assert.assertEquals(1-(0.02/1.02), d.computeDistance(c2), 0.005);
+			Assert.assertEquals(1-(1.01/1.02), d.computeDistance(c3), 0.005);
+		}
 	}
 
 }

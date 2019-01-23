@@ -2,9 +2,7 @@ package sarf.lexer;
 
 
 import org.antlr.v4.runtime.Lexer;
-import org.antlr.v4.runtime.Token;
 
-import ncdsearch.normalizer.Normalizer;
 import sarf.lexer.lang.CSharpLexer;
 
 

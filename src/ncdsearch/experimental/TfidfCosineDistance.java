@@ -9,7 +9,6 @@ import java.util.HashSet;
 
 import gnu.trove.map.hash.TObjectDoubleHashMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
-import gnu.trove.procedure.TObjectDoubleProcedure;
 import ncdsearch.ICodeDistanceStrategy;
 import ncdsearch.TokenSequence;
 import sarf.lexer.DirectoryScan;

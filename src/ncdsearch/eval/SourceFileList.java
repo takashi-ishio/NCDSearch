@@ -3,6 +3,8 @@ package ncdsearch.eval;
 import java.io.File;
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.io.UncheckedIOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -83,9 +85,26 @@ public class SourceFileList {
 							fileCount++;
 							totalLines += line;
 							totalBytes += buf.length;
-							totalRawLines += Files.lines(f.toPath()).count();
+							try {
+								totalRawLines += Files.lines(f.toPath()).count();
+							} catch (UncheckedIOException e) {
+								// Try another encoding
+								String[] charsets = {"MS932", "ISO-8859-1"};
+								boolean found = false;
+								for (String c: charsets) {
+									try {
+										totalRawLines += Files.lines(f.toPath(), Charset.forName(c)).count();
+										found = true;
+										break;
+									} catch (UncheckedIOException e2) {
+										// ignore
+									}
+								}
+								if (!found) System.err.println("Error: " + f.getAbsolutePath() + " is excluded from raw lines of code");
+							}
 						}
 					} catch (IOException e) {
+						System.err.println("Error: Failed to read " + f.getAbsolutePath());
 						errorFileCount++;
 					}
 				}

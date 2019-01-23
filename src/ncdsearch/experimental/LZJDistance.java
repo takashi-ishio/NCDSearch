@@ -11,6 +11,8 @@ public class LZJDistance implements ICodeDistanceStrategy {
 	private boolean strict;
 	private int bestWindowSize;
 	
+	private ICodeDistanceStrategy secondary;
+	
 	private class ByteArrayFragment {
 		
 		private byte[] buf;
@@ -84,6 +86,10 @@ public class LZJDistance implements ICodeDistanceStrategy {
 		this.strict = strict;
 		byte[] queryBytes = query.toByteArray();
 		querySet = toLZSet(queryBytes);
+	}
+
+	public void setSecondaryDistance(ICodeDistanceStrategy strategy) {
+		this.secondary = strategy;
 	}
 	
 	/**
@@ -170,7 +176,11 @@ public class LZJDistance implements ICodeDistanceStrategy {
 			}
 		}
 
-		return bestLZJD;
+		if (secondary != null && bestWindowSize > 0) {
+			return secondary.computeDistance(code.substring(startPos, startPos + bestWindowSize));
+		} else {
+			return bestLZJD;
+		}
 	}
 	
 	public int getBestWindowSize() {

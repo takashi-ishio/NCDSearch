@@ -2,6 +2,7 @@ package ncdsearch.eval;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ public class SourceFileList {
 	private static final String ARG_LANGUAGE = "-lang";
 	
 	private int fileCount;
+	private long totalRawLines;
 	private long totalLines;
 	private int errorFileCount;
 	private long totalBytes;
@@ -53,7 +55,7 @@ public class SourceFileList {
 	}
 	
 	public String toString() {
-		return fileCount + "," + errorFileCount + "," + totalLines + "," + totalBytes;
+		return fileCount + "," + errorFileCount + "," + totalRawLines + "," + totalLines + "," + totalBytes;
 	}
 	
 	public void process(String location, FileType langFilter) {
@@ -81,6 +83,7 @@ public class SourceFileList {
 							fileCount++;
 							totalLines += line;
 							totalBytes += buf.length;
+							totalRawLines += Files.lines(f.toPath()).count();
 						}
 					} catch (IOException e) {
 						errorFileCount++;

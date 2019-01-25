@@ -11,6 +11,7 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 
 import ncdsearch.normalizer.CPP14Normalizer;
+import sarf.lexer.lang.CobolLexer;
 import sarf.lexer.lang.CPP14Lexer;
 import sarf.lexer.lang.CSharpLexer;
 import sarf.lexer.lang.ECMAScriptLexer;
@@ -50,6 +51,7 @@ public class TokenReaderFactory {
 
 		filetype.put("py", FileType.PYTHON);
 
+		filetype.put("cbl", FileType.COBOL);
 	}
 	
 
@@ -147,6 +149,9 @@ public class TokenReaderFactory {
 			case CCFINDERX:
 				return new CCFinderXLexer(buf, charset);
 
+			case COBOL:
+				return new CobolLexerTokenReader(filetype, new CobolLexer(createStream(buf, charset)));
+
 			case UNSUPPORTED:
 			default:
 				return null;
@@ -186,6 +191,9 @@ public class TokenReaderFactory {
 				
 			case CCFINDERX:
 				return new CCFinderXLexer(reader);
+				
+			case COBOL:
+				return new CobolLexerTokenReader(filetype, new CobolLexer(CharStreams.fromReader(reader)));
 
 			case UNSUPPORTED:
 			default:

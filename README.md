@@ -64,7 +64,7 @@ would report a line like this:
 Each line of an output represents a similar source code fragment detected by the tool.
   * The first column is the file name including the code fragment. 
   * The second and third columns indicate the lines of the first and last tokens of the fragment. 
-    * You may specify `-pos` option to extract char positions in the lines.  In the case, it reports 
+    * You may specify `-pos` option to extract char positions in the lines. 
   * The last column indicates the normalized compression distance between the query and the code fragment.  Since it is a distance, more similar code fragments have smaller values.
 
 According to the report, you may find a similar line of code in a file. For example:

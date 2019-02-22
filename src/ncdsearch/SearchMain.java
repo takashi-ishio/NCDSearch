@@ -379,13 +379,15 @@ public class SearchMain {
 										}
 								
 										// Remove redundant elements and print the result.
-										ArrayList<Fragment> result = Fragment.filter(fragments);
-										if (result.size() > 0) {
-											for (Fragment fragment: result) {
-												if (reportPositionDetail) {
-													out.write(fragment.toLongString().getBytes());
-												} else {
-													out.write(fragment.toString().getBytes());
+										if (fragments.size() > 0) {
+											ArrayList<Fragment> result = Fragment.filter(fragments);
+											if (result.size() > 0) {
+												for (Fragment fragment: result) {
+													if (reportPositionDetail) {
+														out.write(fragment.toLongString().getBytes());
+													} else {
+														out.write(fragment.toString().getBytes());
+													}
 												}
 											}
 										}

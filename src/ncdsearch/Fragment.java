@@ -2,6 +2,7 @@ package ncdsearch;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 
 
 public class Fragment implements Comparable<Fragment> {
@@ -103,32 +104,31 @@ public class Fragment implements Comparable<Fragment> {
 	}
 	
 	/**
-	 * Remove redundant elements.
+	 * Remove redundant elements by selecting best fragments in a greedy manner
 	 * @param fragments a list of fragments to be processed.  
 	 * This collection is modified by this method.
 	 * @return a filtered list of fragments.
 	 */
 	public static ArrayList<Fragment> filter(ArrayList<Fragment> fragments) {
+		fragments.sort(new Comparator<Fragment>() {
+			@Override
+			public int compare(Fragment o1, Fragment o2) {
+				if (o1.isBetterThan(o2)) return -1;
+				else return 1;
+			}
+		});
+		ArrayList<Fragment> result = new ArrayList<>();
 		for (int i=0; i<fragments.size(); i++) {
 			Fragment f1 = fragments.get(i);
 			if (f1 == null) continue;
+			
+			result.add(f1);
 			for (int j=i+1; j<fragments.size(); j++) {
 				Fragment f2 = fragments.get(j);
 				if (f2 == null) continue;
 				if (f1.overlapWith(f2)) {
-					if (f1.isBetterThan(f2)) {
-						fragments.set(j, null);
-					} else {
-						fragments.set(i, null);
-						break;
-					}
+					fragments.set(j, null);
 				}
-			}
-		}
-		ArrayList<Fragment> result = new ArrayList<>();
-		for (int i=0; i<fragments.size(); i++) {
-			if (fragments.get(i) != null) {
-				result.add(fragments.get(i));
 			}
 		}
 		Collections.sort(result);

@@ -73,13 +73,15 @@ public class Fragment implements Comparable<Fragment> {
 	}
 	
 	/**
-	 * Compare two overlapping fragments and select a better one.
+	 * Compare two fragments and select a better one.
 	 * @param another
 	 * @return true if this object is better for output. 
 	 * False if another is better.
+	 * A fragment is better than another one if it has a lower distance.
+	 * If tied, shorter is better.  
+	 * If they have the same legnth, smaller start position is better. 
 	 */
 	public boolean isBetterThan(Fragment another) {
-		assert this.overlapWith(another);
 		// Distance: Lower is better
 		if (this.distance < another.distance) return true;
 		else if (this.distance > another.distance) return false;

@@ -15,11 +15,15 @@ public class NormalizedByteLevenshteinDistance implements ICodeDistanceStrategy 
 	@Override
 	public double computeDistance(TokenSequence code) {
 		byte[] another = code.toByteArray();
-		int[][] score = computeLevenshteinDistance(query, another);
-	    return score[query.length][another.length] * 1.0 / Math.max(query.length, another.length);
+	    return computeLevenshteinDistance(query, another) * 1.0 / Math.max(query.length, another.length);
 	}
 
-	static int[][] computeLevenshteinDistance(byte[] query, byte[] another) {
+	static int computeLevenshteinDistance(byte[] query, byte[] another) { 
+		int[][] score = computeLevenshteinDistanceTable(query, another);
+	    return score[query.length][another.length];
+	}
+	
+	static int[][] computeLevenshteinDistanceTable(byte[] query, byte[] another) {
 		int[][] score = new int[query.length+1][another.length+1];
 		for (int i=0; i<query.length+1; i++) {
 			score[i][0] = i;

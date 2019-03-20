@@ -16,8 +16,7 @@ public class VariableWindowNormalizedByteLevenshteinDistance implements IVariabl
 	@Override
 	public double computeDistance(TokenSequence code) {
 		byte[] another = code.toByteArray();
-		int[][] score = NormalizedByteLevenshteinDistance.computeLevenshteinDistance(query, another);
-	    return score[query.length][another.length] * 1.0 / Math.max(query.length, another.length);
+		return NormalizedByteLevenshteinDistance.computeLevenshteinDistance(query, another) * 1.0 / Math.max(query.length, another.length);
 	}
 	
 	@Override
@@ -26,7 +25,7 @@ public class VariableWindowNormalizedByteLevenshteinDistance implements IVariabl
 		TokenSequence w = code.substring(startPos, endPos);
 		if (w == null) return Double.MAX_VALUE;
 		byte[] another = w.toByteArray();
-		int[][] score = NormalizedByteLevenshteinDistance.computeLevenshteinDistance(query, another);
+		int[][] score = NormalizedByteLevenshteinDistance.computeLevenshteinDistanceTable(query, another);
 		int[] positions = w.getBytePositions();
 		int bestScore = Integer.MAX_VALUE;
 		for (int i=0; i<positions.length; i++) {

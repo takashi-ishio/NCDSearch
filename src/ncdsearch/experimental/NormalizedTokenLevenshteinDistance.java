@@ -17,7 +17,9 @@ public class NormalizedTokenLevenshteinDistance extends TokenLevenshteinDistance
 	
 	@Override
 	public double findBestMatch(TokenSequence code, int startPos, int endPos, double threshold) {
+		if (endPos < code.size()) endPos = code.size();
 		TokenSequence w = code.substring(startPos, endPos);
+		if (w == null) return Double.MAX_VALUE;
 		int[][] table = super.computeDistanceTable(w);
 		int minDistance = Integer.MAX_VALUE;
 		int minIndex = -1;
@@ -30,7 +32,7 @@ public class NormalizedTokenLevenshteinDistance extends TokenLevenshteinDistance
 		}
 		
 		bestWindowSize = minIndex;
-		double distance = 1.0 / Math.max(queryLength, minIndex);
+		double distance = minDistance * 1.0 / Math.max(queryLength, minIndex);
 		return distance;
 	}
 	

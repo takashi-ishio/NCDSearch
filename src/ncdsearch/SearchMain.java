@@ -53,6 +53,7 @@ public class SearchMain {
 	public static final String ARG_THREADS = "-thread";
 	public static final String ARG_PREDICTION_FILTER = "-prefilter";
 	public static final String ARG_ENCODING = "-encoding";
+	public static final String ARG_ALLOW_OVERLAP = "-allowoverlap";
 	
 	private static final String ALGORITHM_TOKEN_LEVENSHTEIN_DISTANCE = "tld";
 	private static final String ALGORITHM_BYTE_LCS_DISTANCE = "blcs";
@@ -81,6 +82,7 @@ public class SearchMain {
 	private boolean verbose = false;
 	private boolean reportPositionDetail = false;
 	private int threads = 0;
+	private boolean allowOverlap = false;
 
 	private String algorithm = "zip";
 
@@ -209,6 +211,9 @@ public class SearchMain {
 			} else if (args[idx].equals(ARG_POSITION_DETAIL)) {
 				idx++;
 				reportPositionDetail = true;
+			} else if (args[idx].equals(ARG_ALLOW_OVERLAP)) {
+				idx++;
+				allowOverlap = true;
 			} else if (args[idx].startsWith(ARG_THREADS)) {
 				idx++;
 				threads = Integer.parseInt(args[idx++]);
@@ -378,8 +383,13 @@ public class SearchMain {
 											}
 										}
 								
-										// Remove redundant elements and print the result.
-										if (fragments.size() > 0) {
+										if (allowOverlap) {
+											// Print the raw result
+											for (Fragment fragment: fragments) {
+												out.write(fragment.toString().getBytes());
+											}
+										} else {
+											// Remove redundant elements and print the result.
 											ArrayList<Fragment> result = Fragment.filter(fragments);
 											if (result.size() > 0) {
 												for (Fragment fragment: result) {

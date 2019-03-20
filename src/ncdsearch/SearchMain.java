@@ -426,13 +426,13 @@ public class SearchMain {
 	 * @return the best code fragment 
 	 */
 	private Fragment checkPosition(File f, TokenSequence fileTokens, int startPos, ICodeDistanceStrategy similarityStrategy) {
-		if (similarityStrategy instanceof LZJDistance) {
+		if (similarityStrategy instanceof IFastDistanceStrategy) {
 			// special treatment
-			LZJDistance lzjd = (LZJDistance)similarityStrategy;
+			IFastDistanceStrategy strategy = (IFastDistanceStrategy)similarityStrategy;
 			int endPos = startPos + windowSize.get(windowSize.size()-1);
-			double distance = lzjd.findBestMatch(fileTokens, startPos, endPos, threshold);
+			double distance = strategy.findBestMatch(fileTokens, startPos, endPos, threshold);
 			if (distance <= threshold) {
-				int w = lzjd.getBestWindowSize();
+				int w = strategy.getBestWindowSize();
 				return new Fragment(f.getAbsolutePath(), fileTokens, startPos, startPos+w, distance); 
 			} else {
 				return null;

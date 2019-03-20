@@ -1,15 +1,42 @@
 package ncdsearch.experimental;
 
-import ncdsearch.ICodeDistanceStrategy;
+
+import ncdsearch.IFastDistanceStrategy;
 import ncdsearch.TokenSequence;
 
-public class NormalizedTokenLevenshteinDistance extends TokenLevenshteinDistance implements ICodeDistanceStrategy {
+public class NormalizedTokenLevenshteinDistance extends TokenLevenshteinDistance implements IFastDistanceStrategy {
 
 	private int queryLength;
+	
+	private int bestWindowSize;
 	
 	public NormalizedTokenLevenshteinDistance(TokenSequence query) {
 		super(query);
 		this.queryLength = query.size();
+	}
+	
+	@Override
+	public double findBestMatch(TokenSequence code, int startPos, int endPos, double threshold) {
+		TokenSequence w = code.substring(startPos, endPos);
+		int[][] table = super.computeDistanceTable(w);
+		int minDistance = Integer.MAX_VALUE;
+		int minIndex = -1;
+		for (int i=0; i<=w.size(); i++) {
+			int d = table[queryLength][i];
+			if (d < minDistance) {
+				minDistance = d;
+				minIndex = i;
+			}
+		}
+		
+		bestWindowSize = minIndex;
+		double distance = 1.0 / Math.max(queryLength, minIndex);
+		return distance;
+	}
+	
+	@Override
+	public int getBestWindowSize() {
+		return bestWindowSize;
 	}
 	
 	@Override

@@ -11,8 +11,7 @@ public class TokenLevenshteinDistance implements ICodeDistanceStrategy {
 		this.query = query;
 	}
 	
-	@Override
-	public double computeDistance(TokenSequence code) {
+	protected int[][] computeDistanceTable(TokenSequence code) {
 		int[][] distance = new int[query.size()+1][code.size()+1];
 	    for (int i=0; i<query.size()+1; i++) {
 	    	distance[i][0] = i;
@@ -32,6 +31,12 @@ public class TokenLevenshteinDistance implements ICodeDistanceStrategy {
     			distance[i][j] = d2;
 	    	}
 	    }
+		return distance;
+	}
+	
+	@Override
+	public double computeDistance(TokenSequence code) {
+		int[][] distance = computeDistanceTable(code);
 		return distance[query.size()][code.size()];
 	}
 	

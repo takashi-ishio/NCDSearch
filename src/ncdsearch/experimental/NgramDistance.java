@@ -5,7 +5,7 @@ import ncdsearch.ICodeDistanceStrategy;
 import ncdsearch.TokenSequence;
 
 /**
- * This strategy uses Jaccard index of n-gram sets (1 <= n <= 7).
+ * This strategy uses Jaccard index of n-gram multisets (1 <= n <= 7).
  */
 public class NgramDistance implements ICodeDistanceStrategy {
 

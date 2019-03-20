@@ -3,10 +3,10 @@ package ncdsearch.experimental;
 import java.util.HashSet;
 
 import ncdsearch.ICodeDistanceStrategy;
-import ncdsearch.IFastDistanceStrategy;
+import ncdsearch.IVariableWindowStrategy;
 import ncdsearch.TokenSequence;
 
-public class LZJDistance implements IFastDistanceStrategy {
+public class LZJDistance implements IVariableWindowStrategy {
 	
 	private HashSet<ByteArrayFragment> querySet;
 	private boolean strict;

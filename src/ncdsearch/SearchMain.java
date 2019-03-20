@@ -21,6 +21,8 @@ import ncdsearch.experimental.ByteLCSDistance;
 import ncdsearch.experimental.LZJDistance;
 import ncdsearch.experimental.NormalizedByteLevenshteinDistance;
 import ncdsearch.experimental.TokenLevenshteinDistance;
+import ncdsearch.experimental.VariableWindowNormalizedByteLevenshteinDistance;
+import ncdsearch.experimental.VariableWindowNormalizedTokenLevenshteinDistance;
 import ncdsearch.experimental.NgramDistance;
 import ncdsearch.experimental.NgramSetDistance;
 import ncdsearch.experimental.NormalizedTokenLevenshteinDistance;
@@ -59,6 +61,8 @@ public class SearchMain {
 	private static final String ALGORITHM_BYTE_LCS_DISTANCE = "blcs";
 	private static final String ALGORITHM_NORMALIZED_BYTE_LEVENSHTEIN_DISTANCE = "nbld";
 	private static final String ALGORITHM_NORMALIZED_TOKEN_LEVENSHTEIN_DISTANCE = "ntld";
+	private static final String ALGORITHM_VARIABLE_WINDOW_NORMALIZED_BYTE_LEVENSHTEIN_DISTANCE = "vnbld";
+	private static final String ALGORITHM_VARIABLE_WINDOW_NORMALIZED_TOKEN_LEVENSHTEIN_DISTANCE = "vntld";
 	private static final String ALGORITHM_BYTE_NGRAM_MULTISET = "bngram";
 	private static final String ALGORITHM_BYTE_NGRAM_SET = "setbngram";
 	private static final String ALGORITHM_TFIDF = "tfidf";
@@ -68,7 +72,10 @@ public class SearchMain {
 	
 	private static final String[] ALGORITHMS = {ALGORITHM_TOKEN_LEVENSHTEIN_DISTANCE,
 			ALGORITHM_BYTE_LCS_DISTANCE, ALGORITHM_NORMALIZED_BYTE_LEVENSHTEIN_DISTANCE,
-			ALGORITHM_NORMALIZED_TOKEN_LEVENSHTEIN_DISTANCE, ALGORITHM_BYTE_NGRAM_MULTISET,
+			ALGORITHM_NORMALIZED_TOKEN_LEVENSHTEIN_DISTANCE, 
+			ALGORITHM_VARIABLE_WINDOW_NORMALIZED_BYTE_LEVENSHTEIN_DISTANCE,
+			ALGORITHM_VARIABLE_WINDOW_NORMALIZED_TOKEN_LEVENSHTEIN_DISTANCE,
+			ALGORITHM_BYTE_NGRAM_MULTISET,
 			ALGORITHM_BYTE_NGRAM_SET, ALGORITHM_TFIDF, ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE, 
 			ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT};
 	
@@ -426,9 +433,9 @@ public class SearchMain {
 	 * @return the best code fragment 
 	 */
 	private Fragment checkPosition(File f, TokenSequence fileTokens, int startPos, ICodeDistanceStrategy similarityStrategy) {
-		if (similarityStrategy instanceof IFastDistanceStrategy) {
-			// special treatment
-			IFastDistanceStrategy strategy = (IFastDistanceStrategy)similarityStrategy;
+		if (similarityStrategy instanceof IVariableWindowStrategy) {
+			// A single call to find the best match 
+			IVariableWindowStrategy strategy = (IVariableWindowStrategy)similarityStrategy;
 			int endPos = startPos + windowSize.get(windowSize.size()-1);
 			double distance = strategy.findBestMatch(fileTokens, startPos, endPos, threshold);
 			if (distance <= threshold) {
@@ -468,6 +475,10 @@ public class SearchMain {
 			return new NormalizedByteLevenshteinDistance(queryTokens);
 		} else if (algorithm.startsWith(ALGORITHM_NORMALIZED_TOKEN_LEVENSHTEIN_DISTANCE)) {
 			return new NormalizedTokenLevenshteinDistance(queryTokens);
+		} else if (algorithm.startsWith(ALGORITHM_VARIABLE_WINDOW_NORMALIZED_BYTE_LEVENSHTEIN_DISTANCE)) {
+			return new VariableWindowNormalizedByteLevenshteinDistance(queryTokens);
+		} else if (algorithm.startsWith(ALGORITHM_VARIABLE_WINDOW_NORMALIZED_TOKEN_LEVENSHTEIN_DISTANCE)) {
+			return new VariableWindowNormalizedTokenLevenshteinDistance(queryTokens);
 		} else if (algorithm.startsWith(ALGORITHM_BYTE_NGRAM_MULTISET)) {
 			int n = Integer.parseInt(algorithm.substring(ALGORITHM_BYTE_NGRAM_MULTISET.length()));
 			return new NgramDistance(queryTokens, n);

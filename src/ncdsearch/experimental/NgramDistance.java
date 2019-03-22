@@ -20,11 +20,15 @@ public class NgramDistance implements ICodeDistanceStrategy {
 	static TLongArrayList createNgram(byte[] buf, int n) {
 		assert n < 8;
 		TLongArrayList result = new TLongArrayList(buf.length-(n-1));
-		for (int i=0; i<buf.length-(n-1); i++) {
-			long l = 0;
-			for (int j=0; j<n; j++) {
-				l = (l << 8) + buf[i + j]; 
-			}
+		if (buf.length < n) return result;
+		long bitmask = 0xff;
+		long l = 0;
+		for (int i=0; i<n-1; i++) {
+			bitmask = (bitmask << 8) + 0xff;
+			l = (l << 8) + buf[i]; 
+		}
+		for (int i=n-1; i<buf.length; i++) {
+			l = ((l << 8) + buf[i]) & bitmask; 
 			result.add(l);
 		}
 		result.sort();

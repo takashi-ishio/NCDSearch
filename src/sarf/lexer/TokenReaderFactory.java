@@ -3,6 +3,7 @@ package sarf.lexer;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -52,6 +53,10 @@ public class TokenReaderFactory {
 		filetype.put("py", FileType.PYTHON);
 
 		filetype.put("cbl", FileType.COBOL);
+		
+		filetype.put("txt", FileType.PLAINTEXT);
+		filetype.put("html", FileType.PLAINTEXT);
+		filetype.put("md", FileType.PLAINTEXT);
 	}
 	
 
@@ -152,6 +157,9 @@ public class TokenReaderFactory {
 			case COBOL:
 				return new CobolLexerTokenReader(filetype, new CobolLexer(createStream(buf, charset)));
 
+			case PLAINTEXT:
+				return new PlainTextReader(new StringReader(new String(buf, charset)));
+				
 			case UNSUPPORTED:
 			default:
 				return null;
@@ -194,6 +202,9 @@ public class TokenReaderFactory {
 				
 			case COBOL:
 				return new CobolLexerTokenReader(filetype, new CobolLexer(CharStreams.fromReader(reader)));
+
+			case PLAINTEXT:
+				return new PlainTextReader(reader);
 
 			case UNSUPPORTED:
 			default:

@@ -56,6 +56,7 @@ public class SearchMain {
 	public static final String ARG_PREDICTION_FILTER = "-prefilter";
 	public static final String ARG_ENCODING = "-encoding";
 	public static final String ARG_ALLOW_OVERLAP = "-allowoverlap";
+	public static final String ARG_INCLUDE = "-i";
 	
 	private static final String ALGORITHM_TOKEN_LEVENSHTEIN_DISTANCE = "tld";
 	private static final String ALGORITHM_BYTE_LCS_DISTANCE = "blcs";
@@ -99,6 +100,7 @@ public class SearchMain {
 	private TIntArrayList windowSize;
 	private boolean normalization = false;
 	private PredictionFilter prefilter = null;
+	private ArrayList<String> inclusionFilters = new ArrayList<>();
 	
 	private Charset charset;
 	private String charsetError;
@@ -171,6 +173,11 @@ public class SearchMain {
 					if (TokenReaderFactory.isSupported(t)) {
 						queryFileType = t;
 					}
+				}
+			} else if (args[idx].equals(ARG_INCLUDE)) {
+				idx++;
+				if (idx < args.length) {
+					inclusionFilters.add(args[idx++]);
 				}
 			} else if (args[idx].equals(ARG_VERBOSE)) {
 				idx++;
@@ -361,15 +368,22 @@ public class SearchMain {
 					@Override
 					public void process(File f) {
 						
-						FileType filetype = TokenReaderFactory.getFileType(f.getAbsolutePath());
-						if (queryFileType == filetype) {
-							if (verbose) System.err.println(f.getAbsolutePath());
+						String path = f.getAbsolutePath();
+						FileType filetype = TokenReaderFactory.getFileType(path);
+						boolean match = (queryFileType == filetype);
+						// Override the default file setting with 
+						for (String inclusionFilter: inclusionFilters) {
+							match |= path.endsWith(inclusionFilter);
+						}
+						
+						if (match) {
+							if (verbose) System.err.println(path);
 
 							c.execute(new Concurrent.Task() {
 								@Override
 								public boolean run(OutputStream out) throws IOException {
 
-									TokenReader reader = TokenReaderFactory.create(filetype, Files.readAllBytes(f.toPath()), charset);
+									TokenReader reader = TokenReaderFactory.create(queryFileType, Files.readAllBytes(f.toPath()), charset);
 									TokenSequence fileTokens = new TokenSequence(reader, normalization);
 							
 									if (prefilter == null || prefilter.shouldSearch(fileTokens)) {

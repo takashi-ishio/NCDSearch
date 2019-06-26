@@ -142,7 +142,7 @@ public class TokenSequence {
 			return null;
 		}
 		int pos;
-		if (endLine <= getLine(0)) { 
+		if (endLine < getLine(0)) { 
 			return null;
 		} else if (startLine <= getLine(0)) { 
 			startPos = 0;

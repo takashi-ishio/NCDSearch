@@ -55,7 +55,9 @@ public class SearchMain {
 	public static final String ARG_THREADS = "-thread";
 	public static final String ARG_PREDICTION_FILTER = "-prefilter";
 	public static final String ARG_ENCODING = "-encoding";
+	public static final String ARG_TIME = "-time";
 	public static final String ARG_ALLOW_OVERLAP = "-allowoverlap";
+	
 	public static final String ARG_INCLUDE = "-i";
 	
 	private static final String ALGORITHM_TOKEN_LEVENSHTEIN_DISTANCE = "tld";
@@ -91,6 +93,7 @@ public class SearchMain {
 	private boolean reportPositionDetail = false;
 	private int threads = 0;
 	private boolean allowOverlap = false;
+	private boolean showTime = false;
 
 	private String algorithm = "zip";
 
@@ -182,6 +185,9 @@ public class SearchMain {
 			} else if (args[idx].equals(ARG_VERBOSE)) {
 				idx++;
 				verbose = true;
+			} else if (args[idx].equals(ARG_TIME)) {
+				idx++;
+				showTime = true;
 			} else if (args[idx].equals(ARG_FULLSCAN)) {
 				idx++;
 				fullscan = true;
@@ -436,7 +442,7 @@ public class SearchMain {
 				s.close();
 			}
 		}
-		if (verbose) {
+		if (verbose || showTime) {
 			long time = System.currentTimeMillis() - t;
 			System.err.println("Time (ms): " + time);
 		}

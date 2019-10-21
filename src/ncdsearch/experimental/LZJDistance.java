@@ -128,30 +128,29 @@ public class LZJDistance implements IVariableWindowStrategy {
 	public double findBestMatch(TokenSequence code, int startPos, int endPos, double threshold) {
 		// Extract token positions between start--end (max window size)
 		if (endPos > code.size()) endPos = code.size();
-		TokenSequence slidingWindow = code.substring(startPos, endPos);
-		int[] positions = slidingWindow.getBytePositions();
-		assert positions.length == slidingWindow.size()+1;
 
 		double bestLZJD = Double.MAX_VALUE;
 		bestWindowSize = 0;
-		int intersection = 0;
-		int start = 0;
-		int end = 1;
 		
-		int firstTokenPos = positions[0];
+		int firstTokenPos = code.getBytePosition(startPos);
 
 		byte[] buf = code.toByteArray();
 		
-		int byteCount = positions[positions.length-1]-firstTokenPos;
-		
+		int byteCount = code.getBytePosition(endPos) - firstTokenPos;
 		HashSet<ByteArrayFragment> s = new HashSet<>(2 * byteCount);
 
 		int allowedMaxUnmatched = 1+(int)(threshold * querySet.size() * 1.0 / (1 - threshold));
 
+		int start = 0;
+		int end = 1;
+		int intersection = 0;
+		
+		int windowSize = endPos-startPos;
 		// For each token position, update LZSet and LZJD 
-		for (int t=0; t<slidingWindow.size(); t++) {
+		for (int t=0; t<windowSize; t++) {
 			
-			while (end <= positions[t+1]-firstTokenPos) {
+			int nextEnd = code.getBytePosition(startPos+t+1)-firstTokenPos;
+			while (end <= nextEnd) {
 				ByteArrayFragment text = new ByteArrayFragment(buf, firstTokenPos + start, end - start);
 				boolean modified = s.add(text);
 				if (modified) {
@@ -169,7 +168,7 @@ public class LZJDistance implements IVariableWindowStrategy {
 				bestLZJD = lzjd;
 				bestWindowSize = t;
 			}
-			
+
 			// Terminate the loop early, if no chance 
 			int unmatched = s.size() - intersection;
 			if (unmatched > allowedMaxUnmatched) {

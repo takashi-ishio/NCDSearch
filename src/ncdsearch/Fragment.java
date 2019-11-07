@@ -67,10 +67,15 @@ public class Fragment implements Comparable<Fragment> {
         return b.toString();
 	}
 	
+	/**
+	 * @param another fragment.
+	 * @return true if this fragment overlaps with another one.
+	 */
 	public boolean overlapWith(Fragment another) {
 		return !(this.endPos <= another.startPos ||
 			another.endPos <= this.startPos);
 	}
+	
 	
 	/**
 	 * Compare two fragments and select a better one.

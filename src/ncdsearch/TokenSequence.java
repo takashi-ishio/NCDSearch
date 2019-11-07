@@ -194,6 +194,15 @@ public class TokenSequence {
 		}
 		return bytepos.toArray(start, end-start+1);
 	}
+	
+	/**
+	 * 
+	 * @param pos index of a token.
+	 * @return
+	 */
+	public int getBytePosition(int pos) {
+		return bytepos.get(pos + start);
+	}
 
 	/**
 	 * @return token positions that are the first tokens of lines, 

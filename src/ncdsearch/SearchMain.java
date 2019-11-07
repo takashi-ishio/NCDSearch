@@ -56,6 +56,7 @@ public class SearchMain {
 	public static final String ARG_PREDICTION_FILTER = "-prefilter";
 	public static final String ARG_ENCODING = "-encoding";
 	public static final String ARG_ALLOW_OVERLAP = "-allowoverlap";
+	
 	public static final String ARG_INCLUDE = "-i";
 	public static final String ARG_NOSEPARATOR = "-nosep";
 	public static final String ARG_SHOW_TIME = "-time";
@@ -186,6 +187,9 @@ public class SearchMain {
 			} else if (args[idx].equals(ARG_VERBOSE)) {
 				idx++;
 				verbose = true;
+			} else if (args[idx].equals(ARG_SHOW_TIME)) {
+				idx++;
+				showTime = true;
 			} else if (args[idx].equals(ARG_FULLSCAN)) {
 				idx++;
 				fullscan = true;
@@ -235,9 +239,6 @@ public class SearchMain {
 			} else if (args[idx].equals(ARG_ALLOW_OVERLAP)) {
 				idx++;
 				allowOverlap = true;
-			} else if (args[idx].equals(ARG_SHOW_TIME)) {
-				idx++;
-				showTime = true;
 			} else if (args[idx].startsWith(ARG_THREADS)) {
 				idx++;
 				threads = Integer.parseInt(args[idx++]);

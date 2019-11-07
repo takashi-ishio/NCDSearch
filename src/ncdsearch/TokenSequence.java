@@ -18,12 +18,17 @@ public class TokenSequence {
 	private int end;
 	private byte[] bytes;
 	private TIntArrayList bytepos;
-	
+
+	public TokenSequence(TokenReader r, boolean normalization) {
+		this(r, normalization, true);
+	}
+
 	/**
 	 * Create an object including all tokens obtained from a reader.
 	 * @param r specifies a TokenReader.
+	 * @param normalization If true, use a normalizer. 
 	 */
-	public TokenSequence(TokenReader r, boolean normalization) {
+	public TokenSequence(TokenReader r, boolean normalization, boolean separator) {
 		tokens = new ArrayList<>();
 		lines = new TIntArrayList();
 		charpos = new TIntArrayList();
@@ -32,13 +37,10 @@ public class TokenSequence {
 		try {
 			while (r.next()) {
 				bytepos.add(s.size());
-				if (normalization) {
-					tokens.add(r.getNormalizedToken());
-					s.write(r.getNormalizedToken().getBytes());
-					s.write(0);
-				} else {
-					tokens.add(r.getToken());
-					s.write(r.getToken().getBytes());
+				String t = normalization ? r.getNormalizedToken() : r.getToken();  
+				tokens.add(t);
+				s.write(t.getBytes());
+				if (separator) {
 					s.write(0);
 				}
 				lines.add(r.getLine());

@@ -57,6 +57,8 @@ public class SearchMain {
 	public static final String ARG_ENCODING = "-encoding";
 	public static final String ARG_ALLOW_OVERLAP = "-allowoverlap";
 	public static final String ARG_INCLUDE = "-i";
+	public static final String ARG_NOSEPARATOR = "-nosep";
+	public static final String ARG_SHOW_TIME = "-time";
 	
 	private static final String ALGORITHM_TOKEN_LEVENSHTEIN_DISTANCE = "tld";
 	private static final String ALGORITHM_BYTE_LCS_DISTANCE = "blcs";
@@ -91,6 +93,8 @@ public class SearchMain {
 	private boolean reportPositionDetail = false;
 	private int threads = 0;
 	private boolean allowOverlap = false;
+	private boolean useSeparator = true;
+	private boolean showTime = false;
 
 	private String algorithm = "zip";
 
@@ -217,6 +221,9 @@ public class SearchMain {
 			} else if (args[idx].equals(ARG_NORMALIZE)) {
 				idx++;
 				normalization = true;
+			} else if (args[idx].equals(ARG_NOSEPARATOR)) {
+				idx++;
+				useSeparator = false;
 			} else if (args[idx].equals(ARG_ALGORITHM)) {
 				idx++;
 				if (idx < args.length) {
@@ -228,6 +235,9 @@ public class SearchMain {
 			} else if (args[idx].equals(ARG_ALLOW_OVERLAP)) {
 				idx++;
 				allowOverlap = true;
+			} else if (args[idx].equals(ARG_SHOW_TIME)) {
+				idx++;
+				showTime = true;
 			} else if (args[idx].startsWith(ARG_THREADS)) {
 				idx++;
 				threads = Integer.parseInt(args[idx++]);
@@ -269,7 +279,7 @@ public class SearchMain {
 			reader = TokenReaderFactory.create(queryFileType, new InputStreamReader(System.in)); 
 		}
 		
-		queryTokens = new TokenSequence(reader, normalization); 
+		queryTokens = new TokenSequence(reader, normalization, useSeparator); 
 		
 		if (queryFilename != null) {
 			queryTokens = queryTokens.substringByLine(queryStartLine, queryEndLine);
@@ -384,7 +394,7 @@ public class SearchMain {
 								public boolean run(OutputStream out) throws IOException {
 
 									TokenReader reader = TokenReaderFactory.create(queryFileType, Files.readAllBytes(f.toPath()), charset);
-									TokenSequence fileTokens = new TokenSequence(reader, normalization);
+									TokenSequence fileTokens = new TokenSequence(reader, normalization, useSeparator);
 							
 									if (prefilter == null || prefilter.shouldSearch(fileTokens)) {
 										int[] positions;
@@ -436,7 +446,7 @@ public class SearchMain {
 				s.close();
 			}
 		}
-		if (verbose) {
+		if (verbose || showTime) {
 			long time = System.currentTimeMillis() - t;
 			System.err.println("Time (ms): " + time);
 		}

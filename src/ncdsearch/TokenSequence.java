@@ -140,7 +140,7 @@ public class TokenSequence {
 	 */
 	public TokenSequence substringByLine(int startLine, int endLine) {
 		int startPos;
-		if (startLine > endLine) {
+		if (startLine > endLine || size() == 0) {
 			return null;
 		}
 		int pos;

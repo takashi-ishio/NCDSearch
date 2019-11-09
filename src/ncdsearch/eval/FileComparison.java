@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 import ncdsearch.ICodeDistanceStrategy;
 import ncdsearch.NormalizedCompressionDistance;
+import ncdsearch.SearchConfiguration;
 import ncdsearch.SearchMain;
 import ncdsearch.TokenSequence;
 import ncdsearch.experimental.LZJDistance;
@@ -34,7 +35,7 @@ public class FileComparison {
 			if (args[idx].equals("-best")) {
 				searchBest = true;
 				idx++;
-			} else if (args[idx].equals(SearchMain.ARG_COMPRESSOR)) {
+			} else if (args[idx].equals(SearchConfiguration.ARG_COMPRESSOR)) {
 				idx++;
 				if (idx < args.length) {
 					compressor = Compressor.valueOf(args[idx++].toUpperCase());

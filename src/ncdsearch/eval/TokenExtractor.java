@@ -2,7 +2,7 @@ package ncdsearch.eval;
 
 import java.util.Arrays;
 
-import ncdsearch.SearchMain;
+import ncdsearch.SearchConfiguration;
 import ncdsearch.TokenSequence;
 
 /**
@@ -11,8 +11,8 @@ import ncdsearch.TokenSequence;
 public class TokenExtractor {
 
 	public static void main(String[] args) {
-		SearchMain main = new SearchMain(args);
-		TokenSequence seq = main.getQueryTokens();
+		SearchConfiguration config = new SearchConfiguration(args);
+		TokenSequence seq = config.getQueryTokens();
 		if (seq != null) {
 			for (int i=0; i<seq.size(); i++) {
 				System.out.println(seq.getToken(i));

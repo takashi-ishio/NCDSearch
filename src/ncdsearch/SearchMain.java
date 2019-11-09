@@ -50,6 +50,7 @@ public class SearchMain {
 	public static final String ARG_QUERY_START_LINE = "-sline";
 	public static final String ARG_QUERY_END_LINE = "-eline";
 	public static final String ARG_QUERY_DIRECT = "-e";
+	public static final String ARG_QUERY_FILENAME_STDIN = "-";
 	public static final String ARG_NORMALIZE = "-normalize";
 	public static final String ARG_POSITION_DETAIL = "-pos";
 	public static final String ARG_THREADS = "-thread";
@@ -262,17 +263,23 @@ public class SearchMain {
 		
 		TokenReader reader;
 		if (queryFilename != null) {
-			try {
-				File f = new File(queryFilename);
-				reader = TokenReaderFactory.create(queryFileType, Files.readAllBytes(f.toPath()), charset); 
-			} catch (IOException e) {
-				System.err.println("Error: Failed to read " + queryFilename + " as a query.");
-				return;
+			if (queryFilename.equals(ARG_QUERY_FILENAME_STDIN)) {
+				reader = TokenReaderFactory.create(queryFileType, new InputStreamReader(System.in)); 
+			} else {
+				try {
+					File f = new File(queryFilename);
+					reader = TokenReaderFactory.create(queryFileType, Files.readAllBytes(f.toPath()), charset); 
+				} catch (IOException e) {
+					System.err.println("Error: Failed to read " + queryFilename + " as a query.");
+					return;
+				}
 			}
 		} else if (queryArgs.size() > 0) {
 			reader = TokenReaderFactory.create(queryFileType, new StringReader(concat(queryArgs)));
 		} else {
-			reader = TokenReaderFactory.create(queryFileType, new InputStreamReader(System.in)); 
+			System.err.println("Error: query is unspecified.");
+			System.err.println("Use a part of a file (-q FILENAME -sline LINE -eline LINE) or tokens (-l LANG -e QUERY)");
+			return;
 		}
 		
 		queryTokens = new TokenSequence(reader, normalization); 

@@ -11,6 +11,7 @@ import java.util.List;
 
 import ncdsearch.eval.FileComparison;
 import ncdsearch.experimental.PredictionFilter;
+import ncdsearch.report.IReport;
 import sarf.lexer.DirectoryScan;
 import sarf.lexer.TokenReader;
 import sarf.lexer.TokenReaderFactory;
@@ -30,11 +31,9 @@ public class SearchMain {
 		SearchConfiguration config = new SearchConfiguration(args);
 		SearchMain instance = new SearchMain(config);
 		if (config.isValidConfiguration()) {
-			if (config.isVerbose()) config.printConfig();
 			instance.execute();
 		} else {
-			System.err.println("Could not execute a search.");
-			config.printConfig();
+			System.err.println(config.getArgumentError());
 		}
 	}
 
@@ -45,11 +44,10 @@ public class SearchMain {
 	
 	
 	public void execute() {
-		long t = System.currentTimeMillis();
 		
 		
 		final List<ICodeDistanceStrategy> createdStrategies = Collections.synchronizedList(new ArrayList<ICodeDistanceStrategy>());
-		try {
+		try (IReport report = config.getReport()) {
 			ThreadLocal<ICodeDistanceStrategy> strategies = new ThreadLocal<ICodeDistanceStrategy>() {
 				@Override
 				protected ICodeDistanceStrategy initialValue() {
@@ -58,7 +56,7 @@ public class SearchMain {
 					return similarityStrategy;
 				}
 			};
-			final Concurrent c = new Concurrent(config.getThreadCount(), System.out);
+			final Concurrent c = new Concurrent(config.getThreadCount(), null);
 			for (String dir: config.getSourceDirs()) {
 				DirectoryScan.scan(new File(dir), new DirectoryScan.Action() {
 					
@@ -98,20 +96,12 @@ public class SearchMain {
 								
 										if (config.allowOverlap()) {
 											// Print the raw result
-											for (Fragment fragment: fragments) {
-												out.write(fragment.toString().getBytes());
-											}
+											report.write(fragments);
 										} else {
 											// Remove redundant elements and print the result.
 											ArrayList<Fragment> result = Fragment.filter(fragments);
 											if (result.size() > 0) {
-												for (Fragment fragment: result) {
-													if (config.reportPositionDetail()) {
-														out.write(fragment.toLongString().getBytes());
-													} else {
-														out.write(fragment.toString().getBytes());
-													}
-												}
+												report.write(result);
 											}
 										}
 									}
@@ -123,14 +113,12 @@ public class SearchMain {
 				});
 			}
 			c.waitComplete();
+		} catch (IOException e) {
+			e.printStackTrace();
 		} finally {
 			for (ICodeDistanceStrategy s: createdStrategies) {
 				s.close();
 			}
-		}
-		if (config.reportTime()) {
-			long time = System.currentTimeMillis() - t;
-			System.err.println("Time (ms): " + time);
 		}
 	}
 	

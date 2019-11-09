@@ -11,6 +11,8 @@ import sarf.lexer.TokenReader;
 
 public class TokenSequence {
 
+	private static final int SEPARATOR = 0;
+	
 	private ArrayList<String> tokens;
 	private TIntArrayList lines;
 	private TIntArrayList charpos;
@@ -41,7 +43,7 @@ public class TokenSequence {
 				tokens.add(t);
 				s.write(t.getBytes());
 				if (separator) {
-					s.write(0);
+					s.write(SEPARATOR);
 				}
 				lines.add(r.getLine());
 				charpos.add(r.getCharPositionInLine());
@@ -234,6 +236,9 @@ public class TokenSequence {
 		return result;
 	}
 	
+	/**
+	 * @return a string representation of tokens seprated by white space. 
+	 */
 	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder();

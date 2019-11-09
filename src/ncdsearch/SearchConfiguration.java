@@ -26,6 +26,8 @@ import ncdsearch.experimental.TokenLevenshteinDistance;
 import ncdsearch.experimental.VariableWindowNormalizedByteLevenshteinDistance;
 import ncdsearch.experimental.VariableWindowNormalizedTokenLevenshteinDistance;
 import ncdsearch.ncd.Compressor;
+import ncdsearch.report.IReport;
+import ncdsearch.report.StdoutReport;
 import sarf.lexer.FileType;
 import sarf.lexer.TokenReader;
 import sarf.lexer.TokenReaderFactory;
@@ -88,6 +90,8 @@ public class SearchConfiguration {
 	private boolean normalization = false;
 	private PredictionFilter prefilter = null;
 	private ArrayList<String> inclusionFilters = new ArrayList<>();
+	
+	private String argumentError;
 	
 
 	private double WINDOW_STEP = 0.05; 
@@ -243,15 +247,14 @@ public class SearchConfiguration {
 					File f = new File(queryFilename);
 					reader = TokenReaderFactory.create(queryFileType, Files.readAllBytes(f.toPath()), charset); 
 				} catch (IOException e) {
-					System.err.println("Error: Failed to read " + queryFilename + " as a query.");
+					argumentError = "Failed to read " + queryFilename + " as a query.";
 					return;
 				}
 			}
 		} else if (queryArgs.size() > 0) {
 			reader = TokenReaderFactory.create(queryFileType, new StringReader(concat(queryArgs)));
 		} else {
-			System.err.println("Error: query is unspecified.");
-			System.err.println("Use a part of a file (-q FILENAME -sline LINE -eline LINE) or tokens (-l LANG -e QUERY)");
+			argumentError = "Query is unspecified. Use a part of a file (-q FILENAME -sline LINE -eline LINE) or tokens (-l LANG -e QUERY)";
 			return;
 		}
 		
@@ -309,38 +312,49 @@ public class SearchConfiguration {
 				windowSize.size() > 0;
 	}
 	
-	public void printConfig() {
-		System.err.println("Configuration: ");
+	private void printConfig(IReport report) {
+		// entire validity
+		report.writeConfig("Configuration", isValidConfiguration() ? "valid": "invalid - Could not execute a search"); 
+
+		// algorithm name
 		if (isValidAlgorithmName(algorithm)) {
-			System.err.println(" Strategy: " + algorithm);
+			report.writeConfig("Strategy", algorithm);
 		} else {
-			System.err.println(" Strategy: " + algorithm + " (invalid name)");
+			report.writeConfig("Strategy", algorithm + " (invalid name)");
 		}
-		System.err.println(" Min window size ratio: " + MIN_WINDOW);
-		System.err.println(" Max window size ratio: " + MAX_WINDOW);
+		
+		// window size
+		report.writeConfig("Min-window-size-ratio", Double.toString(MIN_WINDOW));
+		report.writeConfig("Max-window-size-ratio", Double.toString(MAX_WINDOW));
 		if (windowSize != null) {
-			System.err.println(" Window size: " + concat(windowSize));
+			report.writeConfig("Window-size", concat(windowSize));
 		} else {
-			System.err.println(" Window size: (unavailable)");
+			report.writeConfig("Window-size", "(unavailable)");
 		}
-		System.err.println(" threshold: " + threshold);
-		System.err.println(" File type: " + queryFileType.name());
+		report.writeConfig("Distance-threshold", Double.toString(threshold));
+		report.writeConfig("Query-language", queryFileType.name());
 		if (threads > 0) {
-			System.err.println(" Multi-threading: Enabled (" + threads + " worker threads)");
+			report.writeConfig("Multi-threading", "Enabled (" + threads + " worker threads)");
 		} else {
-			System.err.println(" Multi-threading: Disabled");
+			report.writeConfig("Multi-threading", "Disabled");
 		}
 		if (queryTokens != null) {
-			System.err.println(" Query size: " + queryTokens.size());
+			report.writeConfig("Query", queryTokens.toString());
+			report.writeConfig("Query-size", Integer.toString(queryTokens.size()));
 		} else {
-			System.err.println(" Query size: (unavailable)");
+			report.writeConfig("Query", "(unavailable)");
+			report.writeConfig("Query-size", "(unavailable)");
 		}
+		report.writeConfig("Use-normalization", Boolean.toString(normalization));
+		report.writeConfig("Use-separator", Boolean.toString(useSeparator));
+		report.writeConfig("Allow-overlap", Boolean.toString(allowOverlap));
+		
 		if (charsetError != null) {
-			System.err.println(" Charset: " + charsetError + " (" + charset.displayName() + " is used)");
+			report.writeConfig("Charset", charsetError + " (" + charset.displayName() + " is used)");
 		} else {
-			System.err.println(" Charset: " + charset.displayName());
+			report.writeConfig("Charset", charset.displayName());
 		}
-		System.err.println(" Search path: " + Arrays.toString(sourceDirs.toArray()));
+		report.writeConfig("Source-path: ", Arrays.toString(sourceDirs.toArray()));
 	}
 
 	public boolean isValidAlgorithmName(String name) {
@@ -504,6 +518,16 @@ public class SearchConfiguration {
 	
 	public boolean useSeparator() {
 		return useSeparator;
+	}
+	
+	public IReport getReport() {
+		IReport report = new StdoutReport(this);
+		printConfig(report);
+		return report;
+	}
+	
+	public String getArgumentError() {
+		return argumentError;
 	}
 
 }

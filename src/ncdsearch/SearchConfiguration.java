@@ -330,37 +330,37 @@ public class SearchConfiguration {
 		}
 		
 		// window size
-		report.writeConfig("Min-window-size-ratio", Double.toString(MIN_WINDOW));
-		report.writeConfig("Max-window-size-ratio", Double.toString(MAX_WINDOW));
+		report.writeConfig("MinWindowSizeRatio", Double.toString(MIN_WINDOW));
+		report.writeConfig("MaxWindowSizeRatio", Double.toString(MAX_WINDOW));
 		if (windowSize != null) {
-			report.writeConfig("Window-size", concat(windowSize));
+			report.writeConfig("WindowSize", concat(windowSize));
 		} else {
-			report.writeConfig("Window-size", "(unavailable)");
+			report.writeConfig("WindowSize", "(unavailable)");
 		}
-		report.writeConfig("Distance-threshold", Double.toString(threshold));
-		report.writeConfig("Query-language", queryFileType.name());
+		report.writeConfig("DistanceThreshold", Double.toString(threshold));
+		report.writeConfig("QueryLanguage", queryFileType.name());
 		if (threads > 0) {
-			report.writeConfig("Multi-threading", "Enabled (" + threads + " worker threads)");
+			report.writeConfig("MultiThreading", "Enabled (" + threads + " worker threads)");
 		} else {
-			report.writeConfig("Multi-threading", "Disabled");
+			report.writeConfig("MultiThreading", "Disabled");
 		}
 		if (queryTokens != null) {
 			report.writeConfig("Query", queryTokens.toString());
-			report.writeConfig("Query-size", Integer.toString(queryTokens.size()));
+			report.writeConfig("QuerySize", Integer.toString(queryTokens.size()));
 		} else {
 			report.writeConfig("Query", "(unavailable)");
-			report.writeConfig("Query-size", "(unavailable)");
+			report.writeConfig("QuerySize", "(unavailable)");
 		}
-		report.writeConfig("Use-normalization", Boolean.toString(normalization));
-		report.writeConfig("Use-separator", Boolean.toString(useSeparator));
-		report.writeConfig("Allow-overlap", Boolean.toString(allowOverlap));
+		report.writeConfig("UseNormalization", Boolean.toString(normalization));
+		report.writeConfig("UseSeparator", Boolean.toString(useSeparator));
+		report.writeConfig("AllowOverlap", Boolean.toString(allowOverlap));
 		
 		if (charsetError != null) {
 			report.writeConfig("Charset", charsetError + " (" + charset.displayName() + " is used)");
 		} else {
 			report.writeConfig("Charset", charset.displayName());
 		}
-		report.writeConfig("Source-path: ", Arrays.toString(sourceDirs.toArray()));
+		report.writeConfig("SourcePath: ", Arrays.toString(sourceDirs.toArray()));
 	}
 
 	public boolean isValidAlgorithmName(String name) {

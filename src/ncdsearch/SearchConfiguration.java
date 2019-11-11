@@ -27,6 +27,7 @@ import ncdsearch.experimental.VariableWindowNormalizedByteLevenshteinDistance;
 import ncdsearch.experimental.VariableWindowNormalizedTokenLevenshteinDistance;
 import ncdsearch.ncd.Compressor;
 import ncdsearch.report.IReport;
+import ncdsearch.report.JsonReport;
 import ncdsearch.report.StdoutReport;
 import sarf.lexer.FileType;
 import sarf.lexer.TokenReader;
@@ -53,6 +54,7 @@ public class SearchConfiguration {
 	public static final String ARG_PREDICTION_FILTER = "-prefilter";
 	public static final String ARG_ENCODING = "-encoding";
 	public static final String ARG_ALLOW_OVERLAP = "-allowoverlap";
+	public static final String ARG_FORMAT_JSON = "-json";
 	
 	public static final String ARG_INCLUDE = "-i";
 	public static final String ARG_NOSEPARATOR = "-nosep";
@@ -105,6 +107,7 @@ public class SearchConfiguration {
 	private boolean allowOverlap = false;
 	private boolean useSeparator = true;
 	private boolean showTime = false;
+	private boolean reportJson = false;
 
 	private String algorithm = "zip";
 	private Charset charset;
@@ -204,6 +207,9 @@ public class SearchConfiguration {
 				if (idx < args.length) {
 					algorithm = args[idx++];
 				}
+			} else if (args[idx].equals(ARG_FORMAT_JSON)) {
+				idx++;
+				reportJson = true;
 			} else if (args[idx].equals(ARG_POSITION_DETAIL)) {
 				idx++;
 				reportPositionDetail = true;
@@ -312,7 +318,7 @@ public class SearchConfiguration {
 				windowSize.size() > 0;
 	}
 	
-	private void printConfig(IReport report) {
+	private void printConfig(IReport report) throws IOException {
 		// entire validity
 		report.writeConfig("Configuration", isValidConfiguration() ? "valid": "invalid - Could not execute a search"); 
 
@@ -520,8 +526,13 @@ public class SearchConfiguration {
 		return useSeparator;
 	}
 	
-	public IReport getReport() {
-		IReport report = new StdoutReport(this);
+	public IReport getReport() throws IOException {
+		IReport report;
+		if (reportJson) {
+			report = new JsonReport(this, System.out);
+		} else {
+			report = new StdoutReport(this);
+		}
 		printConfig(report);
 		return report;
 	}

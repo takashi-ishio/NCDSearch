@@ -8,7 +8,7 @@ import ncdsearch.Fragment;
 
 public interface IReport extends Closeable {
 	
-	public void writeConfig(String attrName, String attrValue);
+	public void writeConfig(String attrName, String attrValue) throws IOException;
 
 	/**
 	 * Implementation should be thread safe because multiple threads 

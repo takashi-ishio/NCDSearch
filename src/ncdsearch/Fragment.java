@@ -10,7 +10,7 @@ public class Fragment implements Comparable<Fragment> {
 	private static final String SEPARATOR = ",";
 
 	private String filename;
-	private TokenSequence tokens;
+	private TokenSequence fileTokens;
 	private int startPos;
 	private int endPos;
 	private double distance;
@@ -21,9 +21,9 @@ public class Fragment implements Comparable<Fragment> {
 	 * @param endPos exclusive.
 	 * @param distance
 	 */
-	public Fragment(String filename, TokenSequence tokens, int startPos, int endPos, double distance) {
+	public Fragment(String filename, TokenSequence fileTokens, int startPos, int endPos, double distance) {
 		this.filename = filename;
-		this.tokens = tokens;
+		this.fileTokens = fileTokens;
 		this.startPos = startPos;
 		this.endPos = endPos;
 		this.distance = distance;
@@ -37,9 +37,9 @@ public class Fragment implements Comparable<Fragment> {
 		StringBuilder b = new StringBuilder();
 		b.append(filename);
 		b.append(SEPARATOR);
-		b.append(tokens.getLine(startPos));
+		b.append(getStartLine());
 		b.append(SEPARATOR);
-		b.append(tokens.getLine(endPos-1));
+		b.append(getEndLine());
 		b.append(SEPARATOR);
         b.append(distance);
         b.append("\n");
@@ -54,18 +54,48 @@ public class Fragment implements Comparable<Fragment> {
 		StringBuilder b = new StringBuilder();
 		b.append(filename);
 		b.append(SEPARATOR);
-		b.append(tokens.getLine(startPos));
+		b.append(getStartLine());
 		b.append(SEPARATOR);
-        b.append(tokens.getCharPositionInLine(startPos)); 
+        b.append(getStartCharPositionInLine()); 
 		b.append(SEPARATOR);
-		b.append(tokens.getLine(endPos-1));
+		b.append(getEndLine());
 		b.append(SEPARATOR);
-        b.append(tokens.getEndCharPositionInLine(endPos-1)); 
+        b.append(getEndCharPositionInLine()); 
 		b.append(SEPARATOR);
         b.append(distance);
         b.append("\n");
         return b.toString();
 	}
+	
+	public String getFilename() {
+		return filename;
+	}
+	
+	public int getStartLine() {
+		return fileTokens.getLine(startPos);
+	}
+	
+	public int getEndLine() {
+		return fileTokens.getLine(endPos-1);
+	}
+	
+	public int getStartCharPositionInLine() {
+		return fileTokens.getCharPositionInLine(startPos);
+	}
+	
+	public int getEndCharPositionInLine() {
+		return fileTokens.getEndCharPositionInLine(endPos-1);
+	}
+	
+	public double getDistance() {
+		return distance;
+	}
+	
+	public String getTokenString() {
+		return fileTokens.substring(startPos, endPos).toString();
+	}
+	
+	
 	
 	/**
 	 * @param another fragment.

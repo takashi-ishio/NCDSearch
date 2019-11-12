@@ -36,6 +36,27 @@ The grammar files are maintained in another repository (https://github.com/takas
 
 ## Usage
 
+The following table is a list of major options. 
+
+|Option                  |Description                                                             |
+|------------------------|------------------------------------------------------------------------|
+|`-e` [query]            |Specify a query. All arguments after the option are regarded as a query.|
+|`-q` [filename]         |Read a query from a specified file.  `-` represents a standard input.   | 
+|`-sline` [line-number]  |Specify a start line number of a query in the file of `-q` option.      |
+|`-eline` [line-number]  |Specify an end line number of a query in the file of `-q` option.       |
+|`-lang` [language]      |Specify a programming language of a query.  Required for `-e` option.   |
+|`-th` [threshold]       |Specify a threshold of the distance.  The default is 0.5.               |
+|`-thread` [num]         |Specify the number of threads for concurrent search.                    |
+|`-encoding` [encoding]  |Specify a text encoding of source files.  The default encoding is UTF-8.|
+|`-v`                    |Show configuration and progress.                                        |
+|`-json`                 |Enable a JSON format report.                                            |
+|`-pos`                  |Report the detected source code locations in detail.                    |
+|`-a` [algorithm]        |Specify an algorithm to compute a distance. The default is `zip`.       |
+  
+
+
+
+
 ### Search a code snippet
 
 You can input code fragments using STDIN, a query file, or command line arguments.
@@ -59,7 +80,7 @@ The tool recognizes a programming language by either `-lang` option or a file na
 
 ### Output Format
 
-The tool reports a result in a CSV format.
+The tool reports a result in a CSV format by default.
 For example, an execution with a query:
 
         java -jar ncdsearch.jar -lang java -e "if (this.distance > another.distance) return true;"
@@ -77,6 +98,9 @@ Each line of an output represents a similar source code fragment detected by the
 According to the report, you may find a similar line of code in a file. For example:
 
         81:   if (this.distance < another.distance) return true;
+
+The tool also supports a JSON format.  Add `-json` option to use the format.
+The `-pos` option with the json option reports source code tokens in addition to locations.
 
 
 ### Source File Encoding

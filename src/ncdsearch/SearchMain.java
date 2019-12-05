@@ -11,8 +11,8 @@ import java.util.List;
 
 import ncdsearch.eval.FileComparison;
 import ncdsearch.experimental.PredictionFilter;
+import ncdsearch.files.IFiles;
 import ncdsearch.report.IReport;
-import sarf.lexer.DirectoryScan;
 import sarf.lexer.TokenReader;
 import sarf.lexer.TokenReaderFactory;
 
@@ -57,62 +57,58 @@ public class SearchMain {
 				}
 			};
 			final Concurrent c = new Concurrent(config.getThreadCount(), null);
-			for (String dir: config.getSourceDirs()) {
-				DirectoryScan.scan(new File(dir), new DirectoryScan.Action() {
+			try (IFiles files = config.getFiles()) {
+				for (File f = files.next(); f != null; f = files.next()) {
+					String path = f.getAbsolutePath();
 					
-					@Override
-					public void process(File f) {
+					if (config.isSearchTarget(path)) {
+						if (config.isVerbose()) System.err.println(path);
+	
+						final File target = f;
+						c.execute(new Concurrent.Task() {
+							@Override
+							public boolean run(OutputStream out) throws IOException {
+	
+								TokenReader reader = TokenReaderFactory.create(config.getQueryLanguage(), Files.readAllBytes(target.toPath()), config.getSourceCharset());
+								TokenSequence fileTokens = new TokenSequence(reader, config.useNormalization(), config.useSeparator());
 						
-						String path = f.getAbsolutePath();
-						
-						if (config.isSearchTarget(path)) {
-							if (config.isVerbose()) System.err.println(path);
-
-							c.execute(new Concurrent.Task() {
-								@Override
-								public boolean run(OutputStream out) throws IOException {
-
-									TokenReader reader = TokenReaderFactory.create(config.getQueryLanguage(), Files.readAllBytes(f.toPath()), config.getSourceCharset());
-									TokenSequence fileTokens = new TokenSequence(reader, config.useNormalization(), config.useSeparator());
-							
-									PredictionFilter prefilter = config.getPrefilter();
-									if (prefilter == null || prefilter.shouldSearch(fileTokens)) {
-										int[] positions;
-										if (config.isFullScan()) {
-											positions = fileTokens.getFullPositions(config.getQueryTokens().size());
-										} else {
-											positions = fileTokens.getLineHeadTokenPositions();
-										}
-
-										// Identify a similar code fragment for each position (if exists)
-										ArrayList<Fragment> fragments = new ArrayList<>();
-										ICodeDistanceStrategy similarityStrategy = strategies.get();
-										for (int p=0; p<positions.length; p++) {
-											Fragment fragment = checkPosition(f, fileTokens, positions[p], similarityStrategy);
-											if (fragment != null) {
-												fragments.add(fragment);
-											}
-										}
-								
-										if (config.allowOverlap()) {
-											// Print the raw result
-											report.write(fragments);
-										} else {
-											// Remove redundant elements and print the result.
-											ArrayList<Fragment> result = Fragment.filter(fragments);
-											if (result.size() > 0) {
-												report.write(result);
-											}
+								PredictionFilter prefilter = config.getPrefilter();
+								if (prefilter == null || prefilter.shouldSearch(fileTokens)) {
+									int[] positions;
+									if (config.isFullScan()) {
+										positions = fileTokens.getFullPositions(config.getQueryTokens().size());
+									} else {
+										positions = fileTokens.getLineHeadTokenPositions();
+									}
+	
+									// Identify a similar code fragment for each position (if exists)
+									ArrayList<Fragment> fragments = new ArrayList<>();
+									ICodeDistanceStrategy similarityStrategy = strategies.get();
+									for (int p=0; p<positions.length; p++) {
+										Fragment fragment = checkPosition(target, fileTokens, positions[p], similarityStrategy);
+										if (fragment != null) {
+											fragments.add(fragment);
 										}
 									}
-									return true;
+							
+									if (config.allowOverlap()) {
+										// Print the raw result
+										report.write(fragments);
+									} else {
+										// Remove redundant elements and print the result.
+										ArrayList<Fragment> result = Fragment.filter(fragments);
+										if (result.size() > 0) {
+											report.write(result);
+										}
+									}
 								}
-							});
-						}
+								return true;
+							}
+						});
 					}
-				});
+				}
+				c.waitComplete();
 			}
-			c.waitComplete();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {

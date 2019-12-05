@@ -11,7 +11,7 @@ import gnu.trove.map.hash.TObjectDoubleHashMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
 import ncdsearch.ICodeDistanceStrategy;
 import ncdsearch.TokenSequence;
-import sarf.lexer.DirectoryScan;
+import ncdsearch.files.DirectoryScan;
 import sarf.lexer.FileType;
 import sarf.lexer.TokenReader;
 import sarf.lexer.TokenReaderFactory;
@@ -26,27 +26,24 @@ public class TfidfCosineDistance implements ICodeDistanceStrategy {
 		if (dfMap == null) {			
 			dfMap = new TObjectIntHashMap<>();
 			try {
-				for (String dir: sourceDirs) {
-					DirectoryScan.scan(new File(dir), new DirectoryScan.Action() {
-						@Override
-						public void process(File f) {
-							FileType type = TokenReaderFactory.getFileType(f.getAbsolutePath());
-							if (type == queryFileType) {
-								try {
-									HashSet<String> tokens = new HashSet<>(65536);
-									TokenReader r = TokenReaderFactory.create(type, Files.readAllBytes(f.toPath()), charset);
-									while (r.next()) {
-										tokens.add(r.getToken());
-									}
-									for (String t: tokens) {
-										dfMap.adjustOrPutValue(t, 1, 1);
-									}
-								} catch (IOException e) {
-								}
+				DirectoryScan dir = new DirectoryScan(sourceDirs);
+				for (File f=dir.next(); f != null; f=dir.next()) {
+					FileType type = TokenReaderFactory.getFileType(f.getAbsolutePath());
+					if (type == queryFileType) {
+						try {
+							HashSet<String> tokens = new HashSet<>(65536);
+							TokenReader r = TokenReaderFactory.create(type, Files.readAllBytes(f.toPath()), charset);
+							while (r.next()) {
+								tokens.add(r.getToken());
 							}
+							for (String t: tokens) {
+								dfMap.adjustOrPutValue(t, 1, 1);
+							}
+						} catch (IOException e) {
 						}
-					});
+					}
 				}
+				dir.close();
 			} finally {
 				// Initialize a query vector even if dfMap is not properly initialized
 				queryTFIDF = new TFIDFVector(query);

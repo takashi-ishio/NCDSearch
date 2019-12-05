@@ -25,6 +25,9 @@ import ncdsearch.experimental.TfidfCosineDistance;
 import ncdsearch.experimental.TokenLevenshteinDistance;
 import ncdsearch.experimental.VariableWindowNormalizedByteLevenshteinDistance;
 import ncdsearch.experimental.VariableWindowNormalizedTokenLevenshteinDistance;
+import ncdsearch.files.DirectoryScan;
+import ncdsearch.files.FileList;
+import ncdsearch.files.IFiles;
 import ncdsearch.ncd.Compressor;
 import ncdsearch.report.IReport;
 import ncdsearch.report.JsonReport;
@@ -56,6 +59,7 @@ public class SearchConfiguration {
 	public static final String ARG_ALLOW_OVERLAP = "-allowoverlap";
 	public static final String ARG_FORMAT_JSON = "-json";
 	
+	public static final String ARG_FILE_LIST = "-l";
 	public static final String ARG_INCLUDE = "-i";
 	public static final String ARG_NOSEPARATOR = "-nosep";
 	public static final String ARG_SHOW_TIME = "-time";
@@ -113,6 +117,8 @@ public class SearchConfiguration {
 	private Charset charset;
 	private String charsetError;
 	
+	private File filelistName = null;
+	
 	private String queryFilename = null;
 	private int queryStartLine = 0;
 	private int queryEndLine = Integer.MAX_VALUE;
@@ -152,6 +158,11 @@ public class SearchConfiguration {
 					if (TokenReaderFactory.isSupported(t)) {
 						queryFileType = t;
 					}
+				}
+			} else if (args[idx].equals(ARG_FILE_LIST)) {
+				idx++;
+				if (idx < args.length) {
+					filelistName = new File(args[idx++]);
 				}
 			} else if (args[idx].equals(ARG_INCLUDE)) {
 				idx++;
@@ -314,7 +325,7 @@ public class SearchConfiguration {
 		return queryTokens != null && 
 				windowSize != null && 
 				isValidAlgorithmName(algorithm) &&
-				sourceDirs.size() > 0 &&
+				((filelistName != null && filelistName.isFile() && filelistName.canRead()) || sourceDirs.size() > 0) &&
 				windowSize.size() > 0;
 	}
 	
@@ -360,7 +371,15 @@ public class SearchConfiguration {
 		} else {
 			report.writeConfig("Charset", charset.displayName());
 		}
-		report.writeConfig("SourcePath: ", Arrays.toString(sourceDirs.toArray()));
+		if (filelistName != null) {
+			if (filelistName.isFile() && filelistName.canRead()) {
+				report.writeConfig("SourcePathList: ", filelistName.getAbsolutePath());
+			} else {
+				report.writeConfig("SourcePathList: ", filelistName.getAbsolutePath() + " (unreadable)");
+			}
+		} else {
+			report.writeConfig("SourcePath: ", Arrays.toString(sourceDirs.toArray()));
+		}
 	}
 
 	public boolean isValidAlgorithmName(String name) {
@@ -460,6 +479,14 @@ public class SearchConfiguration {
 	 */
 	public List<String> getSourceDirs() {
 		return sourceDirs;
+	}
+	
+	public IFiles getFiles() {
+		if (filelistName != null) {
+			return new FileList(filelistName);
+		} else {
+			return new DirectoryScan(getSourceDirs());
+		}
 	}
 	
 	/**

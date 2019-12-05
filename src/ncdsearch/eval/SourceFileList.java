@@ -7,8 +7,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.List;
 
-import sarf.lexer.DirectoryScan;
+import ncdsearch.files.DirectoryScan;
 import sarf.lexer.FileType;
 import sarf.lexer.TokenReader;
 import sarf.lexer.TokenReaderFactory;
@@ -60,55 +61,55 @@ public class SourceFileList {
 	}
 	
 	public void process(String location, FileType langFilter) {
-		DirectoryScan.scan(new File(location), new DirectoryScan.Action() {
-			
-			@Override
-			public void process(File f) {
-				FileType t = TokenReaderFactory.getFileType(f.getAbsolutePath());
-				if (TokenReaderFactory.isSupported(t) && 
-					(langFilter == null || langFilter == t)) {
-					try {
-						byte[] buf = Files.readAllBytes(f.toPath());
-						TokenReader r = TokenReaderFactory.create(t, buf, StandardCharsets.UTF_8);
-						if (r != null) {
-							int line = 0;
-							int lastLine = -1;
-							while (r.next()) {
-								int l = r.getLine();
-								if (l != lastLine) {
-									lastLine = l;
-									line++;
-								}
-							}
-							
-							fileCount++;
-							totalLines += line;
-							totalBytes += buf.length;
-							try {
-								totalRawLines += Files.lines(f.toPath()).count();
-							} catch (UncheckedIOException e) {
-								// Try another encoding
-								String[] charsets = {"MS932", "ISO-8859-1"};
-								boolean found = false;
-								for (String c: charsets) {
-									try {
-										totalRawLines += Files.lines(f.toPath(), Charset.forName(c)).count();
-										found = true;
-										break;
-									} catch (UncheckedIOException e2) {
-										// ignore
-									}
-								}
-								if (!found) System.err.println("Error: " + f.getAbsolutePath() + " is excluded from raw lines of code");
+		List<String> files = new ArrayList<>();
+		files.add(location);
+		DirectoryScan dir = new DirectoryScan(files);
+		for (File f=dir.next(); f != null; f=dir.next()) {
+			FileType t = TokenReaderFactory.getFileType(f.getAbsolutePath());
+			if (TokenReaderFactory.isSupported(t) && 
+				(langFilter == null || langFilter == t)) {
+				try {
+					byte[] buf = Files.readAllBytes(f.toPath());
+					TokenReader r = TokenReaderFactory.create(t, buf, StandardCharsets.UTF_8);
+					if (r != null) {
+						int line = 0;
+						int lastLine = -1;
+						while (r.next()) {
+							int l = r.getLine();
+							if (l != lastLine) {
+								lastLine = l;
+								line++;
 							}
 						}
-					} catch (IOException e) {
-						System.err.println("Error: Failed to read " + f.getAbsolutePath());
-						errorFileCount++;
+						
+						fileCount++;
+						totalLines += line;
+						totalBytes += buf.length;
+						try {
+							totalRawLines += Files.lines(f.toPath()).count();
+						} catch (UncheckedIOException e) {
+							// Try another encoding
+							String[] charsets = {"MS932", "ISO-8859-1"};
+							boolean found = false;
+							for (String c: charsets) {
+								try {
+									totalRawLines += Files.lines(f.toPath(), Charset.forName(c)).count();
+									found = true;
+									break;
+								} catch (UncheckedIOException e2) {
+									// ignore
+								}
+							}
+							if (!found) System.err.println("Error: " + f.getAbsolutePath() + " is excluded from raw lines of code");
+						}
 					}
+				} catch (IOException e) {
+					System.err.println("Error: Failed to read " + f.getAbsolutePath());
+					errorFileCount++;
 				}
 			}
-		});
+		}
+		dir.close();
 	}
 
 }

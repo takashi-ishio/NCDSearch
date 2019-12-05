@@ -61,7 +61,7 @@ public class SearchMain {
 				for (File f = files.next(); f != null; f = files.next()) {
 					String path = f.getAbsolutePath();
 					
-					if (config.isSearchTarget(path)) {
+					if (config.useFileList() || config.isSearchTarget(path)) {
 						if (config.isVerbose()) System.err.println(path);
 	
 						final File target = f;

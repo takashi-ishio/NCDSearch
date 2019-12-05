@@ -481,12 +481,19 @@ public class SearchConfiguration {
 		return sourceDirs;
 	}
 	
+	/**
+	 * @return a list of files to be searched.
+	 */
 	public IFiles getFiles() {
 		if (filelistName != null) {
 			return new FileList(filelistName);
 		} else {
 			return new DirectoryScan(getSourceDirs());
 		}
+	}
+	
+	public boolean useFileList() {
+		return filelistName != null;
 	}
 	
 	/**

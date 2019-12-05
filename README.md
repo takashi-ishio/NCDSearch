@@ -139,6 +139,8 @@ For example, the following command searches .java files as plain text.
 
 You can use multiple `-i` options in a command line to search additional files.
 
+You also can use `-l [filename]` option that specifies a text file including a list of file names.
+
 
 ### Full Scan Mode
 

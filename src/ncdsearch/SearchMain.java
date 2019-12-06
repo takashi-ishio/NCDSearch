@@ -61,51 +61,49 @@ public class SearchMain {
 				for (File f = files.next(); f != null; f = files.next()) {
 					String path = f.getAbsolutePath();
 					
-					if (config.useFileList() || config.isSearchTarget(path)) {
-						if (config.isVerbose()) System.err.println(path);
-	
-						final File target = f;
-						c.execute(new Concurrent.Task() {
-							@Override
-							public boolean run(OutputStream out) throws IOException {
-	
-								TokenReader reader = TokenReaderFactory.create(config.getQueryLanguage(), Files.readAllBytes(target.toPath()), config.getSourceCharset());
-								TokenSequence fileTokens = new TokenSequence(reader, config.useNormalization(), config.useSeparator());
-						
-								PredictionFilter prefilter = config.getPrefilter();
-								if (prefilter == null || prefilter.shouldSearch(fileTokens)) {
-									int[] positions;
-									if (config.isFullScan()) {
-										positions = fileTokens.getFullPositions(config.getQueryTokens().size());
-									} else {
-										positions = fileTokens.getLineHeadTokenPositions();
-									}
-	
-									// Identify a similar code fragment for each position (if exists)
-									ArrayList<Fragment> fragments = new ArrayList<>();
-									ICodeDistanceStrategy similarityStrategy = strategies.get();
-									for (int p=0; p<positions.length; p++) {
-										Fragment fragment = checkPosition(target, fileTokens, positions[p], similarityStrategy);
-										if (fragment != null) {
-											fragments.add(fragment);
-										}
-									}
-							
-									if (config.allowOverlap()) {
-										// Print the raw result
-										report.write(fragments);
-									} else {
-										// Remove redundant elements and print the result.
-										ArrayList<Fragment> result = Fragment.filter(fragments);
-										if (result.size() > 0) {
-											report.write(result);
-										}
+					if (config.isVerbose()) System.err.println(path);
+
+					final File target = f;
+					c.execute(new Concurrent.Task() {
+						@Override
+						public boolean run(OutputStream out) throws IOException {
+
+							TokenReader reader = TokenReaderFactory.create(config.getQueryLanguage(), Files.readAllBytes(target.toPath()), config.getSourceCharset());
+							TokenSequence fileTokens = new TokenSequence(reader, config.useNormalization(), config.useSeparator());
+					
+							PredictionFilter prefilter = config.getPrefilter();
+							if (prefilter == null || prefilter.shouldSearch(fileTokens)) {
+								int[] positions;
+								if (config.isFullScan()) {
+									positions = fileTokens.getFullPositions(config.getQueryTokens().size());
+								} else {
+									positions = fileTokens.getLineHeadTokenPositions();
+								}
+
+								// Identify a similar code fragment for each position (if exists)
+								ArrayList<Fragment> fragments = new ArrayList<>();
+								ICodeDistanceStrategy similarityStrategy = strategies.get();
+								for (int p=0; p<positions.length; p++) {
+									Fragment fragment = checkPosition(target, fileTokens, positions[p], similarityStrategy);
+									if (fragment != null) {
+										fragments.add(fragment);
 									}
 								}
-								return true;
+						
+								if (config.allowOverlap()) {
+									// Print the raw result
+									report.write(fragments);
+								} else {
+									// Remove redundant elements and print the result.
+									ArrayList<Fragment> result = Fragment.filter(fragments);
+									if (result.size() > 0) {
+										report.write(result);
+									}
+								}
 							}
-						});
-					}
+							return true;
+						}
+					});
 				}
 				c.waitComplete();
 			}

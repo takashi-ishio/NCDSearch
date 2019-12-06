@@ -27,6 +27,7 @@ import ncdsearch.experimental.VariableWindowNormalizedByteLevenshteinDistance;
 import ncdsearch.experimental.VariableWindowNormalizedTokenLevenshteinDistance;
 import ncdsearch.files.DirectoryScan;
 import ncdsearch.files.FileList;
+import ncdsearch.files.IFileFilter;
 import ncdsearch.files.IFiles;
 import ncdsearch.ncd.Compressor;
 import ncdsearch.report.IReport;
@@ -488,7 +489,14 @@ public class SearchConfiguration {
 		if (filelistName != null) {
 			return new FileList(filelistName);
 		} else {
-			return new DirectoryScan(getSourceDirs());
+			return new DirectoryScan(getSourceDirs(), new IFileFilter() {
+				
+				@Override
+				public boolean isTarget(File f) {
+					// TODO Auto-generated method stub
+					return isSearchTarget(f.getPath());
+				}
+			});
 		}
 	}
 	

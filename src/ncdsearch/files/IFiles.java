@@ -16,4 +16,9 @@ public interface IFiles extends Closeable {
 	 */
 	public File next();
 	
+	/**
+	 * IFiles object do not throw an exception during closing
+	 */
+	public void close();
+	
 }

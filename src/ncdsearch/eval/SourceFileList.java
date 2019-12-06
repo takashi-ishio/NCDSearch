@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ncdsearch.files.DirectoryScan;
-import ncdsearch.files.IFileFilter;
 import sarf.lexer.FileType;
 import sarf.lexer.TokenReader;
 import sarf.lexer.TokenReaderFactory;

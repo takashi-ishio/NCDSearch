@@ -20,6 +20,7 @@ public class TokenSequence {
 	private int end;
 	private byte[] bytes;
 	private TIntArrayList bytepos;
+	private boolean useSeparator;
 
 	public TokenSequence(TokenReader r, boolean normalization) {
 		this(r, normalization, true);
@@ -35,6 +36,7 @@ public class TokenSequence {
 		lines = new TIntArrayList();
 		charpos = new TIntArrayList();
 		bytepos = new TIntArrayList();
+		useSeparator = separator;
 		ByteArrayOutputStream s = new ByteArrayOutputStream(65536);
 		try {
 			while (r.next()) {
@@ -244,7 +246,9 @@ public class TokenSequence {
 		StringBuilder b = new StringBuilder();
 		for (int i=0; i<size(); i++) {
 			b.append(getToken(i));
-			b.append(" ");
+			if (useSeparator) {
+				b.append(" ");
+			}
 		}
 		return b.toString();
 	}

@@ -2,6 +2,8 @@ package sarf.lexer;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.nio.charset.Charset;
@@ -57,6 +59,8 @@ public class TokenReaderFactory {
 		filetype.put("txt", FileType.PLAINTEXT);
 		filetype.put("html", FileType.PLAINTEXT);
 		filetype.put("md", FileType.PLAINTEXT);
+
+		filetype.put("docx", FileType.DOCX);
 	}
 	
 
@@ -164,6 +168,9 @@ public class TokenReaderFactory {
 			case PLAINTEXT:
 				return new PlainTextReader(new StringReader(new String(buf, charset)));
 				
+			case DOCX:
+				return new DocxReader(new ByteArrayInputStream(buf));
+				
 			case UNSUPPORTED:
 			default:
 				return null;
@@ -172,6 +179,22 @@ public class TokenReaderFactory {
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
+		}
+	}
+
+	/**
+	 * Create a token reader reading source code from a given reader.
+	 * @param filetype specifies a file type that can be obtained by TokenReaderFactory#getFileType. 
+	 * @param reader is source code.  The object is automatically closed.  
+	 * @return a token reader.
+	 */
+	public static TokenReader create(FileType filetype, InputStream stream) {
+		switch (filetype) {
+		case DOCX:
+			return new DocxReader(stream);
+		
+		default:
+			return create(filetype, new InputStreamReader(stream));
 		}
 	}
 
@@ -210,6 +233,8 @@ public class TokenReaderFactory {
 			case PLAINTEXT:
 				return new PlainTextReader(reader);
 
+			case DOCX:
+				// Cannot create a reader for a binary file
 			case UNSUPPORTED:
 			default:
 				return null;

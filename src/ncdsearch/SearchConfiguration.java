@@ -279,7 +279,7 @@ public class SearchConfiguration {
 		TokenReader reader;
 		if (queryFilename != null) {
 			if (queryFilename.equals(ARG_QUERY_FILENAME_STDIN)) {
-				reader = TokenReaderFactory.create(queryFileType, new InputStreamReader(System.in)); 
+				reader = TokenReaderFactory.create(queryFileType, System.in); 
 			} else {
 				try {
 					File f = new File(queryFilename);

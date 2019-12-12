@@ -514,7 +514,7 @@ public class SearchConfiguration {
 		if (!match) {
 			// Check file name-based filters  
 			for (String inclusionFilter: inclusionFilters) {
-				match |= filepath.endsWith(inclusionFilter);
+				match |= filepath.toLowerCase().endsWith(inclusionFilter);
 			}
 		}
 		return match;

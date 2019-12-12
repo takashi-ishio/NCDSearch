@@ -65,7 +65,11 @@ public class TokenReaderFactory {
 	}
 
 	public static boolean isSupported(FileType filetype) {
-		return filetype != FileType.UNSUPPORTED;
+		return filetype != null && filetype != FileType.UNSUPPORTED;
+	}
+
+	public static FileType getFileTypeForExtension(String ext) {
+		return getFileType("." + ext);
 	}
 
 	public static FileType getFileType(String filename) {

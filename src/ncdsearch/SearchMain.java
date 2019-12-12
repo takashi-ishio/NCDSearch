@@ -13,6 +13,7 @@ import ncdsearch.eval.FileComparison;
 import ncdsearch.experimental.PredictionFilter;
 import ncdsearch.files.IFiles;
 import ncdsearch.report.IReport;
+import sarf.lexer.FileType;
 import sarf.lexer.TokenReader;
 import sarf.lexer.TokenReaderFactory;
 
@@ -62,48 +63,52 @@ public class SearchMain {
 					String path = f.getAbsolutePath();
 					
 					if (config.isVerbose()) System.err.println(path);
-
-					final File target = f;
-					c.execute(new Concurrent.Task() {
-						@Override
-						public boolean run(OutputStream out) throws IOException {
-
-							TokenReader reader = TokenReaderFactory.create(config.getQueryLanguage(), Files.readAllBytes(target.toPath()), config.getSourceCharset());
-							TokenSequence fileTokens = new TokenSequence(reader, config.useNormalization(), config.useSeparator());
 					
-							PredictionFilter prefilter = config.getPrefilter();
-							if (prefilter == null || prefilter.shouldSearch(fileTokens)) {
-								int[] positions;
-								if (config.isFullScan()) {
-									positions = fileTokens.getFullPositions(config.getQueryTokens().size());
-								} else {
-									positions = fileTokens.getLineHeadTokenPositions();
-								}
-
-								// Identify a similar code fragment for each position (if exists)
-								ArrayList<Fragment> fragments = new ArrayList<>();
-								ICodeDistanceStrategy similarityStrategy = strategies.get();
-								for (int p=0; p<positions.length; p++) {
-									Fragment fragment = checkPosition(target, fileTokens, positions[p], similarityStrategy);
-									if (fragment != null) {
-										fragments.add(fragment);
-									}
-								}
+					final FileType type = config.getTargetLanguage(path);
+					if (TokenReaderFactory.isSupported(type)) {
+						final File target = f;
 						
-								if (config.allowOverlap()) {
-									// Print the raw result
-									report.write(fragments);
-								} else {
-									// Remove redundant elements and print the result.
-									ArrayList<Fragment> result = Fragment.filter(fragments);
-									if (result.size() > 0) {
-										report.write(result);
+						c.execute(new Concurrent.Task() {
+							@Override
+							public boolean run(OutputStream out) throws IOException {
+	
+								TokenReader reader = TokenReaderFactory.create(type, Files.readAllBytes(target.toPath()), config.getSourceCharset());
+								TokenSequence fileTokens = new TokenSequence(reader, config.useNormalization(), config.useSeparator());
+						
+								PredictionFilter prefilter = config.getPrefilter();
+								if (prefilter == null || prefilter.shouldSearch(fileTokens)) {
+									int[] positions;
+									if (config.isFullScan()) {
+										positions = fileTokens.getFullPositions(config.getQueryTokens().size());
+									} else {
+										positions = fileTokens.getLineHeadTokenPositions();
+									}
+	
+									// Identify a similar code fragment for each position (if exists)
+									ArrayList<Fragment> fragments = new ArrayList<>();
+									ICodeDistanceStrategy similarityStrategy = strategies.get();
+									for (int p=0; p<positions.length; p++) {
+										Fragment fragment = checkPosition(target, fileTokens, positions[p], similarityStrategy);
+										if (fragment != null) {
+											fragments.add(fragment);
+										}
+									}
+							
+									if (config.allowOverlap()) {
+										// Print the raw result
+										report.write(fragments);
+									} else {
+										// Remove redundant elements and print the result.
+										ArrayList<Fragment> result = Fragment.filter(fragments);
+										if (result.size() > 0) {
+											report.write(result);
+										}
 									}
 								}
+								return true;
 							}
-							return true;
-						}
-					});
+						});
+					}
 				}
 				c.waitComplete();
 			}

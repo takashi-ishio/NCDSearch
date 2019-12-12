@@ -42,7 +42,8 @@ public class SearchConfiguration {
 	public static final String ARG_MIN_WINDOW = "-min";
 	public static final String ARG_MAX_WINDOW = "-max";
 	public static final String ARG_THRESHOLD = "-th";
-	public static final String ARG_LANGUAGE = "-lang";
+	public static final String ARG_QUERY_LANGUAGE = "-lang";
+	public static final String ARG_TARGET_LANGUAGE = "-targetlang";
 	public static final String ARG_VERBOSE = "-v";
 	public static final String ARG_ALGORITHM = "-a";
 	public static final String ARG_COMPRESSOR = "-c";
@@ -64,7 +65,9 @@ public class SearchConfiguration {
 	public static final String ARG_INCLUDE = "-i";
 	public static final String ARG_NOSEPARATOR = "-nosep";
 	public static final String ARG_SHOW_TIME = "-time";
-	
+
+	private static final String TARGET_LANG_AUTOMATIC = "auto";
+
 	private static final String ALGORITHM_TOKEN_LEVENSHTEIN_DISTANCE = "tld";
 	private static final String ALGORITHM_BYTE_LCS_DISTANCE = "blcs";
 	private static final String ALGORITHM_NORMALIZED_BYTE_LEVENSHTEIN_DISTANCE = "nbld";
@@ -117,6 +120,9 @@ public class SearchConfiguration {
 	private String algorithm = "zip";
 	private Charset charset;
 	private String charsetError;
+	private String targetLang = null;
+	private boolean targetLangAutomatic = false;
+	private FileType targetFileType = null;
 	
 	private File filelistName = null;
 	
@@ -152,10 +158,10 @@ public class SearchConfiguration {
 					} catch (NumberFormatException e) {
 					}
 				}
-			} else if (args[idx].equals(ARG_LANGUAGE)) {
+			} else if (args[idx].equals(ARG_QUERY_LANGUAGE)) {
 				idx++;
 				if (idx < args.length) {
-					FileType t = TokenReaderFactory.getFileType("." + args[idx++]);
+					FileType t = TokenReaderFactory.getFileTypeForExtension(args[idx++]);
 					if (TokenReaderFactory.isSupported(t)) {
 						queryFileType = t;
 					}
@@ -192,6 +198,20 @@ public class SearchConfiguration {
 					if (TokenReaderFactory.isSupported(t) && queryFileType == null) {
 						queryFileType = t;
 					}
+				}
+			} else if (args[idx].equals(ARG_TARGET_LANGUAGE)) {
+				idx++;
+				if (idx < args.length) {
+					targetLang = args[idx++];
+					
+					targetLangAutomatic = targetLang.equalsIgnoreCase(TARGET_LANG_AUTOMATIC);
+					FileType t = TokenReaderFactory.getFileTypeForExtension(targetLang);
+					if (TokenReaderFactory.isSupported(t)) {
+						targetFileType = t;
+					} else if (!targetLangAutomatic) {
+						argumentError = "The specified language of target files is invalid: " + targetLang;
+					}
+					
 				}
 			} else if (args[idx].equals(ARG_QUERY_START_LINE)) {
 				idx++;
@@ -327,6 +347,7 @@ public class SearchConfiguration {
 				windowSize != null && 
 				isValidAlgorithmName(algorithm) &&
 				((filelistName != null && filelistName.isFile() && filelistName.canRead()) || sourceDirs.size() > 0) &&
+				(targetLang == null || targetLangAutomatic || targetFileType != null) && // Not satisfied if targetLang is an invalid language name
 				windowSize.size() > 0;
 	}
 	
@@ -351,6 +372,21 @@ public class SearchConfiguration {
 		}
 		report.writeConfig("DistanceThreshold", Double.toString(threshold));
 		report.writeConfig("QueryLanguage", queryFileType.name());
+		
+		if (targetLang != null) {
+			if (targetFileType != null) {
+				report.writeConfig("TargetLanguage", targetFileType.name());
+			} else {
+				if (targetLangAutomatic) {
+					report.writeConfig("TargetLanguage", "Automatic");
+				} else {
+					report.writeConfig("TargetLanguage", targetLang + " (invalid)");
+				}
+			}
+		} else {
+			report.writeConfig("TargetLanguage", queryFileType.name());
+		}
+		
 		if (threads > 0) {
 			report.writeConfig("MultiThreading", "Enabled (" + threads + " worker threads)");
 		} else {
@@ -493,7 +529,6 @@ public class SearchConfiguration {
 				
 				@Override
 				public boolean isTarget(File f) {
-					// TODO Auto-generated method stub
 					return isSearchTarget(f.getPath());
 				}
 			});
@@ -510,14 +545,31 @@ public class SearchConfiguration {
 	 */
 	public boolean isSearchTarget(String filepath) {
 		FileType filetype = TokenReaderFactory.getFileType(filepath);
-		boolean match = (queryFileType == filetype);
-		if (!match) {
-			// Check file name-based filters  
-			for (String inclusionFilter: inclusionFilters) {
-				match |= filepath.toLowerCase().endsWith(inclusionFilter);
+		if ((!targetLangAutomatic && targetFileType != null && targetFileType == filetype)||
+			(!targetLangAutomatic && targetFileType == null && queryFileType == filetype)) {
+			return true;
+		}
+		// Check file name-based filters  
+		for (String inclusionFilter: inclusionFilters) {
+			if (filepath.toLowerCase().endsWith(inclusionFilter)) {
+				return true;
 			}
 		}
-		return match;
+		return false;
+	}
+	
+	/**
+	 * 
+	 * @param filepath
+	 * @return true if it is supported 
+	 */
+	public FileType getTargetLanguage(String filepath) {
+		if (targetFileType != null) {
+			return targetFileType;
+		} else if (targetLangAutomatic) {
+			return TokenReaderFactory.getFileType(filepath);
+		}
+		return queryFileType;
 	}
 	
 	public boolean allowOverlap() {

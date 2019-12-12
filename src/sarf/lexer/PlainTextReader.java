@@ -10,32 +10,52 @@ public class PlainTextReader implements TokenReader {
 	private String content;
 	private int firstCharPos;
 	private int lineNum;
+	private int index;
 	
 	/**
 	 * @param r represents a source/text file.  This reader is automatically closed when all the lines are consumed by a client.  
 	 */
 	public PlainTextReader(Reader r) {
 		reader = new LineNumberReader(r);
+		content = "";
+	}
+	
+	private boolean nextNonEmptyLine() throws IOException {
+		for (String line=reader.readLine(); line != null; line=reader.readLine()) {
+			String trimmed = line.trim();
+			if (trimmed.length() > 0) {
+				content = trimmed;
+				firstCharPos = line.indexOf(trimmed);
+				lineNum = reader.getLineNumber();
+				index = 0;
+				return true;
+			}
+		}
+		// End of File
+		content = null;
+		firstCharPos = 0;
+		index = 0;
+		reader.close();
+		return false;
 	}
 	
 	@Override
 	public boolean next() {
-		try {
-			String line = reader.readLine();
-			if (line != null) {
-				content = line.trim();
-				firstCharPos = line.indexOf(content);
-				lineNum = reader.getLineNumber();
-				return true;
+		if (content != null) {
+			index++;
+			if (index >= content.length()) {
+				try {
+					return nextNonEmptyLine();
+				} catch (IOException e) {
+					content = null;
+					firstCharPos = 0;
+					index = 0;
+				}
 			} else {
-				reader.close();
-				content = null;
-				firstCharPos = 0;
-				return false;
+				return true;
 			}
-		} catch (IOException e) {
-			return false;
 		}
+		return false;
 	}
 	
 	@Override
@@ -45,7 +65,7 @@ public class PlainTextReader implements TokenReader {
 	
 	@Override
 	public int getCharPositionInLine() {
-		return firstCharPos;
+		return firstCharPos + index;
 	}
 	
 	@Override
@@ -55,7 +75,7 @@ public class PlainTextReader implements TokenReader {
 	
 	@Override
 	public String getToken() {
-		return content;
+		return Character.toString(content.charAt(index));
 	}
 	
 	@Override

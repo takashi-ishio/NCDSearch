@@ -20,6 +20,7 @@ import sarf.lexer.lang.CSharpLexer;
 import sarf.lexer.lang.ECMAScriptLexer;
 import sarf.lexer.lang.Java8Lexer;
 import sarf.lexer.lang.Python3Lexer;
+import sarf.lexer.lang.VisualBasic6Lexer;
 
 public class TokenReaderFactory {
 	
@@ -55,6 +56,8 @@ public class TokenReaderFactory {
 		filetype.put("py", FileType.PYTHON);
 
 		filetype.put("cbl", FileType.COBOL);
+
+		filetype.put("vb", FileType.VISUALBASIC6);
 		
 		filetype.put("txt", FileType.PLAINTEXT);
 		filetype.put("html", FileType.PLAINTEXT);
@@ -162,6 +165,9 @@ public class TokenReaderFactory {
 			case CCFINDERX:
 				return new CCFinderXLexer(buf, charset);
 
+			case VISUALBASIC6:
+				return new VisualBasic6LexerTokenReader(filetype, new VisualBasic6Lexer(createStream(buf, charset)));
+
 			case COBOL:
 				return new CobolLexerTokenReader(filetype, new CobolLexer(createStream(buf, charset)));
 
@@ -226,6 +232,9 @@ public class TokenReaderFactory {
 				
 			case CCFINDERX:
 				return new CCFinderXLexer(reader);
+			
+			case VISUALBASIC6:
+				return new VisualBasic6LexerTokenReader(filetype, new VisualBasic6Lexer(CharStreams.fromReader(reader)));
 				
 			case COBOL:
 				return new CobolLexerTokenReader(filetype, new CobolLexer(CharStreams.fromReader(reader)));

@@ -19,6 +19,7 @@
 */
 /*
 * This grammar file includes additional .NET keywords for VB.NET lexical analysis.
+* This grammar DOES NOT SUPPORT parsing VB.NET files.
 */
 
 grammar VisualBasic6;

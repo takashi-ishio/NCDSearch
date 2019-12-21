@@ -124,12 +124,12 @@ The plain text mode regards a single line as a single token but ignores indentat
 
 Each language option automatically searches source files using the following extensions.
  - C/C++: .c, .cc, .cp, .cpp, .cx, .cxx, .c+, .c++, .h, .hh, .hxx, .h+, .h++, .hp, .hpp
- - Java: .java
+ - Java 8: .java
  - JavaScript: .js
  - C#: .cs
  - Python: .py
  - COBOL: .cbl
- - Visual Basic 6: .vb 
+ - Visual Basic 6 and .NET (experimental): .vb 
  - Plain Text: .txt, .html, .md
  - CCFinderX: .ccfx, .ccfinderx, .ccfxprep
 

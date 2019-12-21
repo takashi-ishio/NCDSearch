@@ -17,6 +17,9 @@
 * and has been tested with MSDN VB6 statements as well as several Visual
 * Basic 6.0 code repositories.
 */
+/*
+* This grammar file includes additional .NET keywords for VB.NET lexical analysis.
+*/
 
 grammar VisualBasic6;
 
@@ -1604,19 +1607,22 @@ PRIVATE
 
 
 PROPERTY_GET
-   : P R O P E R T Y ' ' G E T
+   : PROPERTY ' ' G E T
    ;
 
 
 PROPERTY_LET
-   : P R O P E R T Y ' ' L E T
+   : PROPERTY ' ' L E T
    ;
 
 
 PROPERTY_SET
-   : P R O P E R T Y ' ' S E T
+   : PROPERTY ' ' S E T
    ;
 
+PROPERTY
+   : P R O P E R T Y
+   ;
 
 PUBLIC
    : P U B L I C
@@ -2083,6 +2089,7 @@ WS
    : [ \t] +
    ;
 
+
 // letters
 
 fragment LETTER
@@ -2223,4 +2230,91 @@ fragment Y
 
 fragment Z
    : ('z' | 'Z')
+   ;
+
+NETKeywords /* Additional keywords, Linq, Preprocessors */
+   : A S C E N D I N G
+   | D E S C E N D I N G
+   | O R D E R
+   | B Y
+   | T A K E
+   | S K I P
+   | D I S T I N C T
+   | E Q U A L S
+   | J O I N
+   | F R O M
+   | R E G I O N
+   | R E A D O N L Y
+   | W R I T E O N L Y
+   | O F F
+   | A N D A L S O
+   | O R E L S E
+   | A W A I T
+   | S H A D O W S
+   | D E F A U L T
+   | C B O O L
+   | C B Y T E
+   | C C H A R
+   | C D A T E
+   | C D E C
+   | C D B L 
+   | C I N T
+   | C L N G
+   | C O B J
+   | C S B Y T E
+   | C S H O R T
+   | C S N G
+   | C S T R
+   | C T Y P E
+   | C U I N T
+   | C U L N G
+   | C U S H O R T
+   | I T E R A T O R
+   | T R Y
+   | C A T C H
+   | A D D H A N D L E R
+   | C H A R
+   | C O N T I N U E
+   | D E C I M A L
+   | D E L E G A T E
+   | D I R E C T C A S T
+   | E N D I F
+   | F I N A L L Y
+   | G E T T Y P E
+   | G E T X M L N A M E S P A C E
+   | H A N D L E S
+   | I M P O R T S
+   | I N H E R I T S
+   | I N T E R F A C E
+   | I S N O T
+   | M U S T I N H E R I T
+   | M U S T O V E R R I D E
+   | M O D U L E
+   | M Y B A S E
+   | M Y C L A S S
+   | N A R R O W I N G
+   | N O T I N H E R I T A B L E
+   | N O T O V E R R I D A B L E
+   | O F
+   | O P E R A T O R
+   | O V E R L O A D S
+   | O V E R R I D E S
+   | O V E R R I D A B L E
+   | P A R T I A L
+   | P R O T E C T E D
+   | R E M O V E H A N D L E R
+   | S B Y T E
+   | S H O R T
+   | S T R U C T U R E
+   | S Y N C L O C K
+   | T H R O W
+   | T R Y C A S T
+   | U I N T E G E R
+   | U L O N G
+   | U S H O R T
+   | U S I N G
+   | W H E N
+   | W I D E N I N G
+   | '"'   /* To avoid a lexical analysis error when a string literal
+              includes a line separator (VB.NET in Visual Studio 2015 or later.) */
    ;

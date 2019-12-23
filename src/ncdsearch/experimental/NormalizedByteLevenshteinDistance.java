@@ -15,9 +15,26 @@ public class NormalizedByteLevenshteinDistance implements ICodeDistanceStrategy 
 	@Override
 	public double computeDistance(TokenSequence code) {
 		byte[] another = code.toByteArray();
-	    return computeLevenshteinDistance(query, another) * 1.0 / Math.max(query.length, another.length);
+	    return computeNormalizedLevenshteinDistance(query, another);
 	}
 
+	/**
+	 * Compute a normalized Levenshtein distance of two byte arrays. 
+	 * @param query the first array.
+	 * @param another the second array.
+	 * @return the number of edit operations (add/delete/modify) 
+	 * divided by the length of the longer array.
+	 */
+	static double computeNormalizedLevenshteinDistance(byte[] query, byte[] another) {
+		return computeLevenshteinDistance(query, another) * 1.0 / Math.max(query.length, another.length);
+	}
+
+	/**
+	 * Compute a Levenshtein distance of two byte arrays. 
+	 * @param query the first array.
+	 * @param another the second array.
+	 * @return the number of edit operations (add/delete/modify). 
+	 */
 	static int computeLevenshteinDistance(byte[] query, byte[] another) { 
 		int[][] score = computeLevenshteinDistanceTable(query, another);
 	    return score[query.length][another.length];

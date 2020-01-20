@@ -166,7 +166,7 @@ public class LZJDistance implements IVariableWindowStrategy {
 			double lzjd = (unionSize - intersection) * 1.0 / unionSize;
 			if (lzjd < bestLZJD) {
 				bestLZJD = lzjd;
-				bestWindowSize = t;
+				bestWindowSize = t+1;
 			}
 
 			// Terminate the loop early, if no chance 

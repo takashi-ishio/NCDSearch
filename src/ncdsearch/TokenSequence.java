@@ -71,6 +71,7 @@ public class TokenSequence {
 		this.charpos = base.charpos;
 		this.bytes = base.bytes;
 		this.bytepos = base.bytepos;
+		this.useSeparator = base.useSeparator;
 		this.start = start;
 		this.end = end;
 	}

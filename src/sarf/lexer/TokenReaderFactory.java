@@ -2,6 +2,8 @@ package sarf.lexer;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.nio.charset.Charset;
@@ -18,6 +20,7 @@ import sarf.lexer.lang.CSharpLexer;
 import sarf.lexer.lang.ECMAScriptLexer;
 import sarf.lexer.lang.Java8Lexer;
 import sarf.lexer.lang.Python3Lexer;
+import sarf.lexer.lang.VisualBasic6Lexer;
 
 public class TokenReaderFactory {
 	
@@ -53,10 +56,14 @@ public class TokenReaderFactory {
 		filetype.put("py", FileType.PYTHON);
 
 		filetype.put("cbl", FileType.COBOL);
+
+		filetype.put("vb", FileType.VISUALBASIC6);
 		
 		filetype.put("txt", FileType.PLAINTEXT);
 		filetype.put("html", FileType.PLAINTEXT);
 		filetype.put("md", FileType.PLAINTEXT);
+
+		filetype.put("docx", FileType.DOCX);
 	}
 	
 
@@ -65,7 +72,11 @@ public class TokenReaderFactory {
 	}
 
 	public static boolean isSupported(FileType filetype) {
-		return filetype != FileType.UNSUPPORTED;
+		return filetype != null && filetype != FileType.UNSUPPORTED;
+	}
+
+	public static FileType getFileTypeForExtension(String ext) {
+		return getFileType("." + ext);
 	}
 
 	public static FileType getFileType(String filename) {
@@ -154,11 +165,17 @@ public class TokenReaderFactory {
 			case CCFINDERX:
 				return new CCFinderXLexer(buf, charset);
 
+			case VISUALBASIC6:
+				return new VisualBasic6LexerTokenReader(filetype, new VisualBasic6Lexer(createStream(buf, charset)));
+
 			case COBOL:
 				return new CobolLexerTokenReader(filetype, new CobolLexer(createStream(buf, charset)));
 
 			case PLAINTEXT:
 				return new PlainTextReader(new StringReader(new String(buf, charset)));
+				
+			case DOCX:
+				return new DocxReader(new ByteArrayInputStream(buf));
 				
 			case UNSUPPORTED:
 			default:
@@ -168,6 +185,22 @@ public class TokenReaderFactory {
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
+		}
+	}
+
+	/**
+	 * Create a token reader reading source code from a given reader.
+	 * @param filetype specifies a file type that can be obtained by TokenReaderFactory#getFileType. 
+	 * @param reader is source code.  The object is automatically closed.  
+	 * @return a token reader.
+	 */
+	public static TokenReader create(FileType filetype, InputStream stream) {
+		switch (filetype) {
+		case DOCX:
+			return new DocxReader(stream);
+		
+		default:
+			return create(filetype, new InputStreamReader(stream));
 		}
 	}
 
@@ -199,6 +232,9 @@ public class TokenReaderFactory {
 				
 			case CCFINDERX:
 				return new CCFinderXLexer(reader);
+			
+			case VISUALBASIC6:
+				return new VisualBasic6LexerTokenReader(filetype, new VisualBasic6Lexer(CharStreams.fromReader(reader)));
 				
 			case COBOL:
 				return new CobolLexerTokenReader(filetype, new CobolLexer(CharStreams.fromReader(reader)));
@@ -206,6 +242,8 @@ public class TokenReaderFactory {
 			case PLAINTEXT:
 				return new PlainTextReader(reader);
 
+			case DOCX:
+				// Cannot create a reader for a binary file
 			case UNSUPPORTED:
 			default:
 				return null;

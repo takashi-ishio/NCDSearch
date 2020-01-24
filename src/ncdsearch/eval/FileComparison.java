@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import ncdsearch.ICodeDistanceStrategy;
 import ncdsearch.NormalizedCompressionDistance;
 import ncdsearch.SearchConfiguration;
-import ncdsearch.SearchMain;
 import ncdsearch.TokenSequence;
 import ncdsearch.experimental.LZJDistance;
 import ncdsearch.experimental.NormalizedTokenLevenshteinDistance;

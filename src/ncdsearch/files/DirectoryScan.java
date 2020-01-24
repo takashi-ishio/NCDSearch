@@ -11,11 +11,26 @@ import java.util.List;
 public class DirectoryScan implements IFiles {
 	
 	private ArrayList<File> files = new ArrayList<File>(100);
-	
+	private IFileFilter filter;
+
+	/**
+	 * Construct an instance without file filtering
+	 * @param dirs
+	 */
 	public DirectoryScan(List<String> dirs) {
+		this(dirs, new IFileFilter() {
+			@Override
+			public boolean isTarget(File f) {
+				return true;
+			}
+		});
+	}
+
+	public DirectoryScan(List<String> dirs, IFileFilter filter) {
 		for (String d: dirs) {
 			files.add(new File(d));
 		}
+		this.filter = filter;
 	}
 
 	/**
@@ -26,7 +41,7 @@ public class DirectoryScan implements IFiles {
 	public File next() {
 		while (!files.isEmpty()) {
 			File f = files.remove(files.size()-1);
-			if (f.isFile() && f.canRead()) {
+			if (f.isFile() && f.canRead() && filter.isTarget(f)) {
 				return f;
 			} else if (f.isDirectory() && f.canRead()) {
 				File[] children = f.listFiles();

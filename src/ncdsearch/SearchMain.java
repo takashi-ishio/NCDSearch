@@ -13,6 +13,7 @@ import ncdsearch.eval.FileComparison;
 import ncdsearch.experimental.PredictionFilter;
 import ncdsearch.files.IFiles;
 import ncdsearch.report.IReport;
+import sarf.lexer.FileType;
 import sarf.lexer.TokenReader;
 import sarf.lexer.TokenReaderFactory;
 
@@ -61,15 +62,17 @@ public class SearchMain {
 				for (File f = files.next(); f != null; f = files.next()) {
 					String path = f.getAbsolutePath();
 					
-					if (config.useFileList() || config.isSearchTarget(path)) {
-						if (config.isVerbose()) System.err.println(path);
-	
+					if (config.isVerbose()) System.err.println(path);
+					
+					final FileType type = config.getTargetLanguage(path);
+					if (TokenReaderFactory.isSupported(type)) {
 						final File target = f;
+						
 						c.execute(new Concurrent.Task() {
 							@Override
 							public boolean run(OutputStream out) throws IOException {
 	
-								TokenReader reader = TokenReaderFactory.create(config.getQueryLanguage(), Files.readAllBytes(target.toPath()), config.getSourceCharset());
+								TokenReader reader = TokenReaderFactory.create(type, Files.readAllBytes(target.toPath()), config.getSourceCharset());
 								TokenSequence fileTokens = new TokenSequence(reader, config.useNormalization(), config.useSeparator());
 						
 								PredictionFilter prefilter = config.getPrefilter();

@@ -280,7 +280,7 @@ public class SearchConfiguration {
 		if (queryFilename != null) {
 			queryTokens = queryTokens.substringByLine(queryStartLine, queryEndLine);
 			if (queryTokens == null) {
-				System.err.println("No tokens exist in lines " + queryStartLine + " through " + queryEndLine);
+				argumentError = "No tokens exist in lines " + queryStartLine + " through " + queryEndLine;
 				return;
 			}
 		}

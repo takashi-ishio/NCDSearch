@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
+import org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 
@@ -29,6 +30,7 @@ public class DocxReader implements TokenReader {
 	        paragraphIndex = 0;
 	        charIndex = -1;
 		} catch (IOException e) {
+		} catch (NotOfficeXmlFileException e) {
 		}
 	}
 	

@@ -240,7 +240,8 @@ public class TokenSequence {
 	}
 	
 	/**
-	 * @return a string representation of tokens seprated by white space. 
+	 * @return a string representation of tokens.
+	 * The string is separated by white space if separator is enabled. 
 	 */
 	@Override
 	public String toString() {

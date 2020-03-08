@@ -2,7 +2,6 @@ package ncdsearch;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
@@ -15,6 +14,7 @@ import java.util.List;
 import gnu.trove.list.array.TDoubleArrayList;
 import gnu.trove.list.array.TIntArrayList;
 import ncdsearch.experimental.ByteLCSDistance;
+import ncdsearch.experimental.CharLZJDistance;
 import ncdsearch.experimental.LZJDistance;
 import ncdsearch.experimental.NgramDistance;
 import ncdsearch.experimental.NgramSetDistance;
@@ -80,6 +80,7 @@ public class SearchConfiguration {
 	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE = "lzjd";
 	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT = "strict";
 	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_WITH_NCD = "ncd";
+	private static final String ALGORITHM_CHAR_LAMPEL_ZIV_JACCARD_DISTANCE = "clzjd";
 	
 	private static final String[] ALGORITHMS = {ALGORITHM_TOKEN_LEVENSHTEIN_DISTANCE,
 			ALGORITHM_BYTE_LCS_DISTANCE, ALGORITHM_NORMALIZED_BYTE_LEVENSHTEIN_DISTANCE,
@@ -87,8 +88,10 @@ public class SearchConfiguration {
 			ALGORITHM_VARIABLE_WINDOW_NORMALIZED_BYTE_LEVENSHTEIN_DISTANCE,
 			ALGORITHM_VARIABLE_WINDOW_NORMALIZED_TOKEN_LEVENSHTEIN_DISTANCE,
 			ALGORITHM_BYTE_NGRAM_MULTISET,
-			ALGORITHM_BYTE_NGRAM_SET, ALGORITHM_TFIDF, ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE, 
-			ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT};
+			ALGORITHM_BYTE_NGRAM_SET, ALGORITHM_TFIDF, 
+			ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE, 
+			ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT,
+			ALGORITHM_CHAR_LAMPEL_ZIV_JACCARD_DISTANCE};
 	
 	
 
@@ -457,6 +460,8 @@ public class SearchConfiguration {
 			return new NgramSetDistance(queryTokens, n);
 		} else if (algorithm.startsWith(ALGORITHM_TFIDF)) {
 			return new TfidfCosineDistance(sourceDirs, queryFileType, queryTokens, charset);
+		} else if (algorithm.startsWith(ALGORITHM_CHAR_LAMPEL_ZIV_JACCARD_DISTANCE)) {
+			return new CharLZJDistance(queryTokens);
 		} else if (algorithm.startsWith(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE)) {
 			boolean strict = algorithm.contains(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT);
 			LZJDistance d = new LZJDistance(queryTokens, strict);

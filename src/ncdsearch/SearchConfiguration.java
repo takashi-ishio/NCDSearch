@@ -431,6 +431,7 @@ public class SearchConfiguration {
 			Compressor c = Compressor.valueOf(name.toUpperCase());
 			return c != null;
 		} catch (IllegalArgumentException e) {
+			argumentError = "Invalid algorithm name: " + algorithm;
 			return false;
 		}
 	}

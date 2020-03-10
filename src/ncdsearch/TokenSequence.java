@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import gnu.trove.list.array.TIntArrayList;
+import sarf.lexer.FileType;
 import sarf.lexer.TokenReader;
 
 
@@ -74,6 +75,27 @@ public class TokenSequence {
 		this.useSeparator = base.useSeparator;
 		this.start = start;
 		this.end = end;
+	}
+	
+	/**
+	 * Wrap a string as a single-token sequence
+	 * @param s specifies a string.
+	 * @return a TokenSequence object.
+	 */
+	public TokenSequence(String s) {
+		tokens = new ArrayList<>();
+		tokens.add(s);
+		lines = new TIntArrayList();
+		lines.add(0);
+		charpos = new TIntArrayList();
+		charpos.add(0);
+		start = 0;
+		end = 1;
+		bytes = s.getBytes();
+		bytepos = new TIntArrayList();
+		bytepos.add(0);
+		bytepos.add(bytes.length);
+		useSeparator = false;
 	}
 	
 	/**

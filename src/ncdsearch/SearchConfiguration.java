@@ -440,33 +440,59 @@ public class SearchConfiguration {
 		return queryTokens;
 	}
 	
+	/**
+	 * Create the algorithm object specified by the command line arguments
+	 * @return a strategy object.
+	 * The object may have an internal state.  
+	 */
 	public ICodeDistanceStrategy createStrategy() {
-		if (algorithm.startsWith(ALGORITHM_TOKEN_LEVENSHTEIN_DISTANCE)) {
-			return new TokenLevenshteinDistance(queryTokens);
-		} else if (algorithm.startsWith(ALGORITHM_BYTE_LCS_DISTANCE)) {
-			return new ByteLCSDistance(queryTokens);
-		} else if (algorithm.startsWith(ALGORITHM_NORMALIZED_BYTE_LEVENSHTEIN_DISTANCE)) {
-			return new NormalizedByteLevenshteinDistance(queryTokens);
-		} else if (algorithm.startsWith(ALGORITHM_NORMALIZED_TOKEN_LEVENSHTEIN_DISTANCE)) {
-			return new NormalizedTokenLevenshteinDistance(queryTokens);
-		} else if (algorithm.startsWith(ALGORITHM_VARIABLE_WINDOW_NORMALIZED_BYTE_LEVENSHTEIN_DISTANCE)) {
-			return new VariableWindowNormalizedByteLevenshteinDistance(queryTokens);
-		} else if (algorithm.startsWith(ALGORITHM_VARIABLE_WINDOW_NORMALIZED_TOKEN_LEVENSHTEIN_DISTANCE)) {
-			return new VariableWindowNormalizedTokenLevenshteinDistance(queryTokens);
-		} else if (algorithm.startsWith(ALGORITHM_BYTE_NGRAM_MULTISET)) {
-			int n = Integer.parseInt(algorithm.substring(ALGORITHM_BYTE_NGRAM_MULTISET.length()));
-			return new NgramDistance(queryTokens, n);
-		} else if (algorithm.startsWith(ALGORITHM_BYTE_NGRAM_SET)) {
-			int n = Integer.parseInt(algorithm.substring(ALGORITHM_BYTE_NGRAM_SET.length()));
-			return new NgramSetDistance(queryTokens, n);
-		} else if (algorithm.startsWith(ALGORITHM_TFIDF)) {
+		return createStrategy(algorithm);
+	}
+	
+	/**
+	 * Create a stretegy object representing an algorithm 
+	 * @param algorithmName
+	 * @return
+	 */
+	public ICodeDistanceStrategy createStrategy(String algorithmName) {
+		if (algorithmName.startsWith(ALGORITHM_TFIDF)) {
 			return new TfidfCosineDistance(sourceDirs, queryFileType, queryTokens, charset);
-		} else if (algorithm.startsWith(ALGORITHM_CHAR_LAMPEL_ZIV_JACCARD_DISTANCE)) {
+		} else {
+			return createStrategy(algorithmName, queryTokens);
+		}
+	}
+
+	/**
+	 * Create a stretegy object representing an algorithm 
+	 * @param algorithmName
+	 * @param queryTokens
+	 * @return
+	 */
+	public static ICodeDistanceStrategy createStrategy(String algorithmName, TokenSequence queryTokens) {
+		if (algorithmName.startsWith(ALGORITHM_TOKEN_LEVENSHTEIN_DISTANCE)) {
+			return new TokenLevenshteinDistance(queryTokens);
+		} else if (algorithmName.startsWith(ALGORITHM_BYTE_LCS_DISTANCE)) {
+			return new ByteLCSDistance(queryTokens);
+		} else if (algorithmName.startsWith(ALGORITHM_NORMALIZED_BYTE_LEVENSHTEIN_DISTANCE)) {
+			return new NormalizedByteLevenshteinDistance(queryTokens);
+		} else if (algorithmName.startsWith(ALGORITHM_NORMALIZED_TOKEN_LEVENSHTEIN_DISTANCE)) {
+			return new NormalizedTokenLevenshteinDistance(queryTokens);
+		} else if (algorithmName.startsWith(ALGORITHM_VARIABLE_WINDOW_NORMALIZED_BYTE_LEVENSHTEIN_DISTANCE)) {
+			return new VariableWindowNormalizedByteLevenshteinDistance(queryTokens);
+		} else if (algorithmName.startsWith(ALGORITHM_VARIABLE_WINDOW_NORMALIZED_TOKEN_LEVENSHTEIN_DISTANCE)) {
+			return new VariableWindowNormalizedTokenLevenshteinDistance(queryTokens);
+		} else if (algorithmName.startsWith(ALGORITHM_BYTE_NGRAM_MULTISET)) {
+			int n = Integer.parseInt(algorithmName.substring(ALGORITHM_BYTE_NGRAM_MULTISET.length()));
+			return new NgramDistance(queryTokens, n);
+		} else if (algorithmName.startsWith(ALGORITHM_BYTE_NGRAM_SET)) {
+			int n = Integer.parseInt(algorithmName.substring(ALGORITHM_BYTE_NGRAM_SET.length()));
+			return new NgramSetDistance(queryTokens, n);
+		} else if (algorithmName.startsWith(ALGORITHM_CHAR_LAMPEL_ZIV_JACCARD_DISTANCE)) {
 			return new CharLZJDistance(queryTokens);
-		} else if (algorithm.startsWith(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE)) {
-			boolean strict = algorithm.contains(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT);
+		} else if (algorithmName.startsWith(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE)) {
+			boolean strict = algorithmName.contains(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT);
 			LZJDistance d = new LZJDistance(queryTokens, strict);
-			if (algorithm.contains(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_WITH_NCD)) {
+			if (algorithmName.contains(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_WITH_NCD)) {
 				d.setSecondaryDistance(new NormalizedCompressionDistance(queryTokens));
 			}
 			return d;
@@ -474,12 +500,12 @@ public class SearchConfiguration {
 
 		Compressor c = Compressor.ZIP;
 		try {
-			c = Compressor.valueOf(algorithm.toUpperCase());
+			c = Compressor.valueOf(algorithmName.toUpperCase());
 		} catch (IllegalArgumentException e) {
 		}
 		return new NormalizedCompressionDistance(queryTokens, Compressor.createInstance(c));
 	}
-	
+
 	public static String concat(ArrayList<String> queryArgs) {
 		StringBuilder b = new StringBuilder();
 		for (String arg: queryArgs) {

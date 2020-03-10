@@ -18,19 +18,29 @@ public abstract class DistanceClustering extends Clustering {
 	protected int totalVertexNumber;
 	protected boolean[] removedFlagMap;
 	protected double exDistanceThreshold;
+	
+	private boolean enableExClustering;
 
 	public DistanceClustering(List<JsonNode> allNode, String strategy, int clusterNum) {
 		super(allNode, strategy);
 		this.clusterNum = clusterNum;
+		this.enableExClustering = false;
 	}
 
 	public DistanceClustering(List<JsonNode> allNode, String strategy, int clusterNum, double exDistanceThreshold) {
 		this(allNode, strategy, clusterNum);
 		this.exDistanceThreshold = exDistanceThreshold;
 	}
+	
+	public void enableExClustering() {
+		this.enableExClustering = true;
+	}
 
 	@Override
 	public List<List<JsonNode>> clustering() {
+		if (enableExClustering) {
+			return exClustering();
+		}
 		init();
 		int mapSize = totalVertexNumber;
 		System.err.println("initial clusters : " + mapSize);
@@ -51,7 +61,6 @@ public abstract class DistanceClustering extends Clustering {
 		return getNodeList();
 	}
 
-	@Override
 	public List<List<JsonNode>> exClustering() {
 		init();
 		int mapSize = totalVertexNumber;

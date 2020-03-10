@@ -15,6 +15,5 @@ public abstract class Clustering {
 	}
 
 	public abstract List<List<JsonNode>> clustering();
-	public abstract List<List<JsonNode>> exClustering();
 
 }

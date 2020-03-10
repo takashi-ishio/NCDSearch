@@ -93,12 +93,22 @@ public class Clusters {
 	public void putRepJsonMap(JsonNode node, List<JsonNode> list) {
 		repJsonMap.put(node, list);
 	}
+	
+	public static List<JsonNode> getTopNodes(int topN, List<JsonNode> nodes) {
+		List<JsonNode> sortedList = Filter.getSortedListbyDistance(nodes);
+		if (sortedList.size() <= topN) {
+			return sortedList;
+		} else {
+			List<JsonNode> list = new ArrayList<>(sortedList);
+			return list.subList(0, topN);
+		}
+	}
+
 
 	public void clusteringNode() {
 		clustering();
-		ClusterRepresent c = new ClusterRepresent(topN);
 		for (List<JsonNode> nodes : clusterContents) {
-			List<JsonNode> reps = c.getClusterReps(nodes);
+			List<JsonNode> reps = getTopNodes(topN, nodes);
 			clusterReps.add(reps);
 			for (JsonNode node : reps) {
 				repJsonMap.put(node, nodes);

@@ -1,11 +1,5 @@
 package ncdsearch.postfilter;
 
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -14,21 +8,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class OutputResult {
 	Clusters clusters;
-	Answers answers;
 	Clusters filteredClusters;
-	String path;
 
-	public OutputResult(Clusters cs, Clusters fcs, String path) {
+	public OutputResult(Clusters cs, Clusters fcs) {
 		this.clusters = cs;
 		this.filteredClusters = fcs;
-		this.path = path;
-	}
-
-	public OutputResult(Clusters cs, Answers a, Clusters fcs, String path) {
-		this.clusters = cs;
-		this.answers = a;
-		this.filteredClusters = fcs;
-		this.path = path;
 	}
 
 	public void print() {
@@ -36,20 +20,7 @@ public class OutputResult {
 		ResultJson rj = new ResultJson(clusters.getAllNode());
 		try {
 			ObjectMapper mapper = new ObjectMapper();
-			List<String> lines = new ArrayList<>();
-			lines.add(mapper.writeValueAsString((Object) rj));
-			Path p;
-			if (path.endsWith(".json")) {
-				p = Paths.get(path.substring(0, path.lastIndexOf("/")), "filtering-"+
-						path.substring(path.lastIndexOf("/")+1));
-			} else {
-				p = Paths.get(path, "result-rank.json");
-			}
-			if (Files.exists(p)) {
-				Files.delete(p);
-			}
-			Files.createFile(p);
-			Files.write(p, lines, Charset.forName("UTF-8"), StandardOpenOption.WRITE);
+			System.out.println(mapper.writeValueAsString((Object) rj));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

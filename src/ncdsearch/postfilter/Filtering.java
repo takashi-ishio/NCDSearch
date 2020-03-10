@@ -2,8 +2,6 @@ package ncdsearch.postfilter;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import ncdsearch.postfilter.evaluate.Filter;
-
 public class Filtering {
 	protected int clusterTopN;
 	protected int allTopN;

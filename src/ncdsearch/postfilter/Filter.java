@@ -1,12 +1,10 @@
-package ncdsearch.postfilter.evaluate;
+package ncdsearch.postfilter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
-
-import ncdsearch.postfilter.Clusters;
-import ncdsearch.postfilter.JsonNodesInfo;
 
 public class Filter {
 	protected int allTopN;
@@ -23,7 +21,7 @@ public class Filter {
 	public Clusters getFilteredClusters(Clusters cs) {
 		Clusters fcs = new Clusters();
 		for (List<JsonNode> nodes : cs.getClusterReps()) {
-			List<JsonNode> sortedNodes = JsonNodesInfo.getSortedListbyDistance(nodes);
+			List<JsonNode> sortedNodes = getSortedListbyDistance(nodes);
 			//if (!isContainLongNode(nodes, cs.getAllNode())) {
 			if (isContainMinNode(nodes, cs.getAllNode())) {
 				//if (isContainInAnswer(nodes, a.getAllNode())) {
@@ -42,11 +40,20 @@ public class Filter {
 		}
 		return fcs;
 	}
+	
+	/*ascending order*/
+	public static List<JsonNode> getSortedListbyDistance(List<JsonNode> nodes) {
+		Collections.sort(nodes,
+				(p1, p2) -> Double.compare(p1.get("Distance").asDouble(), p2.get("Distance").asDouble()));
+		return nodes;
+	}
+
+
 
 	public Clusters getRemovedFilteredClusters(Clusters cs) {
 		Clusters fcs = new Clusters();
 		for (List<JsonNode> nodes : cs.getClusterReps()) {
-			List<JsonNode> sortedNodes = JsonNodesInfo.getSortedListbyDistance(nodes);
+			List<JsonNode> sortedNodes = getSortedListbyDistance(nodes);
 			if (!isContainMaxNode(nodes, cs.getAllNode())) {
 				//if (isContainInAnswer(nodes, a.getAllNode())) {
 				fcs.addClusterReps(sortedNodes);
@@ -78,7 +85,7 @@ public class Filter {
 
 	private boolean isContainMinNode(List<JsonNode> nodes, List<JsonNode> allNode) {
 		for (int i = 0; i < this.allTopN; i++) {
-			JsonNode minNode = JsonNodesInfo.getSortedListbyDistance(allNode).get(i);
+			JsonNode minNode = getSortedListbyDistance(allNode).get(i);
 			if (nodes.contains(minNode)) {
 				return true;
 			}
@@ -88,7 +95,7 @@ public class Filter {
 
 	private boolean isContainMaxNode(List<JsonNode> nodes, List<JsonNode> allNode) {
 		for (int i = allNode.size() - 1; i >= allNode.size() - this.allTopN; i--) {
-			JsonNode maxNode = JsonNodesInfo.getSortedListbyDistance(allNode).get(i);
+			JsonNode maxNode = getSortedListbyDistance(allNode).get(i);
 			if (nodes.contains(maxNode)) {
 				return true;
 			}

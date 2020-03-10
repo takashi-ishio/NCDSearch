@@ -81,10 +81,6 @@ public class Clusters {
 		return repJsonMap;
 	}
 
-	public void putRepJsonMap(JsonNode node, List<JsonNode> list) {
-		repJsonMap.put(node, list);
-	}
-
 	/**
 	 * Extract the topN nodes from nodes (sorted by distance) 
 	 * @param topN

@@ -12,7 +12,6 @@ public class DistanceTopFiltering extends DistanceFiltering {
 	public DistanceTopFiltering(List<JsonNode> allNode, String strategy, int clusterNum, double exDistanceThreshold,
 			double clusterDistance) {
 		super(allNode, strategy, clusterNum, exDistanceThreshold, clusterDistance);
-		// TODO 自動生成されたコンストラクター・スタブ
 	}
 
 	@Override

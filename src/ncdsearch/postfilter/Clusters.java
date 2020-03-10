@@ -23,33 +23,41 @@ import ncdsearch.postfilter.strategy.Shortest;
 
 public class Clusters {
 
-	protected List<JsonNode> allNode = new ArrayList<>();
+	protected List<JsonNode> allNode;
 	protected List<List<JsonNode>> clusterReps = new ArrayList<>();
 	protected List<List<JsonNode>> clusterContents = new ArrayList<>();
 	protected Map<JsonNode, List<JsonNode>> repJsonMap = new HashMap<>();
 
 	private String clustringStrategy;
 	private String distanceAlgorithm;
-	private int topN;
+	private int clusterTopN;
 	private int clusterNum;
 	private double exDistanceThreshold;
 	private double clusterDistance;
 
+	/**
+	 * 
+	 * @param strategy
+	 * @param distanceAlgorithm
+	 * @param topN
+	 * @param clusterNum
+	 * @param exDistanceThreshold
+	 * @param clusterDistance
+	 * @param nodes
+	 */
 	public Clusters(String strategy, String distanceAlgorithm, int topN, int clusterNum, double exDistanceThreshold,
-			double clusterDistance) {
+			double clusterDistance, ArrayList<JsonNode> nodes) {
 		this.clustringStrategy = strategy;
 		this.distanceAlgorithm = distanceAlgorithm;
-		this.topN = topN;
+		this.clusterTopN = topN;
 		this.exDistanceThreshold = exDistanceThreshold;
 		this.clusterNum = clusterNum;
 		this.clusterDistance = clusterDistance;
+		this.allNode = nodes;
+		clusteringNode();
 	}
 
 	public Clusters() {
-	}
-
-	public void addNode(JsonNode node) {
-		allNode.add(node);
 	}
 
 	public void addAllNode(List<JsonNode> nodes) {
@@ -93,7 +101,13 @@ public class Clusters {
 	public void putRepJsonMap(JsonNode node, List<JsonNode> list) {
 		repJsonMap.put(node, list);
 	}
-	
+
+	/**
+	 * Extract the topN nodes from nodes (sorted by distance) 
+	 * @param topN
+	 * @param nodes
+	 * @return
+	 */
 	public static List<JsonNode> getTopNodes(int topN, List<JsonNode> nodes) {
 		List<JsonNode> sortedList = Filter.getSortedListbyDistance(nodes);
 		if (sortedList.size() <= topN) {
@@ -104,11 +118,10 @@ public class Clusters {
 		}
 	}
 
-
-	public void clusteringNode() {
-		clustering();
+	private void clusteringNode() {
+		clusteringInternal();
 		for (List<JsonNode> nodes : clusterContents) {
-			List<JsonNode> reps = getTopNodes(topN, nodes);
+			List<JsonNode> reps = getTopNodes(clusterTopN, nodes);
 			clusterReps.add(reps);
 			for (JsonNode node : reps) {
 				repJsonMap.put(node, nodes);
@@ -119,7 +132,7 @@ public class Clusters {
 
 	}
 
-	public void clustering() {
+	private void clusteringInternal() {
 		Clustering c;
 		if (clustringStrategy.startsWith("EX")) {
 			if (clustringStrategy.equals("EXSH")) {
@@ -135,12 +148,12 @@ public class Clusters {
 					c = new DistanceTopFiltering(allNode, distanceAlgorithm, clusterNum, exDistanceThreshold,
 							clusterDistance);
 				} else {
-					/*EXDFD*/
+					/* EXDFD */
 					c = new DistanceDisFiltering(allNode, distanceAlgorithm, clusterNum, exDistanceThreshold,
 							clusterDistance);
 				}
 			} else {
-				//				System.err.println("Not Supported Strategy: " + clustringStrategy);
+				// System.err.println("Not Supported Strategy: " + clustringStrategy);
 				System.err.println("ExNo Clustering: ");
 				c = new NoClustering(allNode, distanceAlgorithm, clusterNum);
 			}
@@ -150,7 +163,7 @@ public class Clusters {
 				c = new RemoveDistanceTopFiltering(allNode, distanceAlgorithm, clusterNum, exDistanceThreshold,
 						clusterDistance);
 			} else {
-				/*RMEXDFD*/
+				/* RMEXDFD */
 				c = new RemoveDistanceDisFiltering(allNode, distanceAlgorithm, clusterNum, exDistanceThreshold,
 						clusterDistance);
 			}
@@ -169,8 +182,8 @@ public class Clusters {
 			} else if (clustringStrategy.equals("NF")) {
 				c = new NewmanFast(allNode, distanceAlgorithm);
 			} else {
-				//				System.err.println("Not Supported Strategy: " + clustringStrategy);
-				//				System.err.println("No Clustering: ");
+				// System.err.println("Not Supported Strategy: " + clustringStrategy);
+				// System.err.println("No Clustering: ");
 				c = new NoClustering(allNode, distanceAlgorithm, clusterNum);
 			}
 			clusterContents = c.clustering();

@@ -73,12 +73,11 @@ public class Main {
 			allTopN = Integer.parseInt(checkN.substring("Top".length()));
 		}
 		
- 		Filter f = new Filter(allTopN, CLUSTER_TOP_N_2);
  		ArrayList<JsonNode> selected; 
 		if (isRemoveClustering) {
-			selected = f.getRemovedFilteredNodes(cs);
+			selected = cs.getRemovedFilteredNodes(allTopN, CLUSTER_TOP_N_2);
 		} else {
-			selected = f.getFilteredNodes(cs);
+			selected = cs.getFilteredNodes(allTopN, CLUSTER_TOP_N_2);
 		}
 		
 		annotateElementsWithFilteringResult(cs, selected);

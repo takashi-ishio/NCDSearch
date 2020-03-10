@@ -57,19 +57,6 @@ public class Clusters {
 		clusteringNode();
 	}
 
-	public Clusters() {
-	}
-
-	public void addAllNode(List<JsonNode> nodes) {
-		allNode.addAll(nodes);
-	}
-
-	public void addNodes(List<JsonNode> nodes, int count) {
-		for (int i = 0; (i < count && i < nodes.size()); i++) {
-			allNode.add(nodes.get(i));
-		}
-	}
-
 	public List<JsonNode> getAllNode() {
 		return allNode;
 	}
@@ -84,10 +71,6 @@ public class Clusters {
 
 	public List<List<JsonNode>> getClusterContents() {
 		return clusterContents;
-	}
-
-	public void addClusterReps(List<JsonNode> rep) {
-		clusterReps.add(rep);
 	}
 
 	public int getClusterRepsSize() {

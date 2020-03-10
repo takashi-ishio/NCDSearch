@@ -49,7 +49,7 @@ public class Filtering {
 		if (isDistance) {
 			setTopN(cs);
 		}
-		Filter f = new Filter(allTopN, clusterTopN, isRemoveClustering);
+		Filter f = new Filter(allTopN, clusterTopN);
 		if (isRemoveClustering) {
 			return f.getRemovedFilteredClusters(cs);
 		} else {

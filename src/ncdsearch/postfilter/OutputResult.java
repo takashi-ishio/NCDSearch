@@ -20,7 +20,7 @@ public class OutputResult {
 		ResultJson rj = new ResultJson(clusters.getAllNode());
 		try {
 			ObjectMapper mapper = new ObjectMapper();
-			System.out.println(mapper.writeValueAsString((Object) rj));
+			System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString((Object) rj));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -47,10 +47,10 @@ public class OutputResult {
 				rankInCluster++;
 				rankTotal++;
 			}
-			System.out.println("RankInCluster:" + rankInCluster);
+			System.err.println("RankInCluster:" + rankInCluster);
 			clusterID++;
 		}
-		System.out.println("ClusterID:" + (clusterID - 1) + ", RankTotal:" + (rankTotal - 1));
+		System.err.println("ClusterID:" + (clusterID - 1) + ", RankTotal:" + (rankTotal - 1));
 	}
 
 	public class ResultJson {

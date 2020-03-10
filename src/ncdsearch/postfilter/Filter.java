@@ -9,13 +9,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class Filter {
 	protected int allTopN;
 	protected double distanceThreshold;
-	protected boolean isRemoveClustering;
 	protected int clusterTopN;
 
-	public Filter(int allTopN, int clusterTopN, boolean isRemoveClustering) {
+	public Filter(int allTopN, int clusterTopN) {
 		this.allTopN = allTopN;
 		this.clusterTopN = clusterTopN;
-		this.isRemoveClustering = isRemoveClustering;
 	}
 
 	public Clusters getFilteredClusters(Clusters cs) {

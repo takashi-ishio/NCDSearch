@@ -169,6 +169,7 @@ public class Main {
 	}
 
 	public static Clustering getAlgorithm(String clustringStrategy, String distanceAlgorithm, int clusterNum, double exDistanceThreshold, double clusterDistance, ArrayList<JsonNode> allNode) {
+		// EX-Clustering: Terminated when distance between clusters reached a threshold
 		if (clustringStrategy.startsWith("EX")) {
 			DistanceClustering c;
 			if (clustringStrategy.equals("EXSH")) {
@@ -208,6 +209,7 @@ public class Main {
 			return c;
 		} else {
 			Clustering c;
+			// Regular clustering: clusters are merged to obtain k clusters
 			if (clustringStrategy.equals("DIR") || clustringStrategy.equals("FILE")) {
 				c = new PathClustering(allNode, clustringStrategy);
 			} else if (clustringStrategy.equals("SH")) {

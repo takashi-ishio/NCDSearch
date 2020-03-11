@@ -12,32 +12,30 @@ import java.util.List;
 public class Cluster {
 	private List<Component> components;
 
-	public Cluster() {
-		components = new ArrayList<>();
-	}
+	/**
+	 * Create a single-component cluster
+	 * @param node
+	 */
 	public Cluster(Component node) {
 		components = new ArrayList<>();
 		components.add(node);
 	}
 
+	/**
+	 * Merge two clusters
+	 * @param cluster1
+	 * @param cluster2
+	 */
 	public Cluster(Cluster cluster1, Cluster cluster2) {
 		components = new ArrayList<>();
-		this.addAll(cluster1.components);
-		this.addAll(cluster2.components);
-	}
-
-	public void addComponent(Component fragment) {
-		components.add(fragment);
-	}
-
-	public void addAll(List<Component> fragments) {
-		components.addAll(fragments);
+		components.addAll(cluster1.components);
+		components.addAll(cluster2.components);
 	}
 
 	public double getSumEdges(Cluster another) {
 		double sumEdges = 0.0;
-		for(Component f : components) {
-			for(Component a : another.components) {
+		for(Component f: components) {
+			for(Component a: another.components) {
 				sumEdges += 1 / f.computeDistance(a);
 			}
 		}
@@ -69,6 +67,11 @@ public class Cluster {
 	}
 
 
+	/**
+	 * Merge another cluster to this cluster. 
+	 * This method update the cluster object.
+	 * @param another
+	 */
 	public void combine(Cluster another) {
 		components.addAll(another.components);
 	}

@@ -150,7 +150,7 @@ public class Main {
 			}
 			System.err.println("RankInCluster:" + cluster.size());
 		}
-		System.err.println("ClusterID:" + clusters.getClusterCount() + ", RankTotal:" + (rankTotal - 1));
+		System.err.println("ClusterID:" + clusters.getClusterCount() + ", RankTotal:" + rankTotal);
 	}
 
 	/**

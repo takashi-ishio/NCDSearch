@@ -30,7 +30,7 @@ public abstract class RemoveDistanceFiltering extends DistanceFiltering {
 		addNearElements(allClusterList);
 		/*push element to filteredlist*/
 		List<List<JsonNode>> nodeList = new ArrayList<>();
-		this.allNode.clear();
+		this.allNode = new ArrayList<JsonNode>();
 		pushElements(nodeList);
 		return nodeList;
 	}

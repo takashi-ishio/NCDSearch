@@ -3,6 +3,8 @@ package ncdsearch.postfilter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -32,7 +34,7 @@ public class Main {
 	private static String checkN = "Dis0.1";
 	private static double exDistanceThreshold = 0.35;
 	/*optional*/
-	private static double clusterDistance = 0;
+	private static double clusterDistance = 0.25;
 
 	//Optional Param
 	private static final int CLUSTER_REP_N = 10;
@@ -41,63 +43,97 @@ public class Main {
 
 	public static void main(String[] args) {
 		
+		if (args.length < 1) {
+			System.err.println("Arguments: ncdsearch-result.json [Base-Threshold] [Neighborhood-Threshold]");
+		}
+		
 		File json = new File(args[0]);
 		
-		if (args.length > 1) {
-			checkN = args[1];
-			exDistanceThreshold = Double.parseDouble(args[2]);
-			clusteringStrategy = args[3];
-		}
-		if (args.length > 4) {
-			clusterDistance = Double.parseDouble(args[4]);
+		if (args.length == 3) {
+			double distanceThreshold = Double.parseDouble(args[1]);
+			double neighborhoodThreshold = Double.parseDouble(args[2]);
+			
+			// Load nodes (code fragments) from file and performs clustering
+			ArrayList<JsonNode> nodes = loadFromFile(json);
 
-		}
-		boolean isRemoveClustering;
-		if (clusteringStrategy.startsWith("RM")) {
-			isRemoveClustering = true;
-			clusteringStrategy = clusteringStrategy.substring(2);
+			// Select elements 
+			Clustering c = new RemoveDistanceDisFiltering(nodes, distanceAlgorithm, 0, distanceThreshold, neighborhoodThreshold);
+			List<List<JsonNode>> clusters = c.clustering();
+	 		Set<JsonNode> selected = Collections.newSetFromMap(new IdentityHashMap<JsonNode, Boolean>()); 
+	 		for (List<JsonNode> cluster: clusters) {
+	 			selected.addAll(cluster);
+	 		}
+			
+			// Add attributes to nodes
+	 		annotateElementsWithFilteringResult(nodes, selected);
+			
+			// Write a result into STDOUT
+			ResultJson rj = new ResultJson(nodes);
+			try {
+				ObjectMapper mapper = new ObjectMapper();
+				System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString((Object) rj));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
 		} else {
-			isRemoveClustering = false;
-		}
+			if (args.length > 1) {
+				checkN = args[1];
+				exDistanceThreshold = Double.parseDouble(args[2]);
+				clusteringStrategy = args[3];
+			}
+			if (args.length > 4) {
+				clusterDistance = Double.parseDouble(args[4]);
 
-		if (clusteringStrategy.startsWith("EXDF")) {
-			if (isRemoveClustering)
-				clusteringStrategy = "RM" + clusteringStrategy;
-		}
-		
-		// Load nodes (code fragments) from file and performs clustering
-		ArrayList<JsonNode> nodes = loadFromFile(json);
+			}
+			boolean isRemoveClustering;
+			if (clusteringStrategy.startsWith("RM")) {
+				isRemoveClustering = true;
+				clusteringStrategy = clusteringStrategy.substring(2);
+			} else {
+				isRemoveClustering = false;
+			}
 
-		// Translate a distance threshold into a Top-N threshold (if given) 
-		int allTopN = 10; 
-		if (checkN.startsWith("Dis")) {
-			double distanceThreshold = Double.parseDouble(checkN.substring("Dis".length()));
-			allTopN = countDistanceThreshold(nodes, distanceThreshold);
-		} else if (checkN.startsWith("Top")) {
-			allTopN = Integer.parseInt(checkN.substring("Top".length()));
+			if (clusteringStrategy.startsWith("EXDF")) {
+				if (isRemoveClustering)
+					clusteringStrategy = "RM" + clusteringStrategy;
+			}
+			
+			// Load nodes (code fragments) from file and performs clustering
+			ArrayList<JsonNode> nodes = loadFromFile(json);
+
+			// Translate a distance threshold into a Top-N threshold (if given) 
+			int allTopN = 10; 
+			if (checkN.startsWith("Dis")) {
+				double distanceThreshold = Double.parseDouble(checkN.substring("Dis".length()));
+				allTopN = countDistanceThreshold(nodes, distanceThreshold);
+			} else if (checkN.startsWith("Top")) {
+				allTopN = Integer.parseInt(checkN.substring("Top".length()));
+			}
+			
+			// Select nodes from clusters
+			Clustering c = getAlgorithm(clusteringStrategy, distanceAlgorithm, CLUSTER_NUM, exDistanceThreshold, clusterDistance, nodes);
+			Clusters cs = new Clusters(c, CLUSTER_REP_N, nodes);
+	 		Set<JsonNode> selected; 
+			if (isRemoveClustering) {
+				selected = cs.getRemovedFilteredNodes(allTopN, CLUSTER_TOP_K);
+			} else {
+				selected = cs.getFilteredNodes(allTopN, CLUSTER_TOP_K);
+			}
+			
+			// Add attributes to nodes
+			annotateElementsWithFilteringResult(cs, selected);
+			
+			// Write a result into STDOUT
+			ResultJson rj = new ResultJson(nodes);
+			try {
+				ObjectMapper mapper = new ObjectMapper();
+				System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString((Object) rj));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 		
-		// Select nodes from clusters
-		Clustering c = getAlgorithm(clusteringStrategy, distanceAlgorithm, CLUSTER_NUM, exDistanceThreshold, clusterDistance, nodes);
-		Clusters cs = new Clusters(c, CLUSTER_REP_N, nodes);
- 		Set<JsonNode> selected; 
-		if (isRemoveClustering) {
-			selected = cs.getRemovedFilteredNodes(allTopN, CLUSTER_TOP_K);
-		} else {
-			selected = cs.getFilteredNodes(allTopN, CLUSTER_TOP_K);
-		}
-		
-		// Add attributes to nodes
-		annotateElementsWithFilteringResult(cs, selected);
-		
-		// Write a result into STDOUT
-		ResultJson rj = new ResultJson(nodes);
-		try {
-			ObjectMapper mapper = new ObjectMapper();
-			System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString((Object) rj));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 
 	}
 	
@@ -135,6 +171,12 @@ public class Main {
 		return nodes;
 	}
 	
+	private static void annotateElementsWithFilteringResult(List<JsonNode> elements, Set<JsonNode> selected) {
+		for (JsonNode element: elements) {
+			ObjectNode node = (ObjectNode)element;
+			node.put("ShouldCheck", selected.contains(node));
+		}
+	}
 
 	private static void annotateElementsWithFilteringResult(Clusters clusters, Set<JsonNode> selected) {
 		int rankTotal = 0;

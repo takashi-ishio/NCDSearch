@@ -89,7 +89,7 @@ public class CharLZJDistance implements IVariableWindowStrategy {
 			double lzjd = (unionSize - intersection) * 1.0 / unionSize;
 			if (lzjd < bestLZJD) {
 				bestLZJD = lzjd;
-				bestWindowSize = end;
+				bestWindowSize = end-1;
 			}
 
 			// Terminate the loop early, if no chance 

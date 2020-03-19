@@ -10,12 +10,8 @@ import ncdsearch.postfilter.strategy.DistanceClustering;
 
 public class NoClustering extends DistanceClustering {
 
-	public NoClustering(List<JsonNode> allNode, String strategy, int clusterNum) {
-		super(allNode, strategy, clusterNum);
-	}
-
-	public NoClustering(List<JsonNode> allNode, String strategy, int clusterNum, double exDistanceThreshold) {
-		super(allNode, strategy, clusterNum, exDistanceThreshold);
+	public NoClustering(List<JsonNode> allNode, String strategy) {
+		super(allNode, strategy, 0);
 	}
 
 	@Override

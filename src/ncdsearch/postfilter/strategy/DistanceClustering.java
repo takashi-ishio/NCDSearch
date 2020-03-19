@@ -30,12 +30,9 @@ public abstract class DistanceClustering extends Clustering {
 	public DistanceClustering(List<JsonNode> allNode, String strategy, int clusterNum, double exDistanceThreshold) {
 		this(allNode, strategy, clusterNum);
 		this.exDistanceThreshold = exDistanceThreshold;
-	}
-	
-	public void enableExClustering() {
 		this.enableExClustering = true;
 	}
-
+	
 	@Override
 	public List<List<JsonNode>> clustering() {
 		if (enableExClustering) {

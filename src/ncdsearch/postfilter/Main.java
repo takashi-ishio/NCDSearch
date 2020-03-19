@@ -45,17 +45,18 @@ public class Main {
 		
 		if (args.length < 1) {
 			System.err.println("Arguments: ncdsearch-result.json [Base-Threshold] [Neighborhood-Threshold]");
+			System.err.println("Arguments: ncdsearch-result.json -cluster=[Clustering-algorithm]:[Inter-cluster-distance-threshold]");
 		}
 		
 		File json = new File(args[0]);
+		// Load nodes (code fragments) from file and performs clustering
+		ArrayList<JsonNode> nodes = loadFromFile(json);
+
 		
 		if (args.length == 3) {
 			double distanceThreshold = Double.parseDouble(args[1]);
 			double neighborhoodThreshold = Double.parseDouble(args[2]);
 			
-			// Load nodes (code fragments) from file and performs clustering
-			ArrayList<JsonNode> nodes = loadFromFile(json);
-
 			// Select elements 
 			Clustering c = new RemoveDistanceDisFiltering(nodes, distanceAlgorithm, 0, distanceThreshold, neighborhoodThreshold);
 			List<List<JsonNode>> clusters = c.clustering();
@@ -74,6 +75,27 @@ public class Main {
 				System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString((Object) rj));
 			} catch (Exception e) {
 				e.printStackTrace();
+			}
+			
+		} else if (args.length == 2) {
+			String config = args[1];
+			if (config.startsWith("-cluster:")) {
+				String[] tokens = config.substring("-cluster:".length()).split(":");
+				String strategyName = tokens[0];
+				double threshold = Double.parseDouble(tokens[1]);
+				Clustering c = getAlgorithm(nodes, strategyName, threshold);
+				Clusters cs = new Clusters(c, 1, nodes);
+				annotateClusters(cs);
+				// Write a result into STDOUT
+				ResultJson rj = new ResultJson(nodes);
+				try {
+					ObjectMapper mapper = new ObjectMapper();
+					System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString((Object) rj));
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			} else {
+				System.err.println("Arguments: ncdsearch-result.json -cluster=[Clustering-algorithm]:[Inter-cluster-distance-threshold]");
 			}
 
 		} else {
@@ -99,9 +121,6 @@ public class Main {
 					clusteringStrategy = "RM" + clusteringStrategy;
 			}
 			
-			// Load nodes (code fragments) from file and performs clustering
-			ArrayList<JsonNode> nodes = loadFromFile(json);
-
 			// Translate a distance threshold into a Top-N threshold (if given) 
 			int allTopN = 10; 
 			if (checkN.startsWith("Dis")) {
@@ -178,6 +197,17 @@ public class Main {
 		}
 	}
 
+	private static void annotateClusters(Clusters clusters) {
+		for (int i=0; i<clusters.getClusterCount(); i++) {
+			List<JsonNode> cluster = clusters.getClusterContents().get(i);
+			for (int j=0; j<cluster.size(); j++) {
+				ObjectNode node = (ObjectNode)cluster.get(j);
+				node.put("ClusterID", i+1);
+				node.put("RankInCluster", j+1);
+			}
+		}
+	}
+
 	private static void annotateElementsWithFilteringResult(Clusters clusters, Set<JsonNode> selected) {
 		int rankTotal = 0;
 		for (int i=0; i<clusters.getClusterCount(); i++) {
@@ -209,6 +239,23 @@ public class Main {
 			return Result;
 		}
 	}
+	
+	private static Clustering getAlgorithm(List<JsonNode> nodes, String clusteringStrategy, double distanceThreshold) {
+		int dummyClusterNum = 0;
+		Clustering c;
+		if (clusteringStrategy.equals("SH")) {
+			c = new Shortest(nodes, distanceAlgorithm, dummyClusterNum, distanceThreshold);
+		} else if (clusteringStrategy.equals("LO")) {
+			c = new Longest(nodes, distanceAlgorithm, dummyClusterNum, distanceThreshold);
+		} else if (clusteringStrategy.equals("GA")) {
+			c = new GroupAverage(nodes, distanceAlgorithm, dummyClusterNum, distanceThreshold);
+		} else if (clusteringStrategy.equals("AV")) {
+			c = new Average(nodes, distanceAlgorithm, dummyClusterNum, distanceThreshold);
+		} else {
+			c = new NoClustering(nodes, distanceAlgorithm);
+		}
+		return c;
+	}
 
 	public static Clustering getAlgorithm(String clustringStrategy, String distanceAlgorithm, int clusterNum, double exDistanceThreshold, double clusterDistance, ArrayList<JsonNode> allNode) {
 		// EX-Clustering: Terminated when distance between clusters reached a threshold
@@ -234,9 +281,8 @@ public class Main {
 			} else {
 				// System.err.println("Not Supported Strategy: " + clustringStrategy);
 				System.err.println("ExNo Clustering: ");
-				c = new NoClustering(allNode, distanceAlgorithm, clusterNum);
+				c = new NoClustering(allNode, distanceAlgorithm);
 			}
-			c.enableExClustering();
 			return c;
 		} else if (clustringStrategy.startsWith("RM")) {
 			Clustering c;
@@ -267,7 +313,7 @@ public class Main {
 			} else {
 				// System.err.println("Not Supported Strategy: " + clustringStrategy);
 				// System.err.println("No Clustering: ");
-				c = new NoClustering(allNode, distanceAlgorithm, clusterNum);
+				c = new NoClustering(allNode, distanceAlgorithm);
 			}
 			return c;
 		}

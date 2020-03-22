@@ -79,8 +79,8 @@ public class Main {
 			
 		} else if (args.length == 2) {
 			String config = args[1];
-			if (config.startsWith("-cluster:")) {
-				String[] tokens = config.substring("-cluster:".length()).split(":");
+			if (config.startsWith("-cluster=")) {
+				String[] tokens = config.substring("-cluster=".length()).split(":");
 				String strategyName = tokens[0];
 				double threshold = Double.parseDouble(tokens[1]);
 				Clustering c = getAlgorithm(nodes, strategyName, threshold);

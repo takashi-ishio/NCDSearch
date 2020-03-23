@@ -79,10 +79,24 @@ public class Component {
 	}
 
 	public int compare(Component another) {
-		if (isBetterThan(this.node, another.node))
-			return 1;
-		else
-			return -1;
+		// Similar (Lower distance) is better
+		int comparison = Double.compare(JsonNodeInfo.getNodeDistance(this.node), JsonNodeInfo.getNodeDistance(another.node));
+		if (comparison != 0) return comparison;
+
+		// Shorter is better
+		int thislen = JsonNodeInfo.getNodeEndLine(node) - JsonNodeInfo.getNodeStartLine(node);
+		int anotherlen = JsonNodeInfo.getNodeEndLine(another.node) - JsonNodeInfo.getNodeStartLine(another.node);
+		if (thislen != anotherlen) return Integer.compare(thislen, anotherlen);
+
+		// Younger file path is better 
+		int filePath = JsonNodeInfo.getNodeFile(this.node).compareTo(JsonNodeInfo.getNodeFile(another.node));
+		if (filePath != 0) return filePath;
+
+		// Earlier line is better
+		int pos = Integer.compare(JsonNodeInfo.getNodeStartLine(this.node), JsonNodeInfo.getNodeStartLine(another.node));
+		if (pos != 0) return pos;
+		pos = Integer.compare(JsonNodeInfo.getNodeStartChar(this.node), JsonNodeInfo.getNodeStartChar(another.node));
+		return pos;
 	}
 
 	/**
@@ -117,26 +131,6 @@ public class Component {
 			return c1.hashCode() + c2.hashCode();
 		}
 
-	}
-
-	private boolean isBetterThan(JsonNode node, JsonNode another) {
-		// Distance: Lower is better
-		if (JsonNodeInfo.getNodeDistance(node) < JsonNodeInfo.getNodeDistance(another))
-			return true;
-		else if (JsonNodeInfo.getNodeDistance(node) > JsonNodeInfo.getNodeDistance(another))
-			return false;
-		else {
-			// Shorter is better
-			int thislen = JsonNodeInfo.getNodeEndChar(node) - JsonNodeInfo.getNodeStartChar(node);
-			int anotherlen = JsonNodeInfo.getNodeEndChar(another) - JsonNodeInfo.getNodeStartChar(another);
-			if (thislen < anotherlen)
-				return true;
-			else if (thislen > anotherlen)
-				return false;
-			else {
-				return JsonNodeInfo.getNodeStartChar(node) < JsonNodeInfo.getNodeStartChar(another);
-			}
-		}
 	}
 
 }

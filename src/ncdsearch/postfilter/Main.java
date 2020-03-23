@@ -82,7 +82,8 @@ public class Main {
 			if (config.startsWith("-cluster=")) {
 				String[] tokens = config.substring("-cluster=".length()).split(":");
 				String strategyName = tokens[0];
-				double threshold = Double.parseDouble(tokens[1]);
+				double threshold = 0.5;
+				if (tokens.length > 1) threshold = Double.parseDouble(tokens[1]);
 				Clustering c = getAlgorithm(nodes, strategyName, threshold);
 				Clusters cs = new Clusters(c, 1, nodes);
 				annotateClusters(cs);
@@ -251,6 +252,8 @@ public class Main {
 			c = new GroupAverage(nodes, distanceAlgorithm, dummyClusterNum, distanceThreshold);
 		} else if (clusteringStrategy.equals("AV")) {
 			c = new Average(nodes, distanceAlgorithm, dummyClusterNum, distanceThreshold);
+		} else if (clusteringStrategy.equals("NF")) {
+			c = new NewmanFast(nodes, distanceAlgorithm);
 		} else {
 			c = new NoClustering(nodes, distanceAlgorithm);
 		}

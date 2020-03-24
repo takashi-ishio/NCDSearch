@@ -30,7 +30,7 @@ import ncdsearch.postfilter.strategy.Shortest;
 
 public class Main {
 	private static String clusteringStrategy = "EXGA";
-	private static String distanceAlgorithm = "ncd";
+	private static String distanceAlgorithm = "lzjd";
 	private static String checkN = "Dis0.1";
 	private static double exDistanceThreshold = 0.35;
 	/*optional*/

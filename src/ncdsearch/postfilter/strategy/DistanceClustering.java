@@ -40,7 +40,7 @@ public abstract class DistanceClustering extends Clustering {
 		}
 		init();
 		int mapSize = totalVertexNumber;
-		System.err.println("initial clusters : " + mapSize);
+		//System.err.println("initial clusters : " + mapSize);
 		int idx = 0;
 		while (mapSize > clusterNum) {
 			idx++;
@@ -53,7 +53,7 @@ public abstract class DistanceClustering extends Clustering {
 			mapSize = count;
 		}
 
-		System.err.println("iterate count : " + idx);
+		//System.err.println("iterate count : " + idx);
 
 		return getNodeList();
 	}
@@ -62,7 +62,7 @@ public abstract class DistanceClustering extends Clustering {
 		init();
 		int mapSize = totalVertexNumber;
 		double minDistance = 0.0;
-		System.err.println("initial clusters : " + mapSize);
+		//System.err.println("initial clusters : " + mapSize);
 		int idx = 1;
 		while (minDistance <= exDistanceThreshold && idx != totalVertexNumber) {
 			idx++;
@@ -70,7 +70,7 @@ public abstract class DistanceClustering extends Clustering {
 			minDistance = getMinDistance();
 		}
 
-		System.err.println("iterate count : " + (idx - 1));
+		//System.err.println("iterate count : " + (idx - 1));
 		return getNodeList();
 	}
 

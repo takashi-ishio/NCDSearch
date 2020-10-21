@@ -1,7 +1,6 @@
 package ncdsearch.files;
 
 import java.io.Closeable;
-import java.io.File;
 
 /**
  * The class represents a list of files.
@@ -14,7 +13,7 @@ public interface IFiles extends Closeable {
 	 * @return a file to be processed. 
 	 * This method returns null if all files have been processed.  
 	 */
-	public File next();
+	public IFile next();
 	
 	/**
 	 * IFiles object do not throw an exception during closing

@@ -17,12 +17,12 @@ public class FileList implements IFiles {
 	}
 	
 	@Override
-	public File next() {
+	public IFile next() {
 		if (reader != null) {
 			try {
 				String line = reader.readLine();
 				if (line != null) {
-					return new File(line);
+					return new SimpleFile(new File(line));
 				}
 			} catch (IOException e) {
 			}

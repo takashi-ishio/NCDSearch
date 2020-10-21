@@ -1,12 +1,11 @@
 package ncdsearch.experimental;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 
 import gnu.trove.list.array.TLongArrayList;
 import ncdsearch.SearchConfiguration;
 import ncdsearch.TokenSequence;
+import ncdsearch.files.IFile;
 import ncdsearch.files.IFiles;
 import sarf.lexer.TokenReader;
 import sarf.lexer.TokenReaderFactory;
@@ -69,12 +68,12 @@ public class PredictionFilter {
 		SearchConfiguration config = new SearchConfiguration(args);
 		PredictionFilter prefilter = config.getPrefilter();
 		try (IFiles files = config.getFiles()) {
-			for (File f=files.next(); f != null; f=files.next()) {
+			for (IFile f = files.next(); f != null; f = files.next()) {
 				try {
-					TokenReader reader = TokenReaderFactory.create(config.getQueryLanguage(), Files.readAllBytes(f.toPath()), config.getSourceCharset());
+					TokenReader reader = TokenReaderFactory.create(config.getQueryLanguage(), f.read(), config.getSourceCharset());
 					TokenSequence fileTokens = new TokenSequence(reader, config.useNormalization(), config.useSeparator());
 					if (prefilter == null || prefilter.shouldSearch(fileTokens)) {
-						System.out.println(f.getAbsolutePath());
+						System.out.println(f.getPath());
 					}
 				} catch (IOException e) {
 				}

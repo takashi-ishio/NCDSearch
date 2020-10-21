@@ -27,6 +27,7 @@ import ncdsearch.experimental.VariableWindowNormalizedByteLevenshteinDistance;
 import ncdsearch.experimental.VariableWindowNormalizedTokenLevenshteinDistance;
 import ncdsearch.files.DirectoryScan;
 import ncdsearch.files.FileList;
+import ncdsearch.files.GitScan;
 import ncdsearch.files.IFileFilter;
 import ncdsearch.files.IFiles;
 import ncdsearch.ncd.Compressor;
@@ -60,6 +61,7 @@ public class SearchConfiguration {
 	public static final String ARG_ENCODING = "-encoding";
 	public static final String ARG_ALLOW_OVERLAP = "-allowoverlap";
 	public static final String ARG_FORMAT_JSON = "-json";
+	public static final String ARG_GIT_DIR = "-git";
 	
 	public static final String ARG_FILE_LIST = "-l";
 	public static final String ARG_INCLUDE = "-i";
@@ -128,6 +130,7 @@ public class SearchConfiguration {
 	private FileType targetFileType = null;
 	
 	private File filelistName = null;
+	private File gitDirName = null;
 	
 	private String queryFilename = null;
 	private int queryStartLine = 0;
@@ -173,6 +176,11 @@ public class SearchConfiguration {
 				idx++;
 				if (idx < args.length) {
 					filelistName = new File(args[idx++]);
+				}
+			} else if (args[idx].equals(ARG_GIT_DIR)) {
+				idx++;
+				if (idx < args.length) {
+					gitDirName = new File(args[idx++]);
 				}
 			} else if (args[idx].equals(ARG_INCLUDE)) {
 				idx++;
@@ -556,6 +564,8 @@ public class SearchConfiguration {
 	public IFiles getFiles() {
 		if (filelistName != null) {
 			return new FileList(filelistName);
+		} else if (gitDirName != null) {
+			return new GitScan(gitDirName);
 		} else {
 			return new DirectoryScan(getSourceDirs(), new IFileFilter() {
 				

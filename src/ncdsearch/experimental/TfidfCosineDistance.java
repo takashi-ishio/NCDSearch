@@ -1,9 +1,7 @@
 package ncdsearch.experimental;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -12,6 +10,7 @@ import gnu.trove.map.hash.TObjectIntHashMap;
 import ncdsearch.ICodeDistanceStrategy;
 import ncdsearch.TokenSequence;
 import ncdsearch.files.DirectoryScan;
+import ncdsearch.files.IFile;
 import sarf.lexer.FileType;
 import sarf.lexer.TokenReader;
 import sarf.lexer.TokenReaderFactory;
@@ -27,12 +26,12 @@ public class TfidfCosineDistance implements ICodeDistanceStrategy {
 			dfMap = new TObjectIntHashMap<>();
 			try {
 				DirectoryScan dir = new DirectoryScan(sourceDirs);
-				for (File f=dir.next(); f != null; f=dir.next()) {
-					FileType type = TokenReaderFactory.getFileType(f.getAbsolutePath());
+				for (IFile f=dir.next(); f != null; f=dir.next()) {
+					FileType type = TokenReaderFactory.getFileType(f.getPath());
 					if (type == queryFileType) {
 						try {
 							HashSet<String> tokens = new HashSet<>(65536);
-							TokenReader r = TokenReaderFactory.create(type, Files.readAllBytes(f.toPath()), charset);
+							TokenReader r = TokenReaderFactory.create(type, f.read(), charset);
 							while (r.next()) {
 								tokens.add(r.getToken());
 							}

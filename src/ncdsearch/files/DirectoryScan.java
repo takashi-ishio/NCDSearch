@@ -38,11 +38,11 @@ public class DirectoryScan implements IFiles {
 	 * @param dir specifies a search root.
 	 * @param action is called for each file.
 	 */
-	public File next() {
+	public IFile next() {
 		while (!files.isEmpty()) {
 			File f = files.remove(files.size()-1);
 			if (f.isFile() && f.canRead() && filter.isTarget(f)) {
-				return f;
+				return new SimpleFile(f);
 			} else if (f.isDirectory() && f.canRead()) {
 				File[] children = f.listFiles();
 				for (File c: children) {

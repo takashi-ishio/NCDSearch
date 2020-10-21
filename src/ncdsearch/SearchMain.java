@@ -1,9 +1,7 @@
 package ncdsearch;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -11,6 +9,7 @@ import java.util.List;
 
 import ncdsearch.eval.FileComparison;
 import ncdsearch.experimental.PredictionFilter;
+import ncdsearch.files.IFile;
 import ncdsearch.files.IFiles;
 import ncdsearch.report.IReport;
 import sarf.lexer.FileType;
@@ -59,20 +58,20 @@ public class SearchMain {
 			};
 			final Concurrent c = new Concurrent(config.getThreadCount(), null);
 			try (IFiles files = config.getFiles()) {
-				for (File f = files.next(); f != null; f = files.next()) {
-					String path = f.getAbsolutePath();
+				for (IFile f = files.next(); f != null; f = files.next()) {
+					final String targetPath = f.getPath();
 					
-					if (config.isVerbose()) System.err.println(path);
+					if (config.isVerbose()) System.err.println(targetPath);
 					
-					final FileType type = config.getTargetLanguage(path);
+					final FileType type = config.getTargetLanguage(targetPath);
 					if (TokenReaderFactory.isSupported(type)) {
-						final File target = f;
+						final IFile target = f;
 						
 						c.execute(new Concurrent.Task() {
 							@Override
 							public boolean run(OutputStream out) throws IOException {
 	
-								TokenReader reader = TokenReaderFactory.create(type, Files.readAllBytes(target.toPath()), config.getSourceCharset());
+								TokenReader reader = TokenReaderFactory.create(type, target.read(), config.getSourceCharset());
 								TokenSequence fileTokens = new TokenSequence(reader, config.useNormalization(), config.useSeparator());
 						
 								PredictionFilter prefilter = config.getPrefilter();
@@ -88,7 +87,7 @@ public class SearchMain {
 									ArrayList<Fragment> fragments = new ArrayList<>();
 									ICodeDistanceStrategy similarityStrategy = strategies.get();
 									for (int p=0; p<positions.length; p++) {
-										Fragment fragment = checkPosition(target, fileTokens, positions[p], similarityStrategy);
+										Fragment fragment = checkPosition(targetPath, fileTokens, positions[p], similarityStrategy);
 										if (fragment != null) {
 											fragments.add(fragment);
 										}
@@ -125,7 +124,7 @@ public class SearchMain {
 	 * Compare source code of a particular position with a query 
 	 * @return the best code fragment 
 	 */
-	private Fragment checkPosition(File f, TokenSequence fileTokens, int startPos, ICodeDistanceStrategy similarityStrategy) {
+	private Fragment checkPosition(String filepath, TokenSequence fileTokens, int startPos, ICodeDistanceStrategy similarityStrategy) {
 		if (similarityStrategy instanceof IVariableWindowStrategy) {
 			// A single call to find the best match 
 			IVariableWindowStrategy strategy = (IVariableWindowStrategy)similarityStrategy;
@@ -133,7 +132,7 @@ public class SearchMain {
 			double distance = strategy.findBestMatch(fileTokens, startPos, endPos, config.getDistanceThreshold());
 			if (distance <= config.getDistanceThreshold()) {
 				int w = strategy.getBestWindowSize();
-				return new Fragment(f.getAbsolutePath(), fileTokens, startPos, startPos+w, distance); 
+				return new Fragment(filepath, fileTokens, startPos, startPos+w, distance); 
 			} else {
 				return null;
 			}
@@ -152,7 +151,7 @@ public class SearchMain {
 			}
 			
 			if (minDistance <= config.getDistanceThreshold()) {
-				return new Fragment(f.getAbsolutePath(), fileTokens, startPos, startPos+minWindowSize, minDistance); 
+				return new Fragment(filepath, fileTokens, startPos, startPos+minWindowSize, minDistance); 
 			} else {
 				return null;
 			}

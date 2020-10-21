@@ -1,15 +1,17 @@
 package ncdsearch.eval;
 
-import java.io.File;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
 import ncdsearch.files.DirectoryScan;
+import ncdsearch.files.IFile;
 import sarf.lexer.FileType;
 import sarf.lexer.TokenReader;
 import sarf.lexer.TokenReaderFactory;
@@ -64,12 +66,12 @@ public class SourceFileList {
 		List<String> files = new ArrayList<>();
 		files.add(location);
 		DirectoryScan dir = new DirectoryScan(files);
-		for (File f=dir.next(); f != null; f=dir.next()) {
-			FileType t = TokenReaderFactory.getFileType(f.getAbsolutePath());
+		for (IFile f=dir.next(); f != null; f=dir.next()) {
+			FileType t = TokenReaderFactory.getFileType(f.getPath());
 			if (TokenReaderFactory.isSupported(t) && 
 				(langFilter == null || langFilter == t)) {
 				try {
-					byte[] buf = Files.readAllBytes(f.toPath());
+					byte[] buf = f.read();
 					TokenReader r = TokenReaderFactory.create(t, buf, StandardCharsets.UTF_8);
 					if (r != null) {
 						int line = 0;
@@ -85,26 +87,35 @@ public class SourceFileList {
 						fileCount++;
 						totalLines += line;
 						totalBytes += buf.length;
+
 						try {
-							totalRawLines += Files.lines(f.toPath()).count();
+							BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(buf)));
+							int lines = 0;
+							while (reader.readLine() != null) lines++;
+							reader.close();
+							totalRawLines += lines;
 						} catch (UncheckedIOException e) {
 							// Try another encoding
 							String[] charsets = {"MS932", "ISO-8859-1"};
 							boolean found = false;
 							for (String c: charsets) {
 								try {
-									totalRawLines += Files.lines(f.toPath(), Charset.forName(c)).count();
+									BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(buf), Charset.forName(c)));
+									int lines = 0;
+									while (reader.readLine() != null) lines++;
+									reader.close();
+									totalRawLines += lines;
 									found = true;
 									break;
 								} catch (UncheckedIOException e2) {
 									// ignore
 								}
 							}
-							if (!found) System.err.println("Error: " + f.getAbsolutePath() + " is excluded from raw lines of code");
+							if (!found) System.err.println("Error: " + f.getPath() + " is excluded from raw lines of code");
 						}
 					}
 				} catch (IOException e) {
-					System.err.println("Error: Failed to read " + f.getAbsolutePath());
+					System.err.println("Error: Failed to read " + f.getPath());
 					errorFileCount++;
 				}
 			}

@@ -50,6 +50,8 @@ The following table is a list of major options.
 |`-th` [threshold]       |Specify a threshold of the distance.  The default is 0.5.               |
 |`-thread` [num]         |Specify the number of threads for concurrent search.                    |
 |`-encoding` [encoding]  |Specify a text encoding of source files.  The default encoding is UTF-8.|
+|`-l` [filelist]         |Search files listed in the specified text file (one file name per line) |
+|`-git` [git-dir]        |Search files in the specified git repository instead of normal files.   |
 |`-v`                    |Show configuration and progress.                                        |
 |`-json`                 |Enable a JSON format report.                                            |
 |`-pos`                  |Report the detected source code locations in detail.                    |

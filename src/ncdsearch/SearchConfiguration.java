@@ -281,7 +281,7 @@ public class SearchConfiguration {
 				sourceDirs.add(args[idx++]);
 			}
 		}
-		if (sourceDirs.size() == 0) sourceDirs.add(".");
+		if (gitDirName == null && filelistName == null && sourceDirs.size() == 0) sourceDirs.add(".");
 		if (queryFileType == null) queryFileType = FileType.JAVA;
 		if (charset == null) charset = StandardCharsets.UTF_8;
 	
@@ -357,7 +357,7 @@ public class SearchConfiguration {
 		return queryTokens != null && 
 				windowSize != null && 
 				isValidAlgorithmName(algorithm) &&
-				((filelistName != null && filelistName.isFile() && filelistName.canRead()) || sourceDirs.size() > 0) &&
+				((gitDirName != null && gitDirName.isDirectory() && gitDirName.canRead()) || (filelistName != null && filelistName.isFile() && filelistName.canRead()) || sourceDirs.size() > 0) &&
 				(targetLang == null || targetLangAutomatic || targetFileType != null) && // Not satisfied if targetLang is an invalid language name
 				windowSize.size() > 0;
 	}

@@ -17,7 +17,7 @@ Online usage example is available at:
  - (English) https://colab.research.google.com/drive/1RRQS8jQWMIi2fdXmiTBcbwNB3FeZ74Tr
  - (Japanese) https://colab.research.google.com/drive/1eL_92HCCWfVNPRPfc5msi7H_-v5jsx-G
 
-## Lampel-Ziv Jaccard Distance
+## Lempel-Ziv Jaccard Distance
 
 This tool supports LZJD (proposed in <https://arxiv.org/abs/1708.03346>) that is an approximation of NCD. 
 It is significantly faster, while it keeps similar output to NCD using the Deflate (zip) algorithm for code clone detection.

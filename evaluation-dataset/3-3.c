@@ -1,0 +1,1 @@
+perm_fmgr_info(typInput, &(qdesc->arginfuncs[i])); 

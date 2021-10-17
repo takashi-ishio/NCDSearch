@@ -189,6 +189,17 @@ It simply counts the number of added, removed, and modified tokens and reports a
 For example, `-q "a < b" -th 1 -full` matches `a > b` and  `a < c`.
 
 
+## Evaluation Dataset
+
+The `evaluation-dataset` directory contains the dataset we have used to evaluate our tool in ICSME 2018.
+The `cbcd-dataset.json` file includes 53 queries created from the information in [J. Li and M. D. Ernst: CBCD: Cloned Buggy Code Detector](https://homes.cs.washington.edu/~mernst/pubs/buggy-clones-tr110502.pdf).  Each object includes a query source code fragment and code clones that should be detected.
+ - `query`: A file name including the query content.
+ - `queryloc`: The source code location of the query.
+   - `path` shows a project name (postgres/git/linux) and a commit ID including the code.
+   - `file`, `sline`, and `eline` represent the file path, start line number and end line number in the version.
+ - `type`: Code clone type.
+ - `path`: A project name and a commit ID including code clones.
+ - `answers`: A list of source code locations.  The format is the same as `queryloc`.
 
 
 ## License

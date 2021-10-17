@@ -1,0 +1,610 @@
+{
+  "1": {
+    "query": "1-1.c",
+    "queryloc": { "path": "postgres-2618fcd", "file": "src/bin/pg_dump/pg_dump.c", "sline": 2671, "eline": 2675 },
+    "lang": "c",
+    "type": 1,
+    "path": "postgres-87d96ed",
+    "answers": [
+      { "path": "postgres-87d96ed", "file": "src/bin/pg_dump/pg_dump.c", "sline": 2672, "eline": 2676 }
+    ]
+  },
+  "2": {
+    "query": "2-1.c",
+    "queryloc": { "path": "postgres-161be69", "file": "src/backend/optimizer/util/pathnode.c", "sline": 336, "eline": 336 },
+    "lang": "c",
+    "type": 1,
+    "path": "postgres-1b93294",
+    "answers": [
+      { "path": "postgres-1b93294", "file": "src/backend/optimizer/util/pathnode.c", "sline": 344, "eline": 344 }
+    ]
+  },
+  "3": {
+    "query": "3-1.c",
+    "queryloc": { "path": "postgres-dcb09b5", "file": "src/pl/plperl/plperl.c", "sline": 2132, "eline": 2133 },
+    "lang": "c",
+    "type": 3,
+    "path": "postgres-dcb09b5",
+    "answers": [
+      { "path": "postgres-dcb09b5", "file": "src/pl/plperl/plperl.c", "sline": 2088, "eline": 2088 },
+      { "path": "postgres-dcb09b5", "file": "src/pl/plperl/plperl.c", "sline": 2720, "eline": 2720 }
+    ]
+  },
+  "4": {
+    "query": "4-1.c",
+    "queryloc": { "path": "postgres-04d975f", "file": "src/backend/utils/adt/date.c", "sline": 505, "eline": 505 },
+    "lang": "c",
+    "type": 1,
+    "path": "postgres-c456693",
+    "answers": [
+      { "path": "postgres-c456693", "file": "src/backend/utils/adt/date.c", "sline": 505, "eline": 505 }
+    ]
+  },
+  "5": {
+    "query": "5-1.c",
+    "queryloc": { "path": "postgres-9dbfcc2", "file": "src/pl/plperl/plperl.c", "sline": 758, "eline": 763 },
+    "lang": "c",
+    "type": 1,
+    "path": "postgres-6d239ee",
+    "answers": [
+      { "path": "postgres-6d239ee", "file": "src/pl/plperl/plperl.c", "sline": 758, "eline": 763 }
+    ]
+  },
+  "6": {
+    "query": "6-1.c",
+    "queryloc": { "path": "postgres-d9dddd1", "file": "src/bin/psql/describe.c", "sline": 87, "eline": 89, "_sline": 69, "_eline": 71 },
+    "lang": "c",
+    "type": 2,
+    "path": "postgres-d9dddd1",
+    "answers": [
+      { "path": "postgres-d9dddd1", "file": "src/bin/psql/describe.c", "sline": 141, "eline": 143, "_sline": 123, "_eline": 125 },
+      { "path": "postgres-d9dddd1", "file": "src/bin/psql/describe.c", "sline": 239, "eline": 241, "_sline": 181, "_eline": 182 },
+      { "path": "postgres-d9dddd1", "file": "src/bin/psql/describe.c", "sline": 516, "eline": 518, "_sline": 435, "_eline": 438 },
+      { "path": "postgres-d9dddd1", "file": "src/bin/psql/describe.c", "sline": 535, "eline": 537, "_sline": 441, "_eline": 443 },
+      { "path": "postgres-d9dddd1", "file": "src/bin/psql/describe.c", "sline": 549, "eline": 551, "_sline": 447, "_eline": 449 },
+      { "path": "postgres-d9dddd1", "file": "src/bin/psql/describe.c", "sline": 597, "eline": 599, "_sline": 478, "_eline": 481 },
+      { "path": "postgres-d9dddd1", "file": "src/bin/psql/describe.c", "sline": 613, "eline": 615, "_sline": 485, "_eline": 487 },
+      { "path": "postgres-d9dddd1", "file": "src/bin/psql/describe.c", "sline": 663, "eline": 665, "_sline": 535, "_eline": 538 },
+      { "path": "postgres-d9dddd1", "file": "src/bin/psql/describe.c", "sline": 1467, "eline": 1468, "_sline": 1306, "_eline": 1308 },
+      { "path": "postgres-d9dddd1", "file": "src/bin/psql/describe.c", "sline": 1574, "eline": 1576, "_sline": 1406, "_eline": 1408 },
+      { "path": "postgres-d9dddd1", "file": "src/bin/psql/describe.c", "sline": 1639, "eline": 1641, "_sline": 1453, "_eline": 1457 },
+      { "path": "postgres-d9dddd1", "file": "src/bin/psql/describe.c", "sline": 1690, "eline": 1692, "_sline": 1489, "_eline": 1490 },
+      { "path": "postgres-d9dddd1", "file": "src/bin/psql/describe.c", "sline": 1790, "eline": 1792, "_sline": 1569, "_eline": 1572 },
+      { "path": "postgres-d9dddd1", "file": "src/bin/psql/describe.c", "sline": 305, "eline": 308 },
+      { "path": "postgres-d9dddd1", "file": "src/bin/psql/describe.c", "sline": 353, "eline": 355 },
+      { "path": "postgres-d9dddd1", "file": "src/bin/psql/describe.c", "sline": 458, "eline": 460 },
+      { "path": "postgres-d9dddd1", "file": "src/bin/psql/describe.c", "sline": 563, "eline": 565 },
+      { "path": "postgres-d9dddd1", "file": "src/bin/psql/describe.c", "sline": 580, "eline": 582 }
+    ]
+  },
+  "7": {
+    "query": "7-1.c",
+    "queryloc": { "path": "postgres-0d8e7f6", "file": "src/bin/pg_dump/pg_dump.c", "sline": 485, "eline": 485 },
+    "lang": "c",
+    "type": 2,
+    "path": "postgres-087eb4c",
+    "answers": [
+      { "path": "postgres-087eb4c", "file": "src/bin/pg_dump/pg_dump.c", "sline": 506, "eline": 506 }
+    ]
+  },
+  "8": {
+    "query": "8-1.c",
+    "queryloc": { "path": "postgres-8474600", "file": "src/backend/utils/adt/int8.c", "sline": 309, "eline": 309 },
+    "lang": "c",
+    "type": 3,
+    "path": "postgres-8474600",
+    "answers": [
+      { "path": "postgres-8474600", "file": "src/backend/utils/adt/int8.c", "sline": 328, "eline": 328 }
+    ]
+  },
+  "9": {
+    "query": "9-1.c",
+    "queryloc": { "path": "postgres-19dacd4", "file": "src/backend/utils/adt/timestamp.c", "sline": 3536, "eline": 3537 },
+    "lang": "c",
+    "type": 1,
+    "path": "postgres-f2c064a",
+    "answers": [
+      { "path": "postgres-f2c064a", "file": "src/backend/utils/adt/timestamp.c", "sline": 3263, "eline": 3264 }
+    ]
+  },
+  "10": {
+    "query": "10-1.c",
+    "queryloc": { "path": "postgres-3b6bf0c", "file": "src/backend/postmaster/postmaster.c", "sline": 1741, "eline": 1742 },
+    "lang": "c",
+    "type": 2,
+    "path": "postgres-3b6bf0c",
+    "answers": [
+      { "path": "postgres-3b6bf0c", "file": "src/backend/postmaster/postmaster.c", "sline": 1775, "eline": 1776 },
+      { "path": "postgres-3b6bf0c", "file": "src/backend/postmaster/postmaster.c", "sline": 1809, "eline": 1810 },
+      { "path": "postgres-3b6bf0c", "file": "src/backend/postmaster/postmaster.c", "sline": 1857, "eline": 1858 }
+    ]
+  },
+  "11": {
+    "query": "11-1.c",
+    "queryloc": { "path": "postgres-dcb09b5", "file": "contrib/intarray/_int_bool.c", "sline": 199, "eline": 201 },
+    "lang": "c",
+    "type": 1,
+    "path": "postgres-dcb09b5",
+    "answers": [
+      { "path": "postgres-dcb09b5", "file": "contrib/ltree/ltxtquery_io.c", "sline": 244, "eline": 246 }
+    ]
+  },
+  "12": {
+    "query": "12-1.c",
+    "queryloc": { "path": "postgres-6666185", "file": "contrib/pgstattuple/pgstattuple.c", "sline": 258, "eline": 258 },
+    "lang": "c",
+    "type": 3,
+    "path": "postgres-689d02a",
+    "answers": [
+      { "path": "postgres-689d02a", "file": "src/backend/catalog/index.c", "sline": 2009, "eline": 2012 }
+    ]
+  },
+  "13": {
+    "query": "13-1.c",
+    "queryloc": { "path": "postgres-54bce38", "file": "src/backend/optimizer/plan/setrefs.c", "sline": 93, "eline": 96 },
+    "lang": "c",
+    "type": 3,
+    "path": "postgres-54bce38",
+    "answers": [
+      { "path": "postgres-54bce38", "file": "src/backend/optimizer/plan/setrefs.c", "sline": 106, "eline": 109 },
+      { "path": "postgres-54bce38", "file": "src/backend/optimizer/plan/setrefs.c", "sline": 113, "eline": 116 },
+      { "path": "postgres-54bce38", "file": "src/backend/optimizer/plan/setrefs.c", "sline": 145, "eline": 148 },
+      { "path": "postgres-54bce38", "file": "src/backend/optimizer/plan/setrefs.c", "sline": 168, "eline": 171 }
+    ]
+  },
+  "14": {
+    "query": "14-1.c",
+    "queryloc": { "path": "postgres-f4d108a", "file": "src/backend/parser/parse_func.c", "sline": 902, "eline": 909 },
+    "lang": "c",
+    "type": 1,
+    "path": "postgres-42af56e",
+    "answers": [
+      { "path": "postgres-42af56e", "file": "src/backend/parser/parse_oper.c", "sline": 220, "eline": 228 },
+      { "path": "postgres-42af56e", "file": "src/backend/parser/parse_oper.c", "sline": 273, "eline": 280 },
+      { "path": "postgres-42af56e", "file": "src/backend/parser/parse_func.c", "sline": 802, "eline": 809 }
+    ]
+  },
+  "15": {
+    "query": "15-1.c",
+    "queryloc": { "path": "git-a3eb250", "file": "fetch-pack.c", "sline": 97, "eline": 100 },
+    "lang": "c",
+    "type": 1,
+    "path": "git-a3eb250",
+    "answers": [
+      { "path": "git-a3eb250", "file": "clone-pack.c", "sline": 154, "eline": 157 }
+    ],
+    "info": {
+      "parent": "https://git.kernel.org/pub/scm/git/git.git/commit/?id=85c414b5e05d2087e779cdd3587d6ad4cae56e72",
+      "fix": "https://git.kernel.org/pub/scm/git/git.git/commit/?id=5ccdf4cef212183597a0893c23c91da2ded80694"
+    }
+  },
+  "16": {
+    "query": "16-1.c",
+    "queryloc": { "path": "git-b3118bd", "file": "sha1_file.c", "sline": 1360, "eline": 1361 },
+    "lang": "c",
+    "type": 1,
+    "path": "git-b3118bd",
+    "answers": [
+      { "path": "git-b3118bd", "file": "sha1_file.c", "sline": 1599, "eline": 1600 }
+    ],
+    "info": {
+      "fix": "https://git.kernel.org/pub/scm/git/git.git/commit/?id=39eea7bdd943a103deadfd4c4fd204bbbf111219"
+    }
+  },
+  "17": {
+    "query": "17-1.c",
+    "queryloc": { "path": "git-1aa3d01", "file": "builtin-fetch--tool.c", "sline": 151, "eline": 151 },
+    "lang": "c",
+    "type": 3,
+    "path": "git-da0204d",
+    "answers": [
+      { "path": "git-da0204d", "file": "builtin-fetch.c", "sline": 205, "eline": 205 },
+      { "path": "git-da0204d", "file": "builtin-fetch.c", "sline": 206, "eline": 206 },
+      { "path": "git-da0204d", "file": "builtin-fetch.c", "sline": 264, "eline": 264 }
+    ],
+    "info": { 
+      "fix": "https://git.kernel.org/pub/scm/git/git.git/commit/?id=cfa5b2b7faa1a620ec6599a63fa5b9b45bd62b57",
+      "parent": "https://git.kernel.org/pub/scm/git/git.git/commit/?id=da0204df587ae76cd291bc7e495fc60d873c2f20"
+    }
+  },
+  "18": {
+    "query": "18-1.c",
+    "queryloc": { "path": "git-cd03eeb", "file": "transport-helper.c", "sline": 41, "eline": 41 },
+    "lang": "c",
+    "type": 3,
+    "path": "git-cd03eeb",
+    "answers": [
+      { "path": "git-cd03eeb", "file": "transport-helper.c", "sline": 61, "eline": 61 },
+      { "path": "git-cd03eeb", "file": "transport-helper.c", "sline": 128, "eline": 128 }
+    ],
+    "info": { 
+      "reason": "https://git.kernel.org/pub/scm/git/git.git/commit/?id=2b7ca830c6a6e4f0e1722e24973a026b5b867227",
+      "fix": "https://git.kernel.org/pub/scm/git/git.git/commit/?id=3d913526b19545eb4e463f96d2f3b8db8daae6ef",
+      "note": "The commit actually fixes three lines of code, but we include only a single line to keep the dataset consistent to the CBCD paper."
+    }
+  },
+  "19": {
+    "query": "19-1.c",
+    "queryloc": { "path": "git-a3eb250", "file": "commit.c", "sline": 55, "eline": 56 },
+    "lang": "c",
+    "type": 3,
+    "path": "git-a3eb250",
+    "answers": [
+      { "path": "git-a3eb250", "file": "rev-list.c", "sline": 370, "eline": 375 }
+    ],
+    "info": {
+      "fix": "https://git.kernel.org/pub/scm/git/git.git/commit/?id=013aab8265a806c8d3c9b040485839091bca30f4"
+    },
+    "note": "The answer code fragment is not consecutive (It includes lines 370 and 375 but excludes 371-374.)"
+  },
+  "20": {
+    "query": "20-1.c",
+    "queryloc": { "path": "linux-5bb1ab", "file": "net/ipv6/exthdrs.c", "sline": 691, "eline": 692 },
+    "lang": "c",
+    "type": 2,
+    "path": "linux-5bb1ab",
+    "answers": [
+      { "path": "linux-5bb1ab", "file": "net/ipv6/exthdrs.c", "sline": 698, "eline": 698 },
+      { "path": "linux-5bb1ab", "file": "net/ipv6/exthdrs.c", "sline": 703, "eline": 703 },
+      { "path": "linux-5bb1ab", "file": "net/ipv6/exthdrs.c", "sline": 709, "eline": 709 }
+    ],
+    "info": {
+      "fix": "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=e76b2b2567b83448c2ee85a896433b96150c92e6", 
+      "related": "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=483a47d2fe794328d29950fe00ce26dd405d9437"
+    },
+    "note": "The final line (709) uses a different constant."
+  },
+  "21": {
+    "query": "21-1.c",
+    "queryloc": { "path": "linux-590929f", "file": "drivers/media/video/mt9v011.c", "sline": 203, "eline": 204 },
+    "lang": "c",
+    "type": 2,
+    "path": "linux-590929f",
+    "answers": [
+      { "path": "linux-590929f", "file": "drivers/media/video/mt9v011.c", "sline": 206, "eline": 207 }
+    ]
+  },
+  "22": {
+    "query": "22-1.c",
+    "queryloc": { "path": "linux-9378b63", "file": "arch/x86/kernel/tsc.c", "sline": 467, "eline": 467 },
+    "lang": "c",
+    "type": 2,
+    "path": "linux-9378b63",
+    "answers": [
+      { "path": "linux-9378b63", "file": "arch/x86/kernel/tsc.c", "sline": 938, "eline": 938 }
+    ]
+  },
+  "23": {
+    "query": "23-1.c",
+    "queryloc": { "path": "linux-fe1cbab", "file": "net/9p/trans_fd.c", "sline": 919, "eline": 919 },
+    "lang": "c",
+    "type": 2,
+    "path": "linux-fe1cbab",
+    "answers": [
+      { "path": "linux-fe1cbab", "file": "net/9p/trans_fd.c", "sline": 957, "eline": 957 }
+    ],
+    "note": "Different argument.  The snippet in the CBCD tech-report is incorrect (although line numbers are correct)."
+  },
+  "24": {
+    "query": "24-1.c",
+    "queryloc": { "path": "linux-d89197c", "file": "drivers/net/wireless/ath/ath9k/eeprom_def.c", "sline": 1065, "eline": 1066 },
+    "lang": "c",
+    "type": 1,
+    "path": "linux-333ba73",
+    "answers": [
+      { "path": "linux-333ba73", "file": "drivers/net/wireless/ath/ath9k/ar9003_eeprom.c", "sline": 4647, "eline": 4648 }
+    ]
+  },
+  "25": {
+    "query": "25-1.c",
+    "queryloc": { "path": "linux-cab758e", "file": "net/ipv4/tcp_ipv4.c", "sline": 1591, "eline": 1592 },
+    "lang": "c",
+    "type": 1,
+    "path": "linux-cab758e",
+    "answers": [
+      { "path": "linux-cab758e", "file": "net/ipv6/tcp_ipv6.c", "sline": 1646, "eline": 1647 }
+    ]
+  },
+  "26": {
+    "query": "26-1.c",
+    "queryloc": { "path": "linux-0029227", "file": "drivers/usb/host/xhci.c", "sline": 515, "eline": 515 },
+    "lang": "c",
+    "type": 1,
+    "path": "linux-0029227",
+    "answers": [
+      { "path": "linux-0029227", "file": "drivers/usb/host/xhci.c", "sline": 551, "eline": 551 }
+    ]
+  },
+  "27": {
+    "query": "27-1.c",
+    "queryloc": { "path": "linux-713b3c9", "file": "drivers/net/ixgbe/ixgbe_main.c", "sline": 3731, "eline": 3731 },
+    "lang": "c",
+    "type": 1,
+    "path": "linux-713b3c9",
+    "answers": [
+      { "path": "linux-713b3c9", "file": "drivers/net/ixgbe/ixgbe_main.c", "sline": 5971, "eline": 5971 }
+    ]
+  },
+  "28": {
+    "query": "28-1.c",
+    "queryloc": { "path": "linux-52534f2", "file": "drivers/mtd/chips/cfi_cmdset_0002.c", "sline": 714, "eline": 716 },
+    "lang": "c",
+    "type": 3,
+    "path": "linux-52534f2",
+    "answers": [
+      { "path": "linux-52534f2", "file": "drivers/mtd/chips/cfi_cmdset_0001.c", "sline": 816, "eline": 820 },
+      { "path": "linux-52534f2", "file": "drivers/mtd/lpddr/lpddr_cmds.c", "sline": 316, "eline": 321 }
+    ]
+  },
+  "29": {
+    "query": "29-1.c",
+    "queryloc": { "path": "linux-dcace06", "file": "drivers/mmc/host/dw_mmc.c", "sline": 1205, "eline": 1205 },
+    "lang": "c",
+    "type": 3,
+    "path": "linux-dcace06",
+    "answers": [
+      { "path": "linux-dcace06", "file": "drivers/mmc/host/dw_mmc.c", "sline": 1214, "eline": 1214 }
+    ]
+  },
+  "30": {
+    "query": "30-1.c",
+    "queryloc": { "path": "linux-a57ca04", "file": "drivers/mtd/chips/jedec_probe.c", "sline": 1159, "eline": 1160 },
+    "lang": "c",
+    "type": 2,
+    "path": "linux-f636ffb",
+    "answers": [
+      { "path": "linux-f636ffb", "file": "drivers/mtd/chips/jedec_probe.c", "sline": 1464, "eline": 1465 }
+    ]
+  },
+  "31": {
+    "query": "31-1.c",
+    "queryloc": { "path": "linux-ff0ac74", "file": "drivers/net/bnx2x_main.c", "sline": 10037, "eline": 10037 },
+    "lang": "c",
+    "type": 1,
+    "path": "linux-0f77ca9",
+    "answers": [
+      { "path": "linux-0f77ca9", "file": "drivers/net/bnx2.c", "sline": 7395, "eline": 7395 }
+    ],
+    "note": "The same line exists in 26 locations."
+  },
+  "32": {
+    "query": "32-1.c",
+    "queryloc": { "path": "linux-5153f7", "file": "include/asm-i386/processor.h", "sline": 32, "eline": 32 },
+    "lang": "c",
+    "type": 1,
+    "path": "linux-5153f7",
+    "answers": [
+      { "path": "linux-5153f7", "file": "include/asm-x86_64/processor.h", "sline": 35, "eline": 35 }
+    ]
+  },
+  "33": {
+    "query": "33-1.c",
+    "queryloc": { "path": "linux-8bea867", "file": "drivers/gpu/drm/drm_fb_helper.c", "sline": 53, "eline": 66 },
+    "lang": "c",
+    "type": 1,
+    "path": "linux-8bea867",
+    "answers": [
+      { "path": "linux-8bea867", "file": "drivers/video/modedb.c", "sline": 405, "eline": 418 }
+    ]
+  },
+  "34": {
+    "query": "34-1.c",
+    "queryloc": { "path": "linux-ea2d8b5", "file": "drivers/net/wireless/iwlwifi/iwl3945-base.c", "sline": 5771, "eline": 5771 },
+    "lang": "c",
+    "type": 1,
+    "path": "linux-ea2d8b5",
+    "answers": [
+      { "path": "linux-ea2d8b5", "file": "drivers/net/wireless/iwlwifi/iwl-agn.c", "sline": 2093, "eline": 2093 }
+    ]
+  },
+  "35": {
+    "query": "35-1.c",
+    "queryloc": { "path": "linux-c9a2c46", "file": "drivers/hwmon/w83781d.c", "sline": 1370, "eline": 1370 },
+    "lang": "c",
+    "type": 2,
+    "path": "linux-c9a2c46",
+    "answers": [
+      { "path": "linux-c9a2c46", "file": "drivers/hwmon/lm78.c", "sline": 658, "eline": 658 }
+    ]
+  },
+  "36": {
+    "query": "36-1.c",
+    "queryloc": { "path": "linux-d555009", "file": "drivers/usb/serial/opticon.c", "sline": 327, "eline": 331 },
+    "lang": "c",
+    "type": 2,
+    "path": "linux-d555009",
+    "answers": [
+      { "path": "linux-d555009", "file": "drivers/usb/serial/visor.c", "sline": 609, "eline": 613 },
+      { "path": "linux-d555009", "file": "drivers/usb/serial/symbolserial.c", "sline": 191, "eline": 195 }
+    ],
+    "info": {
+      "first": "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=88fa6590b30ef8c4d41923449ada104f915d8df8",
+      "second": "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=b2a5cf1bdc011f5474c72543f9d8116c0f07f452",
+      "third": "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=a1c33952b729eba4cedb8dbe54765921f2b3062f"
+    },
+    "note": "The fix of symbolsereal.c is not included in the CBCD tech report.  option.c lines 167-171 are excluded because the part is not fixed."
+  },
+  "37": {
+    "query": "37-1.c",
+    "queryloc": { "path": "linux-9601e3f", "file": "fs/btrfs/inode.c", "sline": 236, "eline": 237 },
+    "lang": "c",
+    "type": 3,
+    "path": "linux-9601e3f",
+    "answers": [
+      { "path": "linux-9601e3f", "file": "fs/btrfs/inode.c", "sline": 1457, "eline": 1458 }
+    ],
+    "info": {
+      "fix": "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=e980b50cda1610f1c17978d9b7fd311a9dd93877"
+    }
+  },
+  "38": {
+    "query": "38-1.c",
+    "queryloc": { "path": "linux-2567d71", "file": "kernel/rcuclassic.c", "sline": 141, "eline": 146 },
+    "lang": "c",
+    "type": 2,
+    "path": "linux-2567d71",
+    "answers": [
+      { "path": "linux-2567d71", "file": "kernel/rcuclassic.c", "sline": 177, "eline": 183 }
+    ]
+  },
+  "39": {
+    "query": "39-1.c",
+    "queryloc": { "path": "linux-3976ae6", "file": "drivers/net/wireless/rt2x00/rt2400pci.c", "sline": 296, "eline": 299 },
+    "lang": "c",
+    "type": 1,
+    "path": "linux-3976ae6",
+    "answers": [
+      { "path": "linux-3976ae6", "file": "drivers/net/wireless/rt2x00/rt2500pci.c", "sline": 299, "eline": 302 }
+    ]
+  },
+  "40": {
+    "query": "40-1.c", 
+    "queryloc": { "path": "linux-c09c518", "file": "drivers/hwmon/w83627hf.c", "sline": 1332, "eline": 1337 },
+    "lang": "c",
+    "type": 2,
+    "path": "linux-c09c518",
+    "answers": [
+      { "path": "linux-c09c518", "file": "drivers/hwmon/w83627hf.c", "sline": 1347, "eline": 1351 },
+      { "path": "linux-c09c518", "file": "drivers/hwmon/w83627hf.c", "sline": 1422, "eline": 1427 },
+      { "path": "linux-c09c518", "file": "drivers/hwmon/w83627hf.c", "sline": 1437, "eline": 1441 }
+    ],
+    "info": {
+      "fix": "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=d58df9cd788e6fb4962e1c8d5ba7b8b95d639a44"
+    }
+  },
+  "41": {
+    "query": "41-1.c", 
+    "queryloc": { "path": "linux-1c27cb7", "file": "drivers/infiniband/hw/mlx4/qp.c", "sline": 1501, "eline": 1501 },
+    "lang": "c",
+    "type": 1,
+    "path": "linux-b45bfcc",
+    "answers": [
+      { "path": "linux-b45bfcc", "file": "drivers/infiniband/hw/mthca/mthca_qp.c", "sline": 402, "eline": 402 }
+    ]
+  },
+  "42": {
+    "query": "42-1.c", 
+    "queryloc": { "path": "linux-34cc560", "file": "net/ipv4/tcp_output.c", "sline": 484, "eline": 484 },
+    "lang": "c",
+    "type": 2,
+    "path": "linux-34cc560",
+    "answers": [
+      { "path": "linux-34cc560", "file": "net/ipv4/tcp_output.c", "sline": 2163, "eline": 2163 }
+    ]
+  },
+  "43": {
+    "query": "43-1.c", 
+    "queryloc": { "path": "linux-efbfe96c", "file": "mm/vmscan.c", "sline": 976, "eline": 977 },
+    "lang": "c",
+    "type": 1,
+    "path": "linux-efbfe96c",
+    "answers": [
+      { "path": "linux-efbfe96c", "file": "mm/vmscan.c", "sline": 1187, "eline": 1188 }
+    ]
+  },
+  "44": {
+    "query": "44-1.c", 
+    "queryloc": { "path": "linux-093beac", "file": "drivers/infiniband/hw/mthca/mthca_qp.c", "sline": 1730, "eline": 1741 },
+    "lang": "c",
+    "type": 3,
+    "path": "linux-093beac",
+    "answers": [
+      { "path": "linux-093beac", "file": "drivers/infiniband/hw/mthca/mthca_srq.c", "sline": 493, "eline": 508 }
+    ],
+    "info": {
+      "fix": "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=ab28b171eabc0a414e0404844453c11af3caed10",
+      "parent": "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=23f3bc0f2c1e26215b671499c07047c325d54d9c"
+    }
+  },
+  "45": {
+    "query": "45-1.c", 
+    "queryloc": { "path": "linux-a6230af", "file": "fs/cifs/readdir.c", "sline": 217, "eline": 218 },
+    "lang": "c",
+    "type": 1,
+    "path": "linux-a6230af",
+    "answers": [
+      { "path": "linux-a6230af", "file": "fs/cifs/readdir.c", "sline": 334, "eline": 335 }
+    ]
+  },
+  "46": {
+    "query": "46-1.c", 
+    "queryloc": { "path": "linux-c87e34e", "file": "drivers/scsi/sg.c", "sline": 1863, "eline": 1865 },
+    "lang": "c",
+    "type": 3,
+    "path": "linux-c87e34e",
+    "answers": [
+      { "path": "linux-c87e34e", "file": "drivers/scsi/st.c", "sline": 4509, "eline": 4511 }
+    ]
+  },
+  "47": {
+    "query": "47-1.c", 
+    "queryloc": { "path": "linux-5917583", "file": "mm/mremap.c", "sline": 145, "eline": 147 },
+    "lang": "c",
+    "type": 1,
+    "path": "linux-676d55a",
+    "answers": [
+      { "path": "linux-676d55a", "file": "mm/mremap.c", "sline": 145, "eline": 147 }
+    ]
+  },
+  "48": {
+    "query": "48-1.c", 
+    "queryloc": { "path": "linux-19147bb", "file": "drivers/net/e1000/e1000_main.c", "sline": 2052, "eline": 2058 },
+    "lang": "c",
+    "type": 1,
+    "path": "linux-19147bb",
+    "answers": [
+      { "path": "linux-19147bb", "file": "drivers/net/e1000e/netdev.c", "sline": 569, "eline": 573 }
+    ]
+  },
+  "49": {
+    "query": "49-1.c", 
+    "queryloc": { "path": "linux-4c25a2c", "file": "drivers/pci/dmar.c", "sline": 747, "eline": 752 },
+    "lang": "c",
+    "type": 1,
+    "path": "linux-4c25a2c",
+    "answers": [
+      { "path": "linux-4c25a2c", "file": "drivers/pci/intel-iommu.c", "sline": 908, "eline": 913 }
+    ]
+  },
+  "50": {
+    "query": "50-1.c", 
+    "queryloc": { "path": "linux-529ed80", "file": "drivers/video/i810/i810-i2c.c", "sline": 48, "eline": 50 },
+    "lang": "c",
+    "type": 2,
+    "path": "linux-529ed80",
+    "answers": [
+      { "path": "linux-529ed80", "file": "drivers/video/i810/i810-i2c.c", "sline": 59, "eline": 61 }
+    ]
+  },
+  "51": {
+    "query": "51-1.c", 
+    "queryloc": { "path": "linux-3083e83", "file": "drivers/net/wireless/iwlegacy/iwl-core.c", "sline": 1145, "eline": 1148 },
+    "lang": "c",
+    "type": 1,
+    "path": "linux-efe1cf0",
+    "answers": [
+      { "path": "linux-efe1cf0", "file": "drivers/net/wireless/iwlwifi/iwl-core.c", "sline": 1193, "eline": 1196 }
+    ]
+  },
+  "52": {
+    "query": "52-1.c", 
+    "queryloc": { "path": "linux-78794b2", "file": "fs/gfs2/main.c", "sline": 63, "eline": 69 },
+    "lang": "c",
+    "type": 4,
+    "path": "linux-78794b2",
+    "answers": [
+      { "path": "linux-78794b2", "file": "fs/nilfs2/page.c", "sline": 498, "eline": 505 }
+    ]
+  },
+  "53": {
+    "query": "53-1.c", 
+    "queryloc": { "path": "linux-c594d88", "file": "fs/gfs2/ops_address.c", "sline": 233, "eline": 233 },
+    "lang": "c",
+    "type": 2,
+    "path": "linux-c594d88",
+    "answers": [
+      { "path": "linux-c594d88", "file": "fs/gfs2/ops_address.c", "sline": 295, "eline": 296 },
+      { "path": "linux-c594d88", "file": "fs/gfs2/ops_address.c", "sline": 369, "eline": 369 }
+    ]
+  }
+}

@@ -1,1 +1,0 @@
-pathnode->indexqual = NIL; 

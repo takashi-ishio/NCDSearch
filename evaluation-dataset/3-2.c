@@ -1,1 +1,0 @@
-perm_fmgr_info(typeStruct->typinput, &(prodesc->result_in_func)); 

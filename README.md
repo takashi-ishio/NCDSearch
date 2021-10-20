@@ -191,8 +191,10 @@ For example, `-q "a < b" -th 1 -full` matches `a > b` and  `a < c`.
 
 ## Evaluation Dataset
 
-The `evaluation-dataset` directory contains the dataset we have used to evaluate our tool in ICSME 2018.
-The `cbcd-dataset.json` file includes 53 queries created from the information in [J. Li and M. D. Ernst: CBCD: Cloned Buggy Code Detector](https://homes.cs.washington.edu/~mernst/pubs/buggy-clones-tr110502.pdf).  Each object includes a query source code fragment and code clones that should be detected.
+The `evaluation-dataset/cbcd-dataset.json` file includes 53 queries created from the information in [J. Li and M. D. Ernst: CBCD: Cloned Buggy Code Detector](https://homes.cs.washington.edu/~mernst/pubs/buggy-clones-tr110502.pdf).  
+As we found several errors in the paper, we manually checked the version history of three projects and revised the queries and answers.
+
+Each object includes a query source code fragment and code clones that should be detected.
  - `query`: A file name including the query content.
  - `queryloc`: The source code location of the query.
    - `path` shows a project name (postgres/git/linux) and a commit ID including the code.

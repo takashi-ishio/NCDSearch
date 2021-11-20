@@ -2,6 +2,7 @@ package ncdsearch;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 
 import org.junit.Assert;
@@ -25,11 +26,39 @@ public class SearchConfigurationTest {
 	}
 
 	@Test
-	public void testConfigurations() {
+	public void testDefaultConfiguration() {
 		Assert.assertFalse(config("").isValidConfiguration());
-		Assert.assertTrue(config(". -q query.txt -lang java -sline 0 -eline 6  -a zip -th 0.6 -json -pos").isValidConfiguration());
+	}
+
+	@Test
+	public void testQueryFileConfiguration() {
+		try {
+			File f = createTempQueryFile("int x");
+			Assert.assertTrue(Files.readAllLines(f.toPath()).get(0).equals("int x"));
+			Assert.assertTrue(config(". -q " + f.getAbsolutePath() + " -lang java -sline 0 -eline 6  -a zip -th 0.6 -json -pos").isValidConfiguration());
+		} catch (IOException e) {
+			Assert.fail("Failed to create a temporary file for testing");
+		}
 	}
 	
+	private File createTempQueryFile(String content) throws IOException {
+		File f = File.createTempFile("query", ".txt");
+		Files.write(f.toPath(), content.getBytes());
+		f.deleteOnExit();
+		return f;
+	}
+
+	@Test
+	public void testEmptyFileConfiguration() {
+		Assert.assertFalse(config("").isValidConfiguration());
+		try {
+			File f = createTempQueryFile(" ");
+			Assert.assertFalse("Empty file is an invalid configuration", config(". -q " + f.getAbsolutePath() + " -lang java -sline 0 -eline 6  -a zip -th 0.6 -json -pos").isValidConfiguration());
+		} catch (IOException e) {
+			Assert.fail("Failed to create a temporary file for testing");
+		}
+	}
+
 	@Test
 	public void testFileListConfiguration() {
 		SearchConfiguration c = config("-l NON-EXISTENT-FILE.txt -e file text"); 
@@ -37,8 +66,7 @@ public class SearchConfigurationTest {
 		Assert.assertFalse("invalid if the file list does not exist", c.isValidConfiguration());
 		
 		try {
-			File f = File.createTempFile("filelist", ".txt");
-			f.deleteOnExit();
+			File f = createTempQueryFile(" ");
 			c = config("-l " + f.getAbsolutePath() + " -e file text");
 			Assert.assertTrue("Valid because the specified file list exists", c.isValidConfiguration());
 		} catch (IOException e) {
@@ -49,10 +77,15 @@ public class SearchConfigurationTest {
 	@Test
 	public void testGitConfiguration() {
 		// This test assumes the current directory is the project directory managed by git
-		Assert.assertTrue(config("-git . -q query.txt -lang java -sline 0 -eline 6  -a zip -th 0.6 -json -pos").isValidConfiguration());
-
-		SearchConfiguration git = config("-git NON-EXISTING-DIR -q query.txt -lang java -sline 0 -eline 6  -a zip -th 0.6 -json -pos");
-		Assert.assertEquals(0, git.getSourceDirs().size());
-		Assert.assertFalse(git.isValidConfiguration());
+		try {
+			File f = createTempQueryFile("int x");
+			Assert.assertTrue(config("-git . -q " + f.getAbsolutePath() + " -lang java -sline 0 -eline 6  -a zip -th 0.6 -json -pos").isValidConfiguration());
+	
+			SearchConfiguration git = config("-git NON-EXISTING-DIR -q query.txt -lang java -sline 0 -eline 6  -a zip -th 0.6 -json -pos");
+			Assert.assertEquals(0, git.getSourceDirs().size());
+			Assert.assertFalse(git.isValidConfiguration());
+		} catch (IOException e) {
+			Assert.fail("Failed to create a temporary file for testing");
+		}
 	}
 }

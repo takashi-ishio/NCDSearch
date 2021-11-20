@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import gnu.trove.list.array.TIntArrayList;
-import sarf.lexer.FileType;
 import sarf.lexer.TokenReader;
 
 

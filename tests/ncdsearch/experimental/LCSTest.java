@@ -3,7 +3,6 @@ package ncdsearch.experimental;
 import org.junit.Assert;
 import org.junit.Test;
 
-import ncdsearch.experimental.NormalizedByteLevenshteinDistance;
 
 public class LCSTest {
 

@@ -551,7 +551,7 @@ public class SearchConfiguration {
 	}
 	
 	public boolean isVerbose() {
-		return verbose;
+		return verbose || testConfig;
 	}
 	
 	public boolean reportTime() {

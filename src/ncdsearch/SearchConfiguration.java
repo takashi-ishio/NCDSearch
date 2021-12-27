@@ -140,6 +140,11 @@ public class SearchConfiguration {
 	private int queryEndLine = Integer.MAX_VALUE;
 	private ArrayList<String> queryArgs = new ArrayList<>();
 
+	/**
+	 * Parse command line arguments and create a configuration.
+	 * This method read a source file if a query is specified by a file name and line numbers.  
+	 * @param args
+	 */
 	public SearchConfiguration(String[] args) {
 		int idx = 0;
 		while (idx < args.length) {

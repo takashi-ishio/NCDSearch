@@ -439,12 +439,12 @@ public class SearchConfiguration {
 		}
 		if (filelistName != null) {
 			if (filelistName.isFile() && filelistName.canRead()) {
-				report.writeConfig("SourcePathList: ", filelistName.getAbsolutePath());
+				report.writeConfig("SourcePathList", filelistName.getAbsolutePath());
 			} else {
-				report.writeConfig("SourcePathList: ", filelistName.getAbsolutePath() + " (unreadable)");
+				report.writeConfig("SourcePathList", filelistName.getAbsolutePath() + " (unreadable)");
 			}
 		} else {
-			report.writeConfig("SourcePath: ", Arrays.toString(sourceDirs.toArray()));
+			report.writeConfig("SourcePath", Arrays.toString(sourceDirs.toArray()));
 		}
 	}
 

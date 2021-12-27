@@ -29,8 +29,16 @@ public class SearchMain {
 		}
 
 		SearchConfiguration config = new SearchConfiguration(args);
-		SearchMain instance = new SearchMain(config);
+		if (config.isTestingConfiguration()) {
+			try (IReport report = config.getReport()) {
+				// simply output a report
+			} catch (IOException e) {
+			}
+			return;
+		}
+
 		if (config.isValidConfiguration()) {
+			SearchMain instance = new SearchMain(config);
 			instance.execute();
 		} else {
 			System.err.println(config.getArgumentError());

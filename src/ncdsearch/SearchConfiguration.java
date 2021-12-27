@@ -70,6 +70,8 @@ public class SearchConfiguration {
 
 	private static final String TARGET_LANG_AUTOMATIC = "auto";
 
+	public static final String ARG_TEST_CONFIG = "-testconfig";
+
 	private static final String ALGORITHM_TOKEN_LEVENSHTEIN_DISTANCE = "tld";
 	private static final String ALGORITHM_BYTE_LCS_DISTANCE = "blcs";
 	private static final String ALGORITHM_NORMALIZED_BYTE_LEVENSHTEIN_DISTANCE = "nbld";
@@ -107,7 +109,8 @@ public class SearchConfiguration {
 	private ArrayList<String> inclusionFilters = new ArrayList<>();
 	
 	private String argumentError;
-	
+
+	private boolean testConfig = false;
 
 	private double WINDOW_STEP = 0.05; 
 	private double MIN_WINDOW = 0.8;
@@ -190,6 +193,9 @@ public class SearchConfiguration {
 			} else if (args[idx].equals(ARG_VERBOSE)) {
 				idx++;
 				verbose = true;
+			} else if (args[idx].equals(ARG_TEST_CONFIG)) {
+				idx++;
+				testConfig = true;
 			} else if (args[idx].equals(ARG_SHOW_TIME)) {
 				idx++;
 				showTime = true;
@@ -360,6 +366,13 @@ public class SearchConfiguration {
 				((gitDirName != null && gitDirName.isDirectory() && gitDirName.canRead()) || (filelistName != null && filelistName.isFile() && filelistName.canRead()) || sourceDirs.size() > 0) &&
 				(targetLang == null || targetLangAutomatic || targetFileType != null) && // Not satisfied if targetLang is an invalid language name
 				windowSize.size() > 0;
+	}
+	
+	/**
+	 * @return true if arguments say that the execution is testing a configuration.
+	 */
+	public boolean isTestingConfiguration() {
+		return testConfig;
 	}
 	
 	private void printConfig(IReport report) throws IOException {

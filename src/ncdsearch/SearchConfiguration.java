@@ -125,7 +125,7 @@ public class SearchConfiguration {
 	private boolean showTime = false;
 	private boolean reportJson = false;
 
-	private String algorithm = "zip";
+	private String algorithm = "lzjd";
 	private Charset charset;
 	private String charsetError;
 	private String targetLang = null;

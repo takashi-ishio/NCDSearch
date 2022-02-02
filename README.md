@@ -1,27 +1,20 @@
 # NCDSearch
 
-A grep-like tool to find similar source code fragments using Normalized Compression Distance.
-
-Normalized Compression Distance (https://en.wikipedia.org/wiki/Normalized_compression_distance) is defined as follows:
-
-        NCD(x, y) = (Z(xy)-min(Z(x), Z(y)) / max(Z(x), Z(y))
-
-where Z(x), Z(y), and Z(xy) are data size obtained by a data compression algorithm (Deflate in our implementation).
-If two data `x` and `y` are similar, then NCD(x, y) results in a small value.
-
+NCDSearch is a grep-like tool to find similar source code fragments in files.  
 For example, if a line `if (this.distance < another.distance) return true;` (in source code of the tool) is given as a query, the tool reports similar lines such as 
 `if (this.distance > another.distance) return false;` and `if (thislen > anotherlen) return true;`.
 The tool assumes that either a long identifier or a few lines of code as a query.
 
-Online usage example is available at:
- - (English) https://colab.research.google.com/drive/1RRQS8jQWMIi2fdXmiTBcbwNB3FeZ74Tr
- - (Japanese) https://colab.research.google.com/drive/1eL_92HCCWfVNPRPfc5msi7H_-v5jsx-G
+While the tool supports famous similarity metrics such as Normalized Compression Distance and Normalized Levenshtein Distance, 
+the tool uses Lempel-Ziv Jaccard Distance (proposed in <https://arxiv.org/abs/1708.03346>) as the default search strategy.
+It is significantly faster than existing NCD, while it keeps similar output to NCD using the Deflate (zip) algorithm for code clone detection.
 
-## Lempel-Ziv Jaccard Distance
+For more details, please read our technical paper [NCDSearch_evaluation_2022.pdf]. 
+> Takashi Ishio, Naoto Maeda, Kensuke Shibuya, Kenho Iwamoto, Katsuro Inoue,
+> NCDSearch: Sliding Window-Based Code Clone Search Using Lempel-Ziv Jaccard Distance.
+> IEICE Transactions on Information and Systems, vol.E105-D, No.5, May 2022. (Accepted)
 
-This tool supports LZJD (proposed in <https://arxiv.org/abs/1708.03346>) that is an approximation of NCD. 
-It is significantly faster, while it keeps similar output to NCD using the Deflate (zip) algorithm for code clone detection.
-Try `-a lzjd` option to enable the algorithm.
+
 
 ## Build Information
 
@@ -37,6 +30,11 @@ The grammar files are maintained in another repository (https://github.com/takas
 
 
 ## Usage
+
+Online usage example is available at:
+ - (English) https://colab.research.google.com/drive/1RRQS8jQWMIi2fdXmiTBcbwNB3FeZ74Tr
+ - (Japanese) https://colab.research.google.com/drive/1eL_92HCCWfVNPRPfc5msi7H_-v5jsx-G
+
 
 The following table is a list of major options. 
 
@@ -55,7 +53,7 @@ The following table is a list of major options.
 |`-v`                    |Show configuration and progress.                                        |
 |`-json`                 |Enable a JSON format report.                                            |
 |`-pos`                  |Report the detected source code locations in detail.                    |
-|`-a` [algorithm]        |Specify an algorithm to compute a distance. The default is `zip`.       |
+|`-a` [algorithm]        |Specify an algorithm to compute a distance. The default is `lzjd`.       |
   
 
 
@@ -170,11 +168,21 @@ Although N can be an arbitrary number (e.g. 2, 4, or 8), an effective value of N
 A larger amount of memory is also required to store N files in memory at once.
 
 
-### Algorithm Option
+### Algorithms
 
-#### NCD with another compression algorithm
-You can choose a compression algorithm other than Deflate.
-The tool accepts `-a XZ` and `-a ZSTD` that are corresponding to Xz and Zstd algorithms.
+#### Normalized Compression Distance (NCD)
+
+Using the `-a zip` option, you can use a traditional Normalized Compression Distance (https://en.wikipedia.org/wiki/Normalized_compression_distance) defined as follows:
+
+        NCD(x, y) = (Z(xy)-min(Z(x), Z(y)) / max(Z(x), Z(y))
+
+where Z(x), Z(y), and Z(xy) are data size obtained by a data compression algorithm (Deflate in case of the `zip` option).
+If two data `x` and `y` are similar, then NCD(x, y) results in a small value.
+
+
+#### NCD with other compression algorithms
+
+The tool also accepts `-a XZ` and `-a ZSTD` that are corresponding to Xz and Zstd algorithms.
 
         java -jar ncdsearch.jar dir_or_file -lang java -a XZ < query
 

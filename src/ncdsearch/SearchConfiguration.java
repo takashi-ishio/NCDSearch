@@ -13,6 +13,7 @@ import java.util.List;
 
 import gnu.trove.list.array.TDoubleArrayList;
 import gnu.trove.list.array.TIntArrayList;
+import ncdsearch.Fragment.LinkStyle;
 import ncdsearch.experimental.ByteLCSDistance;
 import ncdsearch.experimental.CharLZJDistance;
 import ncdsearch.experimental.LZJDistance;
@@ -67,6 +68,8 @@ public class SearchConfiguration {
 	public static final String ARG_INCLUDE = "-i";
 	public static final String ARG_NOSEPARATOR = "-nosep";
 	public static final String ARG_SHOW_TIME = "-time";
+	
+	public static final String ARG_PRINT_LINK = "-link";
 
 	private static final String TARGET_LANG_AUTOMATIC = "auto";
 
@@ -131,6 +134,8 @@ public class SearchConfiguration {
 	private String targetLang = null;
 	private boolean targetLangAutomatic = false;
 	private FileType targetFileType = null;
+	
+	private Fragment.LinkStyle linkStyle = Fragment.LinkStyle.None;
 	
 	private File filelistName = null;
 	private File gitDirName = null;
@@ -267,6 +272,11 @@ public class SearchConfiguration {
 			} else if (args[idx].equals(ARG_POSITION_DETAIL)) {
 				idx++;
 				reportPositionDetail = true;
+			} else if (args[idx].equals(ARG_PRINT_LINK)) {
+				idx++;
+				if (idx < args.length) {
+					linkStyle = LinkStyle.parse(args[idx++]);
+				}
 			} else if (args[idx].equals(ARG_ALLOW_OVERLAP)) {
 				idx++;
 				allowOverlap = true;
@@ -630,6 +640,13 @@ public class SearchConfiguration {
 			return TokenReaderFactory.getFileType(filepath);
 		}
 		return queryFileType;
+	}
+	
+	/**
+	 * @return a file name style for hyperlink on console
+	 */
+	public Fragment.LinkStyle getLinkStyle() {
+		return linkStyle;
 	}
 	
 	public boolean allowOverlap() {

@@ -24,11 +24,7 @@ public class StdoutReport implements IReport {
 	@Override
 	public synchronized void write(List<Fragment> fragments) throws IOException {
 		for (Fragment fragment: fragments) {
-			if (config.reportPositionDetail()) {
-				System.out.write(fragment.toLongString().getBytes());
-			} else {
-				System.out.write(fragment.toString().getBytes());
-			}
+			System.out.write(fragment.toString(config.reportPositionDetail(), config.getLinkStyle()).getBytes());
 		}
 	}
 	

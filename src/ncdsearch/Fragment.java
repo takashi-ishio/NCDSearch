@@ -7,7 +7,7 @@ import java.util.Comparator;
 
 public class Fragment implements Comparable<Fragment> {
 
-	public enum LinkStyle { None, EclipseConsole, VSCodeConsole, FileURL;
+	public enum LinkStyle { None, Eclipse, VSCode, FileURL;
 
 		/**
 		 * Translate a style name into a link style.
@@ -16,9 +16,9 @@ public class Fragment implements Comparable<Fragment> {
 		 */
 		public static LinkStyle parse(String name) {
 			if (name.equalsIgnoreCase("eclipse")) {
-				return EclipseConsole;
+				return Eclipse;
 			} else if (name.equalsIgnoreCase("vscode")) {
-				return VSCodeConsole;
+				return VSCode;
 			} else if (name.equalsIgnoreCase("fileurl")) {
 				return FileURL;
 			} else {
@@ -34,9 +34,9 @@ public class Fragment implements Comparable<Fragment> {
 		 */
 		public String format(String filename, int line) {
 			switch (this) {
-			case EclipseConsole:
+			case Eclipse:
 				return "(" + new File(filename).getName() + ":" + line + ")";
-			case VSCodeConsole:
+			case VSCode:
 				return filename + ":" + line;
 			case FileURL:
 				return "file://" + filename;

@@ -441,6 +441,7 @@ public class SearchConfiguration {
 		report.writeConfig("UseNormalization", Boolean.toString(normalization));
 		report.writeConfig("UseSeparator", Boolean.toString(useSeparator));
 		report.writeConfig("AllowOverlap", Boolean.toString(allowOverlap));
+		report.writeConfig("LinkStyle", linkStyle.toString());
 		
 		if (charsetError != null) {
 			report.writeConfig("Charset", charsetError + " (" + charset.displayName() + " is used)");

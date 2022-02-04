@@ -55,7 +55,7 @@ public class FileComparison {
 			!files.get(0).canRead() ||
 			!files.get(1).isFile() ||
 			!files.get(1).canRead()) {
-			System.err.println("Usage: FileComparison [-best] [-compressor (ZIP|XZ|ZSTD)] [-ntld] queryfile comparedfile");
+			System.err.println("Test comparison usage: [-best] [-compressor (ZIP|XZ|ZSTD)] [-ntld] queryfile comparedfile");
 			return;
 		}
 
@@ -81,7 +81,8 @@ public class FileComparison {
 			System.out.println(distance);
 		}
 	}
-	
+
+
 	public static double searchBestMatch(File query, File target, Compressor c) {
 		TokenSequence queryTokens = read(query);
 		TokenSequence tokens = read(target);

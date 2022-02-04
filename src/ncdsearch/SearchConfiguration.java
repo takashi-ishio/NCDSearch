@@ -314,7 +314,7 @@ public class SearchConfiguration {
 		} else if (queryArgs.size() > 0) {
 			reader = TokenReaderFactory.create(queryFileType, new StringReader(concat(queryArgs)));
 		} else {
-			argumentError = "Query is unspecified. Use a part of a file (-q FILENAME -sline LINE -eline LINE) or tokens (-l LANG -e QUERY)";
+			argumentError = "Query is unspecified. Use a part of a file (-q FILENAME -sline LINE -eline LINE) or tokens (-lang LANG -e QUERY)";
 			return;
 		}
 		

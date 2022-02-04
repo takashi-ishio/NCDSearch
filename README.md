@@ -54,6 +54,8 @@ The following table is a list of major options.
 |`-json`                 |Enable a JSON format report.                                            |
 |`-pos`                  |Report the detected source code locations in detail.                    |
 |`-a` [algorithm]        |Specify an algorithm to compute a distance. The default is `lzjd`.       |
+|`-link` [style]        |If one of `eclipse`, `vscode`, and `fileurl` is given, file names are printed using a clickable format on particular environments.  The default is `none` (just a file name). |
+  
   
 
 

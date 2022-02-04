@@ -9,7 +9,7 @@ While the tool supports famous similarity metrics such as Normalized Compression
 the tool uses Lempel-Ziv Jaccard Distance (proposed in <https://arxiv.org/abs/1708.03346>) as the default search strategy.
 It is significantly faster than existing NCD, while it keeps similar output to NCD using the Deflate (zip) algorithm for code clone detection.
 
-For more details, please read our technical paper [NCDSearch_evaluation_2022.pdf]. 
+For more details, please read [our technical paper](NCDSearch_evaluation_2022.pdf). 
 > Takashi Ishio, Naoto Maeda, Kensuke Shibuya, Kenho Iwamoto, Katsuro Inoue,
 > NCDSearch: Sliding Window-Based Code Clone Search Using Lempel-Ziv Jaccard Distance.
 > IEICE Transactions on Information and Systems, vol.E105-D, No.5, May 2022. (Accepted)

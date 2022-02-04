@@ -212,11 +212,6 @@ public class SearchConfiguration {
 			} else if (args[idx].equals(ARG_FULLSCAN)) {
 				idx++;
 				fullscan = true;
-			} else if (args[idx].equals(ARG_COMPRESSOR)) {
-				idx++;
-				if (idx < args.length) {
-					algorithm = args[idx++];
-				}
 			} else if (args[idx].equals(ARG_QUERY)) {
 				idx++;
 				if (idx < args.length) {
@@ -261,7 +256,8 @@ public class SearchConfiguration {
 			} else if (args[idx].equals(ARG_NOSEPARATOR)) {
 				idx++;
 				useSeparator = false;
-			} else if (args[idx].equals(ARG_ALGORITHM)) {
+			} else if (args[idx].equals(ARG_COMPRESSOR) ||
+					args[idx].equals(ARG_ALGORITHM)) {
 				idx++;
 				if (idx < args.length) {
 					algorithm = args[idx++];

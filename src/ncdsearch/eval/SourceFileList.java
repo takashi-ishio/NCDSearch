@@ -17,7 +17,11 @@ import sarf.lexer.TokenReader;
 import sarf.lexer.TokenReaderFactory;
 
 /**
- * Source file 
+ * This is the main class to count the number of source files in specified directories.
+ * The output is a CSV format.
+ * Each line represents statistics of a location. 
+ * TotalRawLines represents the total number of lines including empty and comment lines.
+ * TotalLines represent the total number of lines including source code tokens.
  */
 public class SourceFileList {
 
@@ -29,6 +33,10 @@ public class SourceFileList {
 	private int errorFileCount;
 	private long totalBytes;
 	
+	/**
+	 * @param args includes a list of source code locations (e.g. "src", "tests").
+	 * A language option (e.g. "-lang java") filters only the specified language.  
+	 */
 	public static void main(String[] args) {
 		ArrayList<String> locations = new ArrayList<>(); 
 		FileType langFilter = null;
@@ -48,15 +56,18 @@ public class SourceFileList {
 			}
 		}		
 		
-		for (String loc: locations) {
+		System.out.println("Location," + COLUMNS);
+		for (String location: locations) {
 			SourceFileList counter = new SourceFileList();
-			counter.process(loc, langFilter);
-			System.out.println(loc + "," + counter.toString());
+			counter.process(location, langFilter);
+			System.out.println(location + "," + counter.toString());
 		}
 	}
 	
 	public SourceFileList() {
 	}
+	
+	public static final String COLUMNS = "FileCount,ErrorFileCount,TotalRawLines,TotalLines,TotalBytes";
 	
 	public String toString() {
 		return fileCount + "," + errorFileCount + "," + totalRawLines + "," + totalLines + "," + totalBytes;

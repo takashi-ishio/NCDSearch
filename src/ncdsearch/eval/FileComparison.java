@@ -18,8 +18,8 @@ import sarf.lexer.TokenReader;
 import sarf.lexer.TokenReaderFactory;
 
 /**
- * Compare given two files and report their similarity. 
- * @author ishio
+ * This is a main class to directly compare given two files and 
+ * report their similarity. 
  */
 public class FileComparison {
 

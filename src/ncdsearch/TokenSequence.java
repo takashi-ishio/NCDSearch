@@ -9,19 +9,65 @@ import gnu.trove.list.array.TIntArrayList;
 import sarf.lexer.TokenReader;
 
 
+/**
+ * This class represents a code fragment.
+ * This is the main data structure of NCDSearch.
+ */
 public class TokenSequence {
 
 	private static final int SEPARATOR = 0;
 	
+	/**
+	 * List of tokens in this code fragment
+	 */
 	private ArrayList<String> tokens;
+	
+	/**
+	 * Line number attribute of each token
+	 */
 	private TIntArrayList lines;
+	
+	/**
+	 * The character position in line of each token
+	 */
 	private TIntArrayList charpos;
+	
+	/**
+	 * An index of the first token of the code fragment.
+	 * This field enables multiple TokenSequence objects share 
+	 * the same ArrayList including tokens. 
+	 */
 	private int start;
+	
+	/**
+	 * An index of the last token (exclusive) of the code fragment.
+	 * This field enables multiple TokenSequence objects share 
+	 * the same ArrayList including tokens. 
+	 */
 	private int end;
+	
+	/**
+	 * A byte array representation for code comparison
+	 */
 	private byte[] bytes;
+	
+	/**
+	 * Positions in the byte array corresponding to tokens
+	 */
 	private TIntArrayList bytepos;
+	
+	/**
+	 * This is a flag representing whether a separator is 
+	 * inserted between tokens in the byte array or not.
+	 */
 	private boolean useSeparator;
 
+	/**
+	 * Create an object including all tokens obtained from a reader.
+	 * A separator is inserted between tokens.
+	 * @param r specifies a TokenReader.
+	 * @param normalization If true, normalize identifier tokens.
+	 */
 	public TokenSequence(TokenReader r, boolean normalization) {
 		this(r, normalization, true);
 	}
@@ -30,6 +76,7 @@ public class TokenSequence {
 	 * Create an object including all tokens obtained from a reader.
 	 * @param r specifies a TokenReader.
 	 * @param normalization If true, use a normalizer. 
+	 * @param separator If true, a separator is inserted between tokens.
 	 */
 	public TokenSequence(TokenReader r, boolean normalization, boolean separator) {
 		tokens = new ArrayList<>();
@@ -137,7 +184,7 @@ public class TokenSequence {
 	/**
 	 * Get the string content of a specified token.
 	 * @param pos index of a token.
-	 * @return the conent of the token.
+	 * @return the content of the token.
 	 */
 	public String getToken(int pos) {
 		return tokens.get(pos + start);
@@ -159,10 +206,10 @@ public class TokenSequence {
 	}
 	
 	/**
-	 * Extract a substring of tokens between the specifid lines.
+	 * Extract a substring of tokens between the specified lines.
 	 * @param startLine specifies the start line of tokens.
 	 * @param endLine specifies the end line of tokens.  Differently from substring method, the line is included in the substring.
-	 * @return tokens.  The method returns null if invalid lines are specifid (e.g. startLine is greater than endLine).
+	 * @return tokens.  The method returns null if invalid lines are specified (e.g. startLine is greater than endLine).
 	 */
 	public TokenSequence substringByLine(int startLine, int endLine) {
 		int startPos;
@@ -222,9 +269,8 @@ public class TokenSequence {
 	}
 	
 	/**
-	 * 
 	 * @param pos index of a token.
-	 * @return
+	 * @return a position of the token in the internal byte array.
 	 */
 	public int getBytePosition(int pos) {
 		return bytepos.get(pos + start);

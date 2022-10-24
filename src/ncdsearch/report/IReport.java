@@ -4,8 +4,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 
-import ncdsearch.Fragment;
-
 /**
  * This interface defines methods to write a runtime configuration and 
  * execution results in a particular format. 

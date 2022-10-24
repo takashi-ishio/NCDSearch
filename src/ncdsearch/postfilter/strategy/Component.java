@@ -5,9 +5,9 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import ncdsearch.ICodeDistanceStrategy;
 import ncdsearch.SearchConfiguration;
-import ncdsearch.TokenSequence;
+import ncdsearch.comparison.ICodeDistanceStrategy;
+import ncdsearch.comparison.TokenSequence;
 import ncdsearch.postfilter.JsonNodeInfo;
 
 /**

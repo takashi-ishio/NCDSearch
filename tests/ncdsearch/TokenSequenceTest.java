@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import org.junit.Assert;
 import org.junit.Test;
 
+import ncdsearch.comparison.TokenSequence;
 import sarf.lexer.FileType;
 import sarf.lexer.TokenReader;
 import sarf.lexer.TokenReaderFactory;

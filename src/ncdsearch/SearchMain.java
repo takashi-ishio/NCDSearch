@@ -7,11 +7,16 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import ncdsearch.comparison.ICodeDistanceStrategy;
+import ncdsearch.comparison.IVariableWindowStrategy;
+import ncdsearch.comparison.TokenSequence;
+import ncdsearch.comparison.algorithm.PredictionFilter;
 import ncdsearch.eval.FileComparison;
-import ncdsearch.experimental.PredictionFilter;
 import ncdsearch.files.IFile;
 import ncdsearch.files.IFiles;
+import ncdsearch.report.Fragment;
 import ncdsearch.report.IReport;
+import ncdsearch.util.Concurrent;
 import sarf.lexer.FileType;
 import sarf.lexer.TokenReader;
 import sarf.lexer.TokenReaderFactory;

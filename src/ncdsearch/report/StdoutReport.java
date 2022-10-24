@@ -3,7 +3,6 @@ package ncdsearch.report;
 import java.io.IOException;
 import java.util.List;
 
-import ncdsearch.Fragment;
 import ncdsearch.SearchConfiguration;
 
 public class StdoutReport implements IReport {

@@ -5,6 +5,9 @@ import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 
 
+/**
+ * This class is a Deflate (gzip) client for NCD calculation
+ */
 public class DeflateStrategy implements ICompressionStrategy {
 
 	private Deflater deflater;

@@ -6,6 +6,9 @@ import org.tukaani.xz.LZMA2Options;
 import org.tukaani.xz.UnsupportedOptionsException;
 import org.tukaani.xz.XZOutputStream;
 
+/**
+ * This class is a XZ client for NCD calculation
+ */
 public class XzStrategy implements ICompressionStrategy {
 
 	private LZMA2Options xzOptions;
@@ -22,8 +25,6 @@ public class XzStrategy implements ICompressionStrategy {
 	public long getDataSize(byte[] buf, int start, int length) {
 		DataSizeRecordStream sizeRecorder = new DataSizeRecordStream();
 		try {
-			//XZCompressorOutputStream stream = new XZCompressorOutputStream(sizeRecorder);
-			//LZMACompressorOutputStream stream = new LZMACompressorOutputStream(sizeRecorder);
 			XZOutputStream stream = new XZOutputStream(sizeRecorder, xzOptions);
 			stream.write(buf, start, length);
 			stream.close();

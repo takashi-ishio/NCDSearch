@@ -3,6 +3,9 @@ package ncdsearch.comparison.ncd;
 
 import ncdsearch.comparison.ncd.folca.FOLCA;
 
+/**
+ * This class is a FOLCA client for NCD calculation
+ */
 public class FolcaStrategy implements ICompressionStrategy {
 
 	public FolcaStrategy() {

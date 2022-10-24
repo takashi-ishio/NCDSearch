@@ -4,6 +4,9 @@ import java.util.Arrays;
 
 import com.github.luben.zstd.Zstd;
 
+/**
+ * This class is a Zstd client for NCD calculation
+ */
 public class ZstdStrategy implements ICompressionStrategy {
 
 	public ZstdStrategy() {

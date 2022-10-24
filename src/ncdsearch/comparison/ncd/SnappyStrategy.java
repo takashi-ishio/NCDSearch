@@ -4,6 +4,9 @@ import java.io.IOException;
 
 import org.xerial.snappy.SnappyOutputStream;
 
+/**
+ * This class is a Snappy client for NCD calculation
+ */
 public class SnappyStrategy implements ICompressionStrategy {
 
 	private DataSizeRecordStream sizeRecorder;

@@ -6,6 +6,11 @@ public enum Compressor {
 
 	ZIP, DEFLATE, XZ, ZSTD, FOLCA, BZIP2, SNAPPY, ZIPHIGH;
 	
+	/**
+	 * A factory method to create an actual compressor
+	 * @param c specifies a compression algorithm
+	 * @return an instance of the algorithm
+	 */
 	public static ICompressionStrategy createInstance(Compressor c) {
 		if (c != null) {
 			switch (c) {

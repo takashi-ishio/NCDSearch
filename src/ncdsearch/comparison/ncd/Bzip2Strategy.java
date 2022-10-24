@@ -4,7 +4,9 @@ import java.io.IOException;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
 
-
+/**
+ * This class is a BZIP2 client for NCD calculation
+ */
 public class Bzip2Strategy implements ICompressionStrategy {
 
 	private DataSizeRecordStream sizeRecorder;
@@ -13,6 +15,9 @@ public class Bzip2Strategy implements ICompressionStrategy {
 		sizeRecorder = new DataSizeRecordStream();
 	}
 	
+	/**
+	 * Calculate the compressed size of the specified byte array
+	 */
 	@Override
 	public long getDataSize(byte[] buf, int start, int length) {
 		sizeRecorder.reset();

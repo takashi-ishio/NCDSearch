@@ -27,7 +27,15 @@ import ncdsearch.postfilter.strategy.PathClustering;
 import ncdsearch.postfilter.strategy.Shortest;
 
 
-
+/**
+ * This is an experimental implementation of post-filtering 
+ * developed for a research paper (written in Japanese). 
+ * DOI: 10.14923/transinfj.2020JDL8009
+ *
+ * This program takes as input a JSON file created by SearchMain and 
+ * apply clustering-based filtering to the result.
+ * 
+ */
 public class Main {
 	private static String clusteringStrategy = "EXGA";
 	private static String distanceAlgorithm = "lzjd";

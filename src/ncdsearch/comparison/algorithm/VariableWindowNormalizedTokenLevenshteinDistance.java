@@ -3,6 +3,11 @@ package ncdsearch.comparison.algorithm;
 import ncdsearch.comparison.IVariableWindowStrategy;
 import ncdsearch.comparison.TokenSequence;
 
+
+/**
+ * This class is to identify the best substring in a target code fragment
+ * which is closest to the query code fragment in terms of token-level edit operations. 
+ */
 public class VariableWindowNormalizedTokenLevenshteinDistance extends TokenLevenshteinDistance implements IVariableWindowStrategy {
 
 	private int queryLength;

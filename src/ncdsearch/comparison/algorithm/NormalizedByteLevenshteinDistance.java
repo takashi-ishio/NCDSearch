@@ -4,6 +4,12 @@ package ncdsearch.comparison.algorithm;
 import ncdsearch.comparison.ICodeDistanceStrategy;
 import ncdsearch.comparison.TokenSequence;
 
+
+/**
+ * This class uses a normalized Levenshtein distance of two byte arrays.
+ * It is the number of edit operations (add/delete/modify) on a byte array 
+ * divided by the length of the longer array.
+ */
 public class NormalizedByteLevenshteinDistance implements ICodeDistanceStrategy {
 
 	private byte[] query;

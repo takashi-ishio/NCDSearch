@@ -4,6 +4,12 @@ package ncdsearch.comparison.algorithm;
 import ncdsearch.comparison.ICodeDistanceStrategy;
 import ncdsearch.comparison.TokenSequence;
 
+
+/**
+ * This class uses a normalized Levenshtein distance of two token sequences.
+ * It is the number of edit operations (add/delete/modify) on tokens  
+ * divided by the length of the longer sequence.
+ */
 public class NormalizedTokenLevenshteinDistance extends TokenLevenshteinDistance implements ICodeDistanceStrategy {
 
 	private int queryLength;

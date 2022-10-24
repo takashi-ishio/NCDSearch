@@ -22,12 +22,20 @@ import sarf.lexer.TokenReader;
 import sarf.lexer.TokenReaderFactory;
 
 
+/**
+ * This is the main class of NCDSearch. 
+ */
 public class SearchMain {
 
 	public static final String ARG_TEST_COMPARE = "--test-compare";
 	private SearchConfiguration config;
 	
+	/**
+	 * Parse the arguments and execute a search.
+	 * @param args is an array of command line arguments
+	 */
 	public static void main(String[] args) {
+		// If the first argument is test comparison, the program directly compares two files.
 		if (args.length > 1 && args[0].equals(ARG_TEST_COMPARE)) {
 			FileComparison.main(Arrays.copyOfRange(args, 1, args.length));
 			return;
@@ -39,6 +47,8 @@ public class SearchMain {
 				// simply output a report
 			} catch (IOException e) {
 			}
+			
+			// The config test mode does not proceed to an actual search
 			return;
 		}
 
@@ -50,17 +60,25 @@ public class SearchMain {
 		}
 	}
 
-	
+	/**
+	 * Create an instance to keep a configuration.
+	 * @param config specifies a configuration created by command line arguments
+	 */
 	public SearchMain(SearchConfiguration config) {
 		this.config = config;
 	}
 	
-	
+	/**
+	 * Execute a search according to the given configuration
+	 */
 	public void execute() {
 		
-		
+		// This is a List to record all strategy objects created for multi-threaded search
 		final List<ICodeDistanceStrategy> createdStrategies = Collections.synchronizedList(new ArrayList<ICodeDistanceStrategy>());
+
 		try (IReport report = config.getReport()) {
+			
+			// A search strategy object is created for each thread 
 			ThreadLocal<ICodeDistanceStrategy> strategies = new ThreadLocal<ICodeDistanceStrategy>() {
 				@Override
 				protected ICodeDistanceStrategy initialValue() {
@@ -69,24 +87,29 @@ public class SearchMain {
 					return similarityStrategy;
 				}
 			};
+			
 			final Concurrent c = new Concurrent(config.getThreadCount(), null);
-			try (IFiles files = config.getFiles()) {
+			
+			try (IFiles files = config.getFiles()) { 
+
 				for (IFile f = files.next(); f != null; f = files.next()) {
 					final String targetPath = f.getPath();
-					
 					if (config.isVerbose()) System.err.println(targetPath);
 					
 					final FileType type = config.getTargetLanguage(targetPath);
 					if (TokenReaderFactory.isSupported(type)) {
-						final IFile target = f;
 						
+						// Analyze the content if the file is a target programming language 
+						final IFile target = f;
 						c.execute(new Concurrent.Task() {
 							@Override
 							public boolean run(OutputStream out) throws IOException {
 	
+								// Read the file content
 								TokenReader reader = TokenReaderFactory.create(type, target.read(), config.getSourceCharset());
 								TokenSequence fileTokens = new TokenSequence(reader, config.useNormalization(), config.useSeparator());
 						
+								// Apply a quick filter 
 								PredictionFilter prefilter = config.getPrefilter();
 								if (prefilter == null || prefilter.shouldSearch(fileTokens)) {
 									int[] positions;
@@ -150,6 +173,7 @@ public class SearchMain {
 				return null;
 			}
 		}  else {
+			// Try several window size and report the best one
 			double minDistance = Double.MAX_VALUE;
 			int minWindowSize = -1;
 			for (int w=0; w<config.getWindowSizeCount(); w++) {

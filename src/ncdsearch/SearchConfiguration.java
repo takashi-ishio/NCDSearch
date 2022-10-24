@@ -678,6 +678,10 @@ public class SearchConfiguration {
 		return queryFileType;
 	}
 	
+	/**
+	 * @return true if the search strictly moves a sliding window token by token.
+	 * This method returns false if the search moves a sliding window line by line. 
+	 */
 	public boolean isFullScan() {
 		return fullscan;
 	}

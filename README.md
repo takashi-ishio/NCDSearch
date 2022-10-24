@@ -12,7 +12,7 @@ It is significantly faster than existing NCD, while it keeps similar output to N
 For more details, please read [our technical paper](NCDSearch_evaluation_2022.pdf). 
 > Takashi Ishio, Naoto Maeda, Kensuke Shibuya, Kenho Iwamoto, Katsuro Inoue,
 > NCDSearch: Sliding Window-Based Code Clone Search Using Lempel-Ziv Jaccard Distance.
-> IEICE Transactions on Information and Systems, vol.E105-D, No.5, May 2022. (Accepted)
+> IEICE Transactions on Information and Systems, vol.E105-D, No.5, May 2022.
 
 
 

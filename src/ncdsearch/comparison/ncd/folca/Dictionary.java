@@ -6,6 +6,10 @@ import java.util.HashSet;
 import gnu.trove.list.array.TLongArrayList;
 import gnu.trove.map.hash.TLongIntHashMap;
 
+/**
+ * This dictionary object is to record a pair of integer symbols as a new symbol
+ * according to the FOLCA algorithm.
+ */
 public class Dictionary {
 
 	private static int SYMBOL_START = 256; 

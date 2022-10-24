@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
 
+/**
+ * This main class is just to test the FOLCA algorithm.
+ */
 public class Driver {
 
 	public static void main(String[] args) {

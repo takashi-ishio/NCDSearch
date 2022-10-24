@@ -1,6 +1,9 @@
 package ncdsearch.comparison.ncd.folca;
 
 
+/**
+ * This is a queue of symbols for FOLCA algorithm
+ */
 public class Queue {
 	
 	public static int DUMMY = Integer.MAX_VALUE;

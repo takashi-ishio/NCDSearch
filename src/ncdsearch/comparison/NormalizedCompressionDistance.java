@@ -4,14 +4,29 @@ import ncdsearch.comparison.ncd.DeflateStrategy;
 import ncdsearch.comparison.ncd.ICompressionStrategy;
 
 
+/**
+ * This class provides a common strategy to calculate a Normalized Compression Distance
+ * using a compression algorithm.
+ */
 public class NormalizedCompressionDistance implements ICodeDistanceStrategy {
 
+	/**
+	 * An object specifying a compression algorithm.
+	 */
 	private ICompressionStrategy strategy;
+	
+	/**
+	 * The byte array of a query code fragment
+	 */
 	private byte[] baseBytes;
+	
+	/**
+	 * The size of a compressed form of the code fragment
+	 */
 	private long baseSize;
 	
 	/**
-	 * Create a distance computation object.
+	 * Create a distance calculation object.
 	 * A client must close the object to release an internal resource.   
 	 * @param query specifies a preset query.  The query is reused for multiple ncd method calls.
 	 */
@@ -35,7 +50,8 @@ public class NormalizedCompressionDistance implements ICodeDistanceStrategy {
 	}
 	
 	/**
-	 * Compute a distance between a preset query and a given target file. 
+	 * Compute a distance between a preset query and a given target file
+	 * using the definition of Normalized Compression Distance.
 	 */
 	@Override
     public double computeDistance(TokenSequence target) {
@@ -49,9 +65,4 @@ public class NormalizedCompressionDistance implements ICodeDistanceStrategy {
         return (c1and2 - Math.min(baseSize, c2)) * 1.0 / Math.max(baseSize, c2);
     }
     
-	@Deprecated
-	public double ncd(TokenSequence target) {
-		return computeDistance(target);
-	}
-	
 }

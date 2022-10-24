@@ -6,14 +6,36 @@ import ncdsearch.comparison.ICodeDistanceStrategy;
 import ncdsearch.comparison.IVariableWindowStrategy;
 import ncdsearch.comparison.TokenSequence;
 
+/**
+ * This is an implementation of Lempel-Ziv Jaccard Distance proposed in <https://arxiv.org/abs/1708.03346>.
+ * We extend the algorithm so that we can identify the best substring in a target code fragment.
+ */
 public class LZJDistance implements IVariableWindowStrategy {
 	
+	/**
+	 * A LZSet of a query code fragment.
+	 */
 	private HashSet<ByteArrayFragment> querySet;
+	
+	/**
+	 * If true, the code strictly compares set elements.
+	 */
 	private boolean strict;
+	
+	/**
+	 * 
+	 */
 	private int bestWindowSize;
 	
+	/**
+	 * If specified, this strategy compares source code fragments
+	 * only when LZJD detected they are similar
+	 */
 	private ICodeDistanceStrategy secondary;
 	
+	/**
+	 * An element of LZSet for HashSet
+	 */
 	private class ByteArrayFragment {
 		
 		private byte[] buf;
@@ -63,45 +85,39 @@ public class LZJDistance implements IVariableWindowStrategy {
 		}
 	}
 	
-	public static void main(String[] args) {
-		for (String arg: args) {
-			LZJDistance d = new LZJDistance(true);
-			HashSet<ByteArrayFragment> lzset = d.toLZSet(arg.getBytes());
-			System.err.println(arg);
-			System.err.print("->");
-			for (ByteArrayFragment element: lzset) {
-				System.err.print(" `");
-				System.err.print(element.toString());
-				System.err.print("'");
-			}
-			System.err.println();
-			d.close();
-		}
-	}
-
+	/**
+	 * Create a strategy instance with a query code fragment. 
+	 * @param query is a query code fragment.
+	 */
 	public LZJDistance(TokenSequence query) {
 		this(query, false);
 	}
 	
+	/**
+	 * Create a strategy instance with an explicit flag of comparison.
+	 * @param query is a query code fragment.
+	 * @param strict If true, this object strictly compares LZSet.
+	 */
 	public LZJDistance(TokenSequence query, boolean strict) {
 		this.strict = strict;
 		byte[] queryBytes = query.toByteArray();
 		querySet = toLZSet(queryBytes);
 	}
 
+	/**
+	 * Set a strategy to calculate the exact distance for a code fragment 
+	 * after LZJD similarity check. 
+	 * @param strategy specifies another strategy.
+	 */
 	public void setSecondaryDistance(ICodeDistanceStrategy strategy) {
 		this.secondary = strategy;
 	}
 	
 	/**
-	 * For testing purpose
-	 * @param strict
+	 * Construct a LZSet for a given byte array.
+	 * @param b
+	 * @return the LZSet of the byte array b.
 	 */
-	private LZJDistance(boolean strict) {
-		this.querySet = new HashSet<>();
-		this.strict = strict;
-	}
-	
 	private HashSet<ByteArrayFragment> toLZSet(byte[] b) {
 		HashSet<ByteArrayFragment> s = new HashSet<>();
 		int start = 0;
@@ -118,12 +134,12 @@ public class LZJDistance implements IVariableWindowStrategy {
 	}
 
 	/**
-	 * 
-	 * Find the best LZJD value and its window size
+	 * Find the best LZJD value and its window size 
 	 * @param code specifies an entire file 
 	 * @param startPos specifies the first token index of LZSets
-	 * @param maxEndPos specifies the last token index of the search
-	 * @return
+	 * @param endPos specifies the last token index of the search
+	 * @param threshold specifies the maximum distance of LZJD 
+	 * @return the best LZJD value
 	 */
 	public double findBestMatch(TokenSequence code, int startPos, int endPos, double threshold) {
 		// Extract token positions between start--end (max window size)
@@ -183,11 +199,21 @@ public class LZJDistance implements IVariableWindowStrategy {
 		}
 	}
 	
+	/**
+	 * @return the length (number of tokens) of the best substring
+	 * identified by the last call of findBestMatch
+	 */
 	public int getBestWindowSize() {
 		return bestWindowSize;
 	}
 	
-	
+	/**
+	 * This method directly calculates LZJD for a target code fragment.
+	 * This method is not used in the main part of the search but available 
+	 * for a quick comparison of two code fragments. 
+	 * @param code is a target code fragment
+	 * @return the LZJD value between the query and the target code fragment
+	 */
 	@Override
 	public double computeDistance(TokenSequence code) {
 		HashSet<ByteArrayFragment> codeSet = toLZSet(code.toByteArray());
@@ -204,9 +230,37 @@ public class LZJDistance implements IVariableWindowStrategy {
 		// No resource used
 	}
 	
+	/**
+	 * This main method is to test LZSet extracted from a string argument.
+	 */
+	public static void main(String[] args) {
+		for (String arg: args) {
+			LZJDistance d = new LZJDistance(true);
+			HashSet<ByteArrayFragment> lzset = d.toLZSet(arg.getBytes());
+			System.err.println(arg);
+			System.err.print("->");
+			for (ByteArrayFragment element: lzset) {
+				System.err.print(" `");
+				System.err.print(element.toString());
+				System.err.print("'");
+			}
+			System.err.println();
+			d.close();
+		}
+	}
+
+	/**
+	 * For testing purpose
+	 * @param strict
+	 */
+	private LZJDistance(boolean strict) {
+		this.querySet = new HashSet<>();
+		this.strict = strict;
+	}
+	
 
     /**
-     * Compress method
+     * Compression using LZ77
      *
      * @param infile the name of the file to compress. Automatically appends
      * a ".lz77" extension to infile name when creating the output file

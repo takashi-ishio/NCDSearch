@@ -1,15 +1,20 @@
 # NCDSearch
 
-NCDSearch is a grep-like tool to find similar source code fragments in files.  
+NCDSearch is a grep-like tool to find similar source code fragments in files.
+In software development, developers may copy and modify source code fragments to reuse existing functionalities in code. 
+This tool is developed to detect such code fragments that are not identified by a simple search tool like grep.
+
 For example, if a line `if (this.distance < another.distance) return true;` (in source code of the tool) is given as a query, the tool reports similar lines such as 
 `if (this.distance > another.distance) return false;` and `if (thislen > anotherlen) return true;`.
-The tool assumes that either a long identifier or a few lines of code as a query.
+You can find two bug fix examples in a company in [our paper published in ICSME 2018 Industry Track](NCDSearch_motivation_2018.pdf).
+> Takashi Ishio, Naoto Maeda, Kensuke Shibuya, Katsuro Inoue: 
+> Cloned Buggy Code Detection in Practice Using Normalized Compression Distance.
+> In proceedings of ICSME 2018, pp.591-594, November 2018.
 
-While the tool supports famous similarity metrics such as Normalized Compression Distance and Normalized Levenshtein Distance, 
-the tool uses Lempel-Ziv Jaccard Distance (proposed in <https://arxiv.org/abs/1708.03346>) as the default search strategy.
+The tool supports famous similarity metrics such as Normalized Compression Distance and Normalized Levenshtein Distance.
+The default search strategy is Lempel-Ziv Jaccard Distance (proposed in <https://arxiv.org/abs/1708.03346>).
 It is significantly faster than existing NCD, while it keeps similar output to NCD using the Deflate (zip) algorithm for code clone detection.
-
-For more details, please read [our technical paper](NCDSearch_evaluation_2022.pdf). 
+The details are described in [our technical paper](NCDSearch_evaluation_2022.pdf). 
 > Takashi Ishio, Naoto Maeda, Kensuke Shibuya, Kenho Iwamoto, Katsuro Inoue,
 > NCDSearch: Sliding Window-Based Code Clone Search Using Lempel-Ziv Jaccard Distance.
 > IEICE Transactions on Information and Systems, vol.E105-D, No.5, May 2022.
@@ -53,15 +58,13 @@ The following table is a list of major options.
 |`-v`                    |Show configuration and progress.                                        |
 |`-json`                 |Enable a JSON format report.                                            |
 |`-pos`                  |Report the detected source code locations in detail.                    |
-|`-a` [algorithm]        |Specify an algorithm to compute a distance. The default is `lzjd`.       |
-|`-link` [style]        |If one of `eclipse`, `vscode`, and `fileurl` is given, file names are printed using a clickable format on particular environments.  The default is `none` (just a file name). |
-  
-  
+|`-a` [algorithm]        |Specify an algorithm to compute a distance. The default is `lzjd`.      |
+|`-link` [style]         |If one of `eclipse`, `vscode`, and `fileurl` is given, file names are printed using a clickable format on particular environments.  The default is `none` (just a file name). |
+|`-testconfig`           |This option does not execute a search but print the current configuration.|
 
 
 
-
-### Search a code snippet
+### Query Code Fragment
 
 You can input code fragments using STDIN, a query file, or command line arguments.
 
@@ -80,6 +83,13 @@ You can specify multiple directories or files to be searched.
         java -jar ncdsearch.jar dir1 dir2 -lang java < query
 
 The tool recognizes a programming language by either `-lang` option or a file name of `-q` option.  The `-lang` option overrides `-q` option's file name.
+
+
+It should be noted that the tool reports all similar code fragments by default.
+If you would like to see only exact matches, you can use `-a tld` option that uses Token-level Levenshtein Distance instead of the default strategy.
+
+        java -jar ncdsearch.jar dir_or_file -lang java -e public static void main(String[] args)
+
 
 
 ### Output Format

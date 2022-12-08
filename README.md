@@ -182,6 +182,20 @@ A larger amount of memory is also required to store N files in memory at once.
 
 ### Algorithms
 
+You can specify an algorithm using `-a` option.
+This tool supports the following algorithms.
+
+ - `lzjd`: Lempel-Ziv Jaccard Distance.  The default strategy.
+ - `clzjd`: Character-level Lempel-Ziv Jaccard Distance.  It internally uses `char` instead of `byte` for comparison.  This may be important to find similar multi-byte strings.
+ - `tld`: Token-level Levenshtein Distance.  A distance is measured by the number of add/delete/modify operations to transform a query string to a code fragment in source code.
+ - `ntld`: Normalized Token-level Levenshtein Distance.  A distance is a variant of Token-level Levenshtein Distance normalized by the length of a query string.
+ - `nbld`: Normalized Byte-level Levenshtein Distance.  A distance is measured by the number of different bytes, normalized by the length of a query string..
+ - `blcs`: Normalized Byte-level Longest Common Subsequence.  A distance is measured by the length of common byte subsequence normalized by the length of a query string.
+ - `zip`: Normalized Compression Distance with Deflate algorithm that has been used in gzip.
+ - `xz`, `zstd`, `bzip2`, `snappy`, `folca`: Normalized Compression Distance with the corresponding compression algorithm. These algorithms are provided just for experiments to see an impact of compression algorithms.
+
+
+
 #### Normalized Compression Distance (NCD)
 
 Using the `-a zip` option, you can use a traditional Normalized Compression Distance (https://en.wikipedia.org/wiki/Normalized_compression_distance) defined as follows:
@@ -191,14 +205,6 @@ Using the `-a zip` option, you can use a traditional Normalized Compression Dist
 where Z(x), Z(y), and Z(xy) are data size obtained by a data compression algorithm (Deflate in case of the `zip` option).
 If two data `x` and `y` are similar, then NCD(x, y) results in a small value.
 
-
-#### NCD with other compression algorithms
-
-The tool also accepts `-a XZ` and `-a ZSTD` that are corresponding to Xz and Zstd algorithms.
-
-        java -jar ncdsearch.jar dir_or_file -lang java -a XZ < query
-
-The feature is experimental to see the dependency of compression algorithms.
 
 #### Token-level Levenshtein Distance
 

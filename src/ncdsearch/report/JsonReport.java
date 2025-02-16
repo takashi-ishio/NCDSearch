@@ -10,14 +10,14 @@ import com.fasterxml.jackson.core.JsonGenerator;
 
 import ncdsearch.SearchConfiguration;
 
-public class JsonReport implements IReport {
+public class JsonReport extends AbstractReport {
 
-	private long startTime = System.currentTimeMillis();
 	private boolean fragmentsGenerated = false;
 	private JsonGenerator gen;
 	private SearchConfiguration config;
 	
 	public JsonReport(SearchConfiguration config, OutputStream w) throws IOException {
+		super(config);
 	    this.config = config;
 		JsonFactory factory = new JsonFactory();
 	    gen = factory.createGenerator(w, JsonEncoding.UTF8);
@@ -31,33 +31,40 @@ public class JsonReport implements IReport {
 	}
 	
 	@Override
-	public void write(List<Fragment> fragments) throws IOException {
+	protected void writeFragment(Fragment fragment) throws IOException {
 		if (!fragmentsGenerated) {
 			gen.writeArrayFieldStart("Result");
 			fragmentsGenerated = true;
 		}
-		for (Fragment fragment: fragments) {
-			gen.writeStartObject();
-			gen.writeStringField("FileName", fragment.getFilename());
-			gen.writeNumberField("StartLine", fragment.getStartLine());
-			gen.writeNumberField("EndLine", fragment.getEndLine());
-			gen.writeNumberField("Distance", fragment.getDistance());
-			if (config.reportPositionDetail()) {
-				gen.writeNumberField("StartChar", fragment.getStartCharPositionInLine());
-				gen.writeNumberField("EndChar", fragment.getEndCharPositionInLine());
-				gen.writeStringField("Tokens", fragment.getTokenString());
-			}
-			gen.writeEndObject();
+
+		gen.writeStartObject();
+		gen.writeStringField("FileName", fragment.getFilename());
+		gen.writeNumberField("StartLine", fragment.getStartLine());
+		gen.writeNumberField("EndLine", fragment.getEndLine());
+		gen.writeNumberField("Distance", fragment.getDistance());
+		if (config.reportPositionDetail()) {
+			gen.writeNumberField("StartChar", fragment.getStartCharPositionInLine());
+			gen.writeNumberField("EndChar", fragment.getEndCharPositionInLine());
+			gen.writeStringField("Tokens", fragment.getTokenString());
 		}
+		gen.writeEndObject();
+	}	
+
+	@Override
+	public void writeNumberField(String name, long value) throws IOException {
+		if (fragmentsGenerated) {
+			gen.writeEndArray();
+			fragmentsGenerated = false;
+		}
+		gen.writeNumberField(name, value);
 	}
 	
 	@Override
-	public void close() throws IOException {
+	public void doClose() throws IOException {
 		if (fragmentsGenerated) {
 			gen.writeEndArray();
+			fragmentsGenerated = false;
 		}
-		long time = System.currentTimeMillis() - startTime;
-		gen.writeNumberField("Time", time);
 		gen.writeEndObject();
 		gen.close();
 	}

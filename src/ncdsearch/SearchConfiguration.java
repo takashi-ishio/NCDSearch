@@ -67,6 +67,7 @@ public class SearchConfiguration {
 	public static final String ARG_ALLOW_OVERLAP = "-allowoverlap";
 	public static final String ARG_FORMAT_JSON = "-json";
 	public static final String ARG_GIT_DIR = "-git";
+	public static final String ARG_SORT_RESULT = "-sort";
 	
 	public static final String ARG_FILE_LIST = "-l";
 	public static final String ARG_INCLUDE = "-i";
@@ -131,6 +132,7 @@ public class SearchConfiguration {
 	private boolean useSeparator = true;
 	private boolean showTime = false;
 	private boolean reportJson = false;
+	private boolean sortResult = false;
 
 	private String algorithm = "lzjd";
 	private Charset charset;
@@ -269,6 +271,9 @@ public class SearchConfiguration {
 			} else if (args[idx].equals(ARG_FORMAT_JSON)) {
 				idx++;
 				reportJson = true;
+			} else if (args[idx].equals(ARG_SORT_RESULT)) {
+				idx++;
+				sortResult = true;
 			} else if (args[idx].equals(ARG_POSITION_DETAIL)) {
 				idx++;
 				reportPositionDetail = true;
@@ -442,6 +447,7 @@ public class SearchConfiguration {
 		report.writeConfig("UseSeparator", Boolean.toString(useSeparator));
 		report.writeConfig("AllowOverlap", Boolean.toString(allowOverlap));
 		report.writeConfig("LinkStyle", linkStyle.toString());
+		report.writeConfig("SortResult", Boolean.toString(sortResult));
 		
 		if (charsetError != null) {
 			report.writeConfig("Charset", charsetError + " (" + charset.displayName() + " is used)");
@@ -608,6 +614,10 @@ public class SearchConfiguration {
 	
 	public boolean useFileList() {
 		return filelistName != null;
+	}
+	
+	public boolean sortResult() {
+		return sortResult;
 	}
 	
 	/**

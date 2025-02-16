@@ -56,6 +56,8 @@ The following table is a list of major options.
 |`-l` [filelist]         |Search files listed in the specified text file (one file name per line) |
 |`-git` [git-dir]        |Search files in the specified git repository instead of normal files.   |
 |`-v`                    |Show configuration and progress.                                        |
+|`-sort`                |Report fragments in the ascending order of distance.                     |
+|`-time`                |Report the ellapsed time and the numbers of analyzed files and lines.   |
 |`-json`                 |Enable a JSON format report.                                            |
 |`-pos`                  |Report the detected source code locations in detail.                    |
 |`-a` [algorithm]        |Specify an algorithm to compute a distance. The default is `lzjd`.      |

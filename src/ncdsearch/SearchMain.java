@@ -118,6 +118,9 @@ public class SearchMain {
 									} else {
 										positions = fileTokens.getLineHeadTokenPositions();
 									}
+									
+									// Count the number of lines and tokens processed by this search
+									report.recordAnalyzedFile(targetPath, fileTokens.getLineCount(), fileTokens.size());
 	
 									// Identify a similar code fragment for each position (if exists)
 									ArrayList<Fragment> fragments = new ArrayList<>();

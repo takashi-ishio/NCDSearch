@@ -63,6 +63,13 @@ public class TokenSequence {
 	private boolean useSeparator;
 
 	/**
+	 * The number of non-empty lines in this file.
+	 * Note that this number does not represent the number of 
+	 * lines in an extracted subsequence.
+	 */
+	private int lineCount;
+	
+	/**
 	 * Create an object including all tokens obtained from a reader.
 	 * A separator is inserted between tokens.
 	 * @param r specifies a TokenReader.
@@ -84,9 +91,12 @@ public class TokenSequence {
 		charpos = new TIntArrayList();
 		bytepos = new TIntArrayList();
 		useSeparator = separator;
+		lineCount = 0;
+		int lastLine = -1;
 		ByteArrayOutputStream s = new ByteArrayOutputStream(65536);
 		try {
 			while (r.next()) {
+				// Read a token
 				bytepos.add(s.size());
 				String t = normalization ? r.getNormalizedToken() : r.getToken();  
 				tokens.add(t);
@@ -96,6 +106,12 @@ public class TokenSequence {
 				}
 				lines.add(r.getLine());
 				charpos.add(r.getCharPositionInLine());
+				
+				// Count non-empty lines
+				if (lastLine != r.getLine()) {
+					lastLine = r.getLine();
+					lineCount++;
+				}
 			}
 			bytepos.add(s.size());
 		} catch (IOException e) {
@@ -121,6 +137,7 @@ public class TokenSequence {
 		this.useSeparator = base.useSeparator;
 		this.start = start;
 		this.end = end;
+		this.lineCount = base.lineCount;
 	}
 	
 	/**
@@ -142,6 +159,7 @@ public class TokenSequence {
 		bytepos.add(0);
 		bytepos.add(bytes.length);
 		useSeparator = false;
+		this.lineCount = 1;
 	}
 	
 	/**
@@ -320,6 +338,13 @@ public class TokenSequence {
 			}
 		}
 		return b.toString();
+	}
+	
+	/**
+	 * @return the number of non-empty lines in the file.
+	 */
+	public int getLineCount() {
+		return lineCount;
 	}
 
 }

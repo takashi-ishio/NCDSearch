@@ -1,16 +1,16 @@
 package ncdsearch.report;
 
 import java.io.IOException;
-import java.util.List;
 
 import ncdsearch.SearchConfiguration;
 
-public class StdoutReport implements IReport {
+public class StdoutReport extends AbstractReport {
 	
-	private long startTime = System.currentTimeMillis();
 	private SearchConfiguration config;
 
+	
 	public StdoutReport(SearchConfiguration config) {
+		super(config);
 		this.config = config;
 	}
 	
@@ -21,17 +21,18 @@ public class StdoutReport implements IReport {
 	}
 
 	@Override
-	public synchronized void write(List<Fragment> fragments) throws IOException {
-		for (Fragment fragment: fragments) {
-			System.out.write(fragment.toString(config.reportPositionDetail(), config.getLinkStyle()).getBytes());
-		}
+	protected void writeFragment(Fragment fragment) throws IOException {
+		System.out.write(fragment.toString(config.reportPositionDetail(), config.getLinkStyle()).getBytes());
 	}
 	
-	public void close() {
-		if (config.reportTime()) {
-			long time = System.currentTimeMillis() - startTime;
-			System.err.println("Time (ms): " + time);
-		}
-		
+	@Override
+	public void writeNumberField(String name, long value) {
+		System.err.println(name + ": " + value);
 	}
+	
+	@Override
+	public void doClose() throws IOException {
+		// nothing to do
+	}
+	
 }

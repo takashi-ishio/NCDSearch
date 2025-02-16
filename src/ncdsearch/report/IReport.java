@@ -27,4 +27,12 @@ public interface IReport extends Closeable {
 	 * @throws IOException
 	 */
 	public void write(List<Fragment> fragments) throws IOException;
+	
+	/**
+	 * 
+	 * @param filename
+	 * @param lines
+	 * @param tokens
+	 */
+	public void recordAnalyzedFile(String filename, int lines, int tokens);
 }

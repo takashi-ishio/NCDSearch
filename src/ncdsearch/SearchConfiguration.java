@@ -130,6 +130,10 @@ public class SearchConfiguration {
 	private boolean reportPositionDetail = false;
 	private int threads = 0;
 	private boolean allowOverlap = false;
+	
+	/**
+	 * If true, a separator is inserted between tokens.
+	 */
 	private boolean useSeparator = true;
 	private boolean showTime = false;
 	private boolean reportJson = false;

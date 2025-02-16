@@ -22,6 +22,9 @@ import sarf.lexer.lang.Java8Lexer;
 import sarf.lexer.lang.Python3Lexer;
 import sarf.lexer.lang.VisualBasic6Lexer;
 
+/**
+ * A factory class to create a lexer for a given language.
+ */
 public class TokenReaderFactory {
 	
 	private static HashMap<String, FileType> filetype;
@@ -64,6 +67,9 @@ public class TokenReaderFactory {
 		filetype.put("md", FileType.PLAINTEXT);
 
 		filetype.put("docx", FileType.DOCX);
+		
+		filetype.put("generic", FileType.GENERIC);
+		filetype.put("neutral", FileType.GENERIC);
 	}
 	
 
@@ -174,9 +180,12 @@ public class TokenReaderFactory {
 			case PLAINTEXT:
 				return new PlainTextReader(new StringReader(new String(buf, charset)));
 				
+			case GENERIC:
+				return new GenericTokenizer(new StringReader(new String(buf, charset)));
+			
 			case DOCX:
 				return new DocxReader(new ByteArrayInputStream(buf));
-				
+
 			case UNSUPPORTED:
 			default:
 				return null;
@@ -242,6 +251,9 @@ public class TokenReaderFactory {
 			case PLAINTEXT:
 				return new PlainTextReader(reader);
 
+			case GENERIC:
+				return new GenericTokenizer(reader);
+				
 			case DOCX:
 				// Cannot create a reader for a binary file
 			case UNSUPPORTED:

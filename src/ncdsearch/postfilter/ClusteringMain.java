@@ -40,8 +40,7 @@ import ncdsearch.postfilter.strategy.Shortest;
  * code fragments.  Using a clustering algorithm, the program adds
  * the "ShouldCheck" field to code fragments. 
  * 
- * Note that this program includes some magic (e.g., "src") 
- * for an experiment environment.
+ * Note that this program is experimental.  Use it at your own risk.
  */
 public class ClusteringMain {
 	

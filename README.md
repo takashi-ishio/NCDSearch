@@ -151,7 +151,7 @@ Each language option automatically searches source files using the following ext
  - Generic: .generic, .neutral
 
 You can include additional files using `-i (extension)` option.
-The generic tokenizer option (`-lang generic`) requires this option to specify file extensions (such as `-i .rs`).
+The generic tokenizer option (`-lang generic`) requires this option to specify file extensions (such as `-i .rs`).  This file extension option is case insensitive.
 
 A combination of `-lang` and `-i` option enables to choose any lexical analysis.
 For example, the following command searches .java files as plain text.

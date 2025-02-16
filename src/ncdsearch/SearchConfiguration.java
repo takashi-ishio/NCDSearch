@@ -215,7 +215,8 @@ public class SearchConfiguration {
 			} else if (args[idx].equals(ARG_INCLUDE)) {
 				idx++;
 				if (idx < args.length) {
-					inclusionFilters.add(args[idx++]);
+					// Filters are case insensitive 
+					inclusionFilters.add(args[idx++].toLowerCase());
 				}
 			} else if (args[idx].equals(ARG_VERBOSE)) {
 				idx++;

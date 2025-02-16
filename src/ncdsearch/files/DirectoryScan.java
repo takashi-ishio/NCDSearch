@@ -45,12 +45,14 @@ public class DirectoryScan implements IFiles {
 				return new SimpleFile(f);
 			} else if (f.isDirectory() && f.canRead()) {
 				File[] children = f.listFiles();
-				for (File c: children) {
-					if (c.isFile() || 
-						(c.isDirectory() &&
-						 !c.getName().equals(".") && 
-						 !c.getName().equals(".."))) {
-						files.add(c);
+				if (children != null) {
+					for (File c: children) {
+						if (c.isFile() || 
+							(c.isDirectory() &&
+							 !c.getName().equals(".") && 
+							 !c.getName().equals(".."))) {
+							files.add(c);
+						}
 					}
 				}
 			}

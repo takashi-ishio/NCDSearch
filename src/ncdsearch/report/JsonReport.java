@@ -2,7 +2,6 @@ package ncdsearch.report;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.List;
 
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -32,11 +31,8 @@ public class JsonReport extends AbstractReport {
 	
 	@Override
 	protected void writeFragment(Fragment fragment) throws IOException {
-		if (!fragmentsGenerated) {
-			gen.writeArrayFieldStart("Result");
-			fragmentsGenerated = true;
-		}
-
+		writeStartOfFragmentsIfNecessary();
+		
 		gen.writeStartObject();
 		gen.writeStringField("FileName", fragment.getFilename());
 		gen.writeNumberField("StartLine", fragment.getStartLine());
@@ -50,21 +46,29 @@ public class JsonReport extends AbstractReport {
 		gen.writeEndObject();
 	}	
 
-	@Override
-	public void writeNumberField(String name, long value) throws IOException {
+	private void writeStartOfFragmentsIfNecessary() throws IOException {
+		if (!fragmentsGenerated) {
+			gen.writeArrayFieldStart("Result");
+			fragmentsGenerated = true;
+		}
+	}
+
+	private void writeEndOfFragmentsIfNecessary() throws IOException {
 		if (fragmentsGenerated) {
 			gen.writeEndArray();
 			fragmentsGenerated = false;
 		}
+	}
+	
+	@Override
+	public void writeNumberField(String name, long value) throws IOException {
+		writeEndOfFragmentsIfNecessary();
 		gen.writeNumberField(name, value);
 	}
 	
 	@Override
 	public void doClose() throws IOException {
-		if (fragmentsGenerated) {
-			gen.writeEndArray();
-			fragmentsGenerated = false;
-		}
+		writeEndOfFragmentsIfNecessary();
 		gen.writeEndObject();
 		gen.close();
 	}

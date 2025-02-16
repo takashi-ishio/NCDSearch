@@ -77,7 +77,16 @@ public abstract class AbstractReport implements IReport {
 		doClose();
 	}
 	
+	/**
+	 * Write a number field after the report
+	 * @param name specifies an attribute name.
+	 * @param value specifies a value.
+	 */
 	public abstract void writeNumberField(String name, long value) throws IOException;
+	
+	/**
+	 * This method implements a procedure of closing.
+	 */
 	public abstract void doClose() throws IOException;
 
 }

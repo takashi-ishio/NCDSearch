@@ -380,12 +380,18 @@ public class SearchConfiguration {
 	 * @return true if arguments are valid and also a query is specified.
 	 */
 	public boolean isValidConfiguration() {
+		boolean windowSizeSpecified = windowSize != null && windowSize.size() > 0; 
+		boolean gitDirSpecified = gitDirName != null && gitDirName.isDirectory() && gitDirName.canRead();
+		boolean fileListSpecified = filelistName != null && filelistName.isFile() && filelistName.canRead();
+		boolean sourceDirSpecified = sourceDirs.size() > 0;
+		boolean targetFilesSpecified = gitDirSpecified || fileListSpecified || sourceDirSpecified;
+		boolean targetLangSpecified = (targetLang == null) || targetLangAutomatic || (targetFileType != null);
+		
 		return queryTokens != null && 
-				windowSize != null && 
+				windowSizeSpecified &&
 				isValidAlgorithmName(algorithm) &&
-				((gitDirName != null && gitDirName.isDirectory() && gitDirName.canRead()) || (filelistName != null && filelistName.isFile() && filelistName.canRead()) || sourceDirs.size() > 0) &&
-				(targetLang == null || targetLangAutomatic || targetFileType != null) && // Not satisfied if targetLang is an invalid language name
-				windowSize.size() > 0;
+				targetFilesSpecified &&
+				targetLangSpecified; 
 	}
 	
 	/**

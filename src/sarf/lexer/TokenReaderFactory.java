@@ -18,6 +18,7 @@ import sarf.lexer.lang.CobolLexer;
 import sarf.lexer.lang.CPP14Lexer;
 import sarf.lexer.lang.CSharpLexer;
 import sarf.lexer.lang.ECMAScriptLexer;
+import sarf.lexer.lang.GenericLexer;
 import sarf.lexer.lang.Java8Lexer;
 import sarf.lexer.lang.Python3Lexer;
 import sarf.lexer.lang.VisualBasic6Lexer;
@@ -158,10 +159,10 @@ public class TokenReaderFactory {
 			case PYTHON:
 			case VISUALBASIC6:
 			case COBOL:
-				return createAntlrReader(filetype, createStream(buf, charset));
-
-			case PLAINTEXT:
 			case GENERIC:
+				return createAntlrReader(filetype, createStream(buf, charset));
+				
+			case PLAINTEXT:
 			case CCFINDERX:
 				return create(filetype, new StringReader(new String(buf, charset)));
 
@@ -211,6 +212,7 @@ public class TokenReaderFactory {
 			case PYTHON:
 			case VISUALBASIC6:
 			case COBOL:
+			case GENERIC:
 				return createAntlrReader(filetype, CharStreams.fromReader(reader));
 
 			case CCFINDERX:
@@ -219,8 +221,7 @@ public class TokenReaderFactory {
 			case PLAINTEXT:
 				return new PlainTextReader(reader);
 
-			case GENERIC:
-				return new GenericTokenizer(reader);
+//				return new GenericTokenizer(reader);
 				
 			case DOCX:
 				// Cannot create a reader for a binary file
@@ -266,8 +267,10 @@ public class TokenReaderFactory {
 		case COBOL:
 			return new CobolLexerTokenReader(filetype, new CobolLexer(stream));
 
-		case PLAINTEXT:
 		case GENERIC:
+			return new LexerTokenReader(filetype, new GenericLexer(stream));
+
+		case PLAINTEXT:
 		case CCFINDERX:
 		case DOCX:
 			// Cannot create a reader for a binary file

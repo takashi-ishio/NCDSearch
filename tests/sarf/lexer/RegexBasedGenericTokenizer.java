@@ -15,8 +15,10 @@ import java.io.Reader;
  * Each symbol other than alphabets and numbers are regarded as a token.
  * As the tokenizer use only simple rules, code comments and 
  * string literals are also split into tokens.
+ * 
+ * This class has been used for 
  */
-public class GenericTokenizer implements TokenReader {
+public class RegexBasedGenericTokenizer implements TokenReader {
 
     /** 
      * Regex to match words, numbers, underscores or single non-alphanumeric characters
@@ -30,7 +32,7 @@ public class GenericTokenizer implements TokenReader {
 	 * The constructor extract tokens from a reader.
 	 * @param r contains source code.
 	 */
-	public GenericTokenizer(Reader r) {
+	public RegexBasedGenericTokenizer(Reader r) {
 		tokens = tokenizeFile(r);
 	}
 	

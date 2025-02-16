@@ -1,86 +1,19 @@
 package sarf.lexer;
 
 import java.io.StringReader;
-import java.util.List;
 
+import org.antlr.v4.runtime.CharStreams;
 import org.junit.Assert;
 import org.junit.Test;
 
-import sarf.lexer.GenericTokenizer.Token;
+import sarf.lexer.lang.GenericLexer;
 
 public class GenericTokenizerTest {
 
 	@Test
-	public void testTokenizeLine() {
-		List<GenericTokenizer.Token> tokens = GenericTokenizer.tokenizeLine("void func_2(a, b);", 5);
-		Token t = tokens.get(0);
-		Assert.assertEquals("void", t.value);
-		Assert.assertEquals(5, t.line);
-		Assert.assertEquals(1, t.position);
-
-		t = tokens.get(1);
-		Assert.assertEquals("func_2", t.value);
-		Assert.assertEquals(5, t.line);
-		Assert.assertEquals(6, t.position);
-
-		t = tokens.get(2);
-		Assert.assertEquals("(", t.value);
-		Assert.assertEquals(5, t.line);
-		Assert.assertEquals(12, t.position);
-
-		t = tokens.get(3);
-		Assert.assertEquals("a", t.value);
-		Assert.assertEquals(13, t.position);
-
-		t = tokens.get(4);
-		Assert.assertEquals(",", t.value);
-		Assert.assertEquals(14, t.position);
-
-		t = tokens.get(5);
-		Assert.assertEquals("b", t.value);
-		Assert.assertEquals(16, t.position);
-
-		t = tokens.get(6);
-		Assert.assertEquals(")", t.value);
-		Assert.assertEquals(17, t.position);
-
-		t = tokens.get(7);
-		Assert.assertEquals(";", t.value);
-		Assert.assertEquals(18, t.position);
-		
-		Assert.assertEquals(8, tokens.size());
-	}
-	
-	@Test
-	public void testTokenizeFile() {
-		StringReader reader = new StringReader("int\n  main\n  ()");
-		List<Token> tokens = GenericTokenizer.tokenizeFile(reader);
-
-		Token t = tokens.get(0);
-		Assert.assertEquals("int", t.value);
-		Assert.assertEquals(1, t.line);
-		Assert.assertEquals(1, t.position);
-
-		t = tokens.get(1);
-		Assert.assertEquals("main", t.value);
-		Assert.assertEquals(2, t.line);
-		Assert.assertEquals(3, t.position);
-
-		t = tokens.get(2);
-		Assert.assertEquals("(", t.value);
-		Assert.assertEquals(3, t.line);
-		Assert.assertEquals(3, t.position);
-
-		t = tokens.get(3);
-		Assert.assertEquals(")", t.value);
-		Assert.assertEquals(3, t.line);
-		Assert.assertEquals(4, t.position);
-	}
-
-	@Test
 	public void testTokenizer() {
-		StringReader reader = new StringReader("int\n  main\n  ()");
-		GenericTokenizer tokenizer = new GenericTokenizer(reader);
+		String src = "int\n  main\n  ()";
+		TokenReader tokenizer = new LexerTokenReader(FileType.GENERIC, new GenericLexer(CharStreams.fromString(src)));
 
 		Assert.assertTrue(tokenizer.next());
 		Assert.assertEquals("int", tokenizer.getToken());
@@ -105,4 +38,76 @@ public class GenericTokenizerTest {
 		Assert.assertFalse(tokenizer.next());
 	}
 
+	@Test
+	public void testTokenizer2() {
+		String src = "void func_2(a, b){\n\t  return;\n}";
+		TokenReader tokenizer = new LexerTokenReader(FileType.GENERIC, new GenericLexer(CharStreams.fromString(src)));
+
+		Assert.assertTrue(tokenizer.next());
+		Assert.assertEquals("void", tokenizer.getToken());
+		Assert.assertEquals(1, tokenizer.getLine());
+		Assert.assertEquals(1, tokenizer.getCharPositionInLine());
+
+		Assert.assertTrue(tokenizer.next());
+		Assert.assertEquals("func_2", tokenizer.getToken());
+		Assert.assertEquals(1, tokenizer.getLine());
+		Assert.assertEquals(6, tokenizer.getCharPositionInLine());
+
+		Assert.assertTrue(tokenizer.next());
+		Assert.assertEquals("(", tokenizer.getToken());
+		Assert.assertEquals(12, tokenizer.getCharPositionInLine());
+
+		Assert.assertTrue(tokenizer.next());
+		Assert.assertEquals("a", tokenizer.getToken());
+		Assert.assertEquals(13, tokenizer.getCharPositionInLine());
+
+		Assert.assertTrue(tokenizer.next());
+		Assert.assertEquals(",", tokenizer.getToken());
+		Assert.assertEquals(14, tokenizer.getCharPositionInLine());
+
+		Assert.assertTrue(tokenizer.next());
+		Assert.assertEquals("b", tokenizer.getToken());
+		Assert.assertEquals(16, tokenizer.getCharPositionInLine());
+
+		Assert.assertTrue(tokenizer.next());
+		Assert.assertEquals(")", tokenizer.getToken());
+		Assert.assertEquals(17, tokenizer.getCharPositionInLine());
+
+		Assert.assertTrue(tokenizer.next());
+		Assert.assertEquals("{", tokenizer.getToken());
+		Assert.assertEquals(1, tokenizer.getLine());
+		Assert.assertEquals(18, tokenizer.getCharPositionInLine());
+
+		Assert.assertTrue(tokenizer.next());
+		Assert.assertEquals("return", tokenizer.getToken());
+		Assert.assertEquals(2, tokenizer.getLine());
+		Assert.assertEquals(4, tokenizer.getCharPositionInLine());
+
+		Assert.assertTrue(tokenizer.next());
+		Assert.assertEquals(";", tokenizer.getToken());
+		Assert.assertEquals(2, tokenizer.getLine());
+		Assert.assertEquals(10, tokenizer.getCharPositionInLine());
+
+		Assert.assertTrue(tokenizer.next());
+		Assert.assertEquals("}", tokenizer.getToken());
+		Assert.assertEquals(3, tokenizer.getLine());
+		Assert.assertEquals(1, tokenizer.getCharPositionInLine());
+
+		Assert.assertFalse(tokenizer.next());
+	}
+	
+	@Test
+	public void testRandomString() {
+		String s = "12asda!\n \n2U)($!A+D&&a9\t\f\n";
+		RegexBasedGenericTokenizer t1 = new RegexBasedGenericTokenizer(new StringReader(s));
+		TokenReader t2 = new LexerTokenReader(FileType.GENERIC, new GenericLexer(CharStreams.fromString(s)));
+		
+		while (t1.next()) {
+			Assert.assertTrue(t2.next());
+			Assert.assertEquals(t1.getToken(), t2.getToken());
+			Assert.assertEquals(t1.getLine(), t2.getLine());
+			Assert.assertEquals(t1.getCharPositionInLine(), t2.getCharPositionInLine());
+		}
+	}
+	
 }

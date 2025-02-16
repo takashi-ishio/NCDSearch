@@ -48,8 +48,8 @@ public class GenericTokenizer implements TokenReader {
     @Override
     public String getToken() {
     	if(index >= 0 && index < tokens.size()) {
-    		Token specificToken = tokens.get(index);
-    		return specificToken.value;
+    		Token currentToken = tokens.get(index);
+    		return currentToken.value;
     	}
     	
     	return null;
@@ -66,8 +66,8 @@ public class GenericTokenizer implements TokenReader {
     @Override
     public int getLine() {
     	 if(index >= 0 && index < tokens.size()) {
-    		 Token specificToken = tokens.get(index);
-    		 return specificToken.line;
+    		 Token currentToken = tokens.get(index);
+    		 return currentToken.line;
     	 }
     	return 0;
     }
@@ -80,8 +80,8 @@ public class GenericTokenizer implements TokenReader {
     @Override
     public int getCharPositionInLine() {
     	 if(index >= 0 && index < tokens.size()) {
-    		 Token specificToken = tokens.get(index);
-    		 return specificToken.position;
+    		 Token currentToken = tokens.get(index);
+    		 return currentToken.position;
     	 }
     	return 0;
     }

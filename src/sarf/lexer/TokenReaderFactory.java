@@ -152,37 +152,19 @@ public class TokenReaderFactory {
 		try {
 			switch (filetype) {
 			case CPP:
-				LexerTokenReader r = new LexerTokenReader(filetype, new CPP14Lexer(createStream(buf, charset)));
-				r.setNormalizer(new CPP14Normalizer());
-				return r;
-	
 			case JAVA:
-				return new LexerTokenReader(filetype, new Java8Lexer(createStream(buf, charset)));
-
 			case ECMASCRIPT:
-				return new LexerTokenReader(filetype, new ECMAScriptLexer(createStream(buf, charset)));
-				
 			case CSHARP:
-				return new CSharpLexerTokenReader(filetype, new CSharpLexer(createStream(buf, charset)));
-
 			case PYTHON:
-				return new LexerTokenReader(filetype, new Python3Lexer(createStream(buf, charset)));
-
-			case CCFINDERX:
-				return new CCFinderXLexer(buf, charset);
-
 			case VISUALBASIC6:
-				return new VisualBasic6LexerTokenReader(filetype, new VisualBasic6Lexer(createStream(buf, charset)));
-
 			case COBOL:
-				return new CobolLexerTokenReader(filetype, new CobolLexer(createStream(buf, charset)));
+				return createAntlrReader(filetype, createStream(buf, charset));
 
 			case PLAINTEXT:
-				return new PlainTextReader(new StringReader(new String(buf, charset)));
-				
 			case GENERIC:
-				return new GenericTokenizer(new StringReader(new String(buf, charset)));
-			
+			case CCFINDERX:
+				return create(filetype, new StringReader(new String(buf, charset)));
+
 			case DOCX:
 				return new DocxReader(new ByteArrayInputStream(buf));
 
@@ -200,7 +182,7 @@ public class TokenReaderFactory {
 	/**
 	 * Create a token reader reading source code from a given reader.
 	 * @param filetype specifies a file type that can be obtained by TokenReaderFactory#getFileType. 
-	 * @param reader is source code.  The object is automatically closed.  
+	 * @param stream is source code.  The object is automatically closed.  
 	 * @return a token reader.
 	 */
 	public static TokenReader create(FileType filetype, InputStream stream) {
@@ -223,31 +205,17 @@ public class TokenReaderFactory {
 		try {
 			switch (filetype) {
 			case CPP:
-				LexerTokenReader r = new LexerTokenReader(filetype, new CPP14Lexer(CharStreams.fromReader(reader)));
-				r.setNormalizer(new CPP14Normalizer());
-				return r;
-	
 			case JAVA:
-				return new LexerTokenReader(filetype, new Java8Lexer(CharStreams.fromReader(reader)));
-
 			case ECMASCRIPT:
-				return new LexerTokenReader(filetype, new ECMAScriptLexer(CharStreams.fromReader(reader)));
-
 			case CSHARP:
-				return new CSharpLexerTokenReader(filetype, new CSharpLexer(CharStreams.fromReader(reader)));
-
 			case PYTHON:
-				return new LexerTokenReader(filetype, new Python3Lexer(CharStreams.fromReader(reader)));
-				
+			case VISUALBASIC6:
+			case COBOL:
+				return createAntlrReader(filetype, CharStreams.fromReader(reader));
+
 			case CCFINDERX:
 				return new CCFinderXLexer(reader);
-			
-			case VISUALBASIC6:
-				return new VisualBasic6LexerTokenReader(filetype, new VisualBasic6Lexer(CharStreams.fromReader(reader)));
 				
-			case COBOL:
-				return new CobolLexerTokenReader(filetype, new CobolLexer(CharStreams.fromReader(reader)));
-
 			case PLAINTEXT:
 				return new PlainTextReader(reader);
 
@@ -267,4 +235,47 @@ public class TokenReaderFactory {
 		}
 	}
 
+	/**
+	 * Create a token reader reading source code from a given character stream.
+	 * @param filetype specifies a file type that can be obtained by TokenReaderFactory#getFileType. 
+	 * @param stream is source code.  The object is automatically closed.  
+	 * @return a token reader.
+	 */
+	private static TokenReader createAntlrReader(FileType filetype, CharStream stream) {
+		switch (filetype) {
+		case CPP:
+			LexerTokenReader r = new LexerTokenReader(filetype, new CPP14Lexer(stream));
+			r.setNormalizer(new CPP14Normalizer());
+			return r;
+
+		case JAVA:
+			return new LexerTokenReader(filetype, new Java8Lexer(stream));
+
+		case ECMASCRIPT:
+			return new LexerTokenReader(filetype, new ECMAScriptLexer(stream));
+
+		case CSHARP:
+			return new CSharpLexerTokenReader(filetype, new CSharpLexer(stream));
+
+		case PYTHON:
+			return new LexerTokenReader(filetype, new Python3Lexer(stream));
+			
+		case VISUALBASIC6:
+			return new VisualBasic6LexerTokenReader(filetype, new VisualBasic6Lexer(stream));
+			
+		case COBOL:
+			return new CobolLexerTokenReader(filetype, new CobolLexer(stream));
+
+		case PLAINTEXT:
+		case GENERIC:
+		case CCFINDERX:
+		case DOCX:
+			// Cannot create a reader for a binary file
+			assert false: "The createAntlrReader method should not be called for these types.";
+		case UNSUPPORTED:
+		default:
+			return null;
+		}
+	}
+	
 }

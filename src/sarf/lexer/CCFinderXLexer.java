@@ -1,11 +1,8 @@
 package sarf.lexer;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.Reader;
-import java.nio.charset.Charset;
 import java.util.Scanner;
 
 public class CCFinderXLexer implements TokenReader {
@@ -17,10 +14,6 @@ public class CCFinderXLexer implements TokenReader {
 	private int bytepos;
 	private String text;
 	private String normalizedText;
-	
-	public CCFinderXLexer(byte[] buf, Charset charset) {
-		this(new InputStreamReader(new ByteArrayInputStream(buf), charset));
-	}
 	
 	public CCFinderXLexer(Reader r) {
 		reader = new LineNumberReader(r);

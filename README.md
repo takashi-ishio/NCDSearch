@@ -54,7 +54,8 @@ The following table is a list of major options.
 |`-thread` [num]         |Specify the number of threads for concurrent search.                    |
 |`-encoding` [encoding]  |Specify a text encoding of source files.  The default encoding is UTF-8.|
 |`-l` [filelist]         |Search files listed in the specified text file (one file name per line) |
-|`-git` [git-dir]        |Search files in the specified git repository instead of normal files.   |
+|`-git` [git-dir]        |Search files in the specified git repository instead of normal files.|
+|`-gitcommit` [commit] |Specifies a commit to be analyzed when `-git` option is specified.  The default value is "HEAD".|
 |`-v`                    |Show configuration and progress.                                        |
 |`-sort`                |Report fragments in the ascending order of distance.                     |
 |`-time`                |Report the ellapsed time and the numbers of analyzed files and lines.   |

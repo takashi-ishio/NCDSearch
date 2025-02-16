@@ -67,6 +67,7 @@ public class SearchConfiguration {
 	public static final String ARG_ALLOW_OVERLAP = "-allowoverlap";
 	public static final String ARG_FORMAT_JSON = "-json";
 	public static final String ARG_GIT_DIR = "-git";
+	public static final String ARG_GIT_COMMIT = "-gitcommit";
 	public static final String ARG_SORT_RESULT = "-sort";
 	
 	public static final String ARG_FILE_LIST = "-l";
@@ -145,6 +146,7 @@ public class SearchConfiguration {
 	
 	private File filelistName = null;
 	private File gitDirName = null;
+	private String gitCommit = null;
 	
 	private String queryFilename = null;
 	private int queryStartLine = 0;
@@ -200,6 +202,11 @@ public class SearchConfiguration {
 				idx++;
 				if (idx < args.length) {
 					gitDirName = new File(args[idx++]);
+				}
+			} else if (args[idx].equals(ARG_GIT_COMMIT)) {
+				idx++;
+				if (idx < args.length) {
+					gitCommit = args[idx++];
 				}
 			} else if (args[idx].equals(ARG_INCLUDE)) {
 				idx++;
@@ -606,7 +613,7 @@ public class SearchConfiguration {
 		if (filelistName != null) {
 			return new FileList(filelistName);
 		} else if (gitDirName != null) {
-			return new GitScan(gitDirName);
+			return new GitScan(gitDirName, gitCommit);
 		} else {
 			return new DirectoryScan(getSourceDirs(), new IFileFilter() {
 				

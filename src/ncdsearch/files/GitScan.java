@@ -25,17 +25,19 @@ public class GitScan implements IFiles {
 	private HashSet<ObjectId> processed;
 	private String currentCommitId; 
 	
+	private boolean previousCommits = false;
+	
 	/**
 	 * Construct an instance without file filtering
 	 * @param dirs
 	 */
-	public GitScan(File gitDir) {
-		String target = "HEAD";
+	public GitScan(File gitDir, String gitCommit) {
+		if (gitCommit == null) gitCommit = "HEAD";
 		processed = new HashSet<>(65536);
 		
 		try {
 			git = Git.open(gitDir);
-			AnyObjectId objId = git.getRepository().resolve(target);
+			AnyObjectId objId = git.getRepository().resolve(gitCommit);
 			Iterable<RevCommit> c = git.log().add(objId).call();
 			commits = c.iterator();
 			if (commits.hasNext()) {
@@ -70,7 +72,9 @@ public class GitScan implements IFiles {
 				}
 				// If not found
 				currentWalk.close();
-				if (commits.hasNext()) {
+				
+				if (previousCommits && commits.hasNext()) {
+					// Analyze the previous commit 
 					RevCommit current = commits.next();
 					RevTree tree = current.getTree();
 					try {

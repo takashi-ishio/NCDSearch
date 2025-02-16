@@ -4,6 +4,9 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+/**
+ * This is a super class representing a clustering algorithm.
+ */
 public abstract class Clustering {
 
 	protected List<JsonNode> allNode;

@@ -34,9 +34,17 @@ import ncdsearch.postfilter.strategy.Shortest;
  *
  * This program takes as input a JSON file created by SearchMain and 
  * apply clustering-based filtering to the result.
+ * Options "-json" and "-pos" are required to generate an analyzable JSON file.
  * 
+ * This program produces a JSON file including a sorted list of 
+ * code fragments.  Using a clustering algorithm, the program adds
+ * the "ShouldCheck" field to code fragments. 
+ * 
+ * Note that this program includes some magic (e.g., "src") 
+ * for an experiment environment.
  */
-public class Main {
+public class ClusteringMain {
+	
 	private static String clusteringStrategy = "EXGA";
 	private static String distanceAlgorithm = "lzjd";
 	private static String checkN = "Dis0.1";

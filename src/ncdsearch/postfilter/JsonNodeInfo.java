@@ -2,7 +2,12 @@ package ncdsearch.postfilter;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+/**
+ * Utility functions to obtain attributes of a JSON node 
+ * (corresponding to a code fragment).
+ */
 public class JsonNodeInfo {
+	
 	public static String getNodeDir(JsonNode node) {
 		String fullDir = node.get("DirName").asText();
 		return fullDir.substring(fullDir.indexOf("src") + 4).replace("\\", "/");

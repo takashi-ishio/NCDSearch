@@ -242,11 +242,20 @@ Each object includes a query source code fragment and code clones that should be
 The source code of this project is available under the MIT License.
 The full license description is included in the LICENSE file.
 
-This project uses the following components.
- - GNU Trove (https://bitbucket.org/trove4j/trove): LGPL License 
- - ANTLR4 (http://www.antlr.org/license.html): BSD License 
+ - GNU Trove (https://bitbucket.org/trove4j/trove): LGPL License
+ - ANTLR4 (http://www.antlr.org/license.html): BSD License
+ - JUnit 4 (https://junit.org/junit4/): Eclipse Public License 1.0
+ - Eclipse JGit (https://projects.eclipse.org/projects/technology.jgit): Eclipse Distribution License 1.0 (BSD-3-Clause)
+ - Jackson Core (https://github.com/FasterXML/jackson-core): Apache License 2.0
+ - Jackson Databind (https://github.com/FasterXML/jackson-databind): Apache License 2.0
+ - Apache POI (https://poi.apache.org/): Apache License 2.0
+
+This project also uses the following components for normalized compression distance.
+
+ - Commons Compress (https://commons.apache.org/proper/commons-compress/): Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
  - XZ (https://tukaani.org/xz/java.html): public domain 
  - ZStd (https://github.com/luben/zstd-jni): 3-clause BSD License 
+ - Snappy-Java (https://github.com/xerial/snappy-java): Apache License 2.0
 
 Grammar files for ANTLR4 come from https://github.com/antlr/grammars-v4/ except for COBOL.
 C/C++ grammars are slightly edited so that the tool can recognize macro directives as tokens (see the header comment).

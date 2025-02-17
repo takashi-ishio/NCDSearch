@@ -154,22 +154,25 @@ Each language option automatically searches source files using the following ext
  - Generic: .generic, .neutral
 
 You can include additional files using `-i (extension)` option.
-The generic tokenizer option (`-lang generic`) requires this option to specify file extensions (such as `-i .rs`).  This file extension option is case insensitive.
-
 A combination of `-lang` and `-i` option enables to choose any lexical analysis.
 For example, the following command searches .java files as plain text.
 
         java -jar ncdsearch.jar dir_or_file -lang txt -i .java -e "// line comment"
 
-You can use multiple `-i` options in a command line to search additional files. 
+The following command is to analyze Rust source files usign a generic tokenizer.
 
-You also can use `-l [filename]` option that specifies a text file including a list of file names.
+        java -jar ncdsearch.jar dir_or_file -lang generic -i .rs -e "fn main() {"
+
+Differently from supported languages, the generic tokenizer includes code comments in search results.
+
+The file extension is case insensitive.  You can use multiple `-i` options in a command line to search additional files. 
 
 If a query language is different from target files (e.g., a query file is .c but you want to search Java source files), 
 you can use `-targetlang` option.  The following command regards a query code fragment as a C code fragment, while it searches Java files.
 
         java -jar ncdsearch.jar dir_or_file -lang c -targetlang java -e "int main(void)"
 
+In addition to `-i` option, you can use `-l [filename]` option to specify a text file including a list of file names.
 
 
 ### Full Scan Mode

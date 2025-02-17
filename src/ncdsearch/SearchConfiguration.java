@@ -345,6 +345,13 @@ public class SearchConfiguration {
 			return;
 		}
 		
+		if (reader == null) {
+			// This line is executed if "-lang docx" is specified but the query is a text file which is not docx. 
+			argumentError = "Could not prepare a tokenizer for the query.";
+			return;
+		}
+		
+		
 		queryTokens = new TokenSequence(reader, normalization, useSeparator); 
 		
 		if (queryFilename != null) {

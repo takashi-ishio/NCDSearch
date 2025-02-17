@@ -52,7 +52,7 @@ public class DocxReader implements TokenReader {
 	
 	@Override
 	public FileType getFileType() {
-		return FileType.PLAINTEXT;
+		return FileType.DOCX;
 	}
 	
 	@Override

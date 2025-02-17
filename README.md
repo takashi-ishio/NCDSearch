@@ -261,7 +261,7 @@ The full license description is included in the LICENSE file.
 
 This project also uses the following components for normalized compression distance.
 
- - Commons Compress (https://commons.apache.org/proper/commons-compress/): Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+ - Commons Compress (https://commons.apache.org/proper/commons-compress/): Apache License 2.0
  - XZ (https://tukaani.org/xz/java.html): public domain 
  - ZStd (https://github.com/luben/zstd-jni): 3-clause BSD License 
  - Snappy-Java (https://github.com/xerial/snappy-java): Apache License 2.0

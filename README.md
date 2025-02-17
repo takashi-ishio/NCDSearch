@@ -44,7 +44,7 @@ Online usage example is available at:
 The following table is a list of major options. 
 
 |Option                  |Description                                                             |
-|------------------------|------------------------------------------------------------------------|
+|:-----------------------|:-----------------------------------------------------------------------|
 |`-e` [query]            |Specify a query. All arguments after the option are regarded as a query.|
 |`-q` [filename]         |Read a query from a specified file.  `-` represents a standard input.   | 
 |`-sline` [line-number]  |Specify a start line number of a query in the file of `-q` option.      |
@@ -54,11 +54,11 @@ The following table is a list of major options.
 |`-thread` [num]         |Specify the number of threads for concurrent search.                    |
 |`-encoding` [encoding]  |Specify a text encoding of source files.  The default encoding is UTF-8.|
 |`-l` [filelist]         |Search files listed in the specified text file (one file name per line) |
-|`-git` [git-dir]        |Search files in the specified git repository instead of normal files.|
-|`-gitcommit` [commit] |Specifies a commit to be analyzed when `-git` option is specified.  The default value is "HEAD".|
+|`-git` [git-dir]        |Search files in the specified git repository instead of normal files.   |
+|`-gitcommit` [commit]   |Specifies a commit to be analyzed when `-git` option is specified.  The default value is "HEAD".|
 |`-v`                    |Show configuration and progress.                                        |
-|`-sort`                |Report fragments in the ascending order of distance.                     |
-|`-time`                |Report the ellapsed time and the numbers of analyzed files and lines.   |
+|`-sort`                 |Report fragments in the ascending order of distance.                    |
+|`-time`                 |Report the ellapsed time and the numbers of analyzed files and lines.   |
 |`-json`                 |Enable a JSON format report.                                            |
 |`-pos`                  |Report the detected source code locations in detail.                    |
 |`-a` [algorithm]        |Specify an algorithm to compute a distance. The default is `lzjd`.      |

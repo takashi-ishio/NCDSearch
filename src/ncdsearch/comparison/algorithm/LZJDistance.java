@@ -1,7 +1,6 @@
 package ncdsearch.comparison.algorithm;
 
-import java.util.HashSet;
-
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import ncdsearch.comparison.ICodeDistanceStrategy;
 import ncdsearch.comparison.IVariableWindowStrategy;
 import ncdsearch.comparison.TokenSequence;
@@ -15,7 +14,7 @@ public class LZJDistance implements IVariableWindowStrategy {
 	/**
 	 * A LZSet of a query code fragment.
 	 */
-	private HashSet<ByteArrayFragment> querySet;
+	private ObjectOpenHashSet<ByteArrayFragment> querySet;
 	
 	/**
 	 * If true, the code strictly compares set elements.
@@ -118,8 +117,8 @@ public class LZJDistance implements IVariableWindowStrategy {
 	 * @param b
 	 * @return the LZSet of the byte array b.
 	 */
-	private HashSet<ByteArrayFragment> toLZSet(byte[] b) {
-		HashSet<ByteArrayFragment> s = new HashSet<>();
+	private ObjectOpenHashSet<ByteArrayFragment> toLZSet(byte[] b) {
+		ObjectOpenHashSet<ByteArrayFragment> s = new ObjectOpenHashSet<>();
 		int start = 0;
 		int end = 1;
 		while (end <= b.length) {
@@ -154,7 +153,7 @@ public class LZJDistance implements IVariableWindowStrategy {
 		byte[] buf = code.toByteArray();
 		
 		int byteCount = code.getBytePosition(endPos) - firstTokenPos;
-		HashSet<ByteArrayFragment> s = new HashSet<>(2 * byteCount);
+		ObjectOpenHashSet<ByteArrayFragment> s = new ObjectOpenHashSet<>(2 * byteCount);
 
 		int allowedMaxUnmatched = 1+(int)(threshold * querySet.size() * 1.0 / (1 - threshold));
 
@@ -217,7 +216,7 @@ public class LZJDistance implements IVariableWindowStrategy {
 	 */
 	@Override
 	public double computeDistance(TokenSequence code) {
-		HashSet<ByteArrayFragment> codeSet = toLZSet(code.toByteArray());
+		ObjectOpenHashSet<ByteArrayFragment> codeSet = toLZSet(code.toByteArray());
 		int codeSetSize = codeSet.size();
 		codeSet.retainAll(querySet);
 		int intersectionSize = codeSet.size();
@@ -237,7 +236,7 @@ public class LZJDistance implements IVariableWindowStrategy {
 	public static void main(String[] args) {
 		for (String arg: args) {
 			LZJDistance d = new LZJDistance(true);
-			HashSet<ByteArrayFragment> lzset = d.toLZSet(arg.getBytes());
+			ObjectOpenHashSet<ByteArrayFragment> lzset = d.toLZSet(arg.getBytes());
 			System.err.println(arg);
 			System.err.print("->");
 			for (ByteArrayFragment element: lzset) {
@@ -255,7 +254,7 @@ public class LZJDistance implements IVariableWindowStrategy {
 	 * @param strict
 	 */
 	private LZJDistance(boolean strict) {
-		this.querySet = new HashSet<>();
+		this.querySet = new ObjectOpenHashSet<>();
 		this.strict = strict;
 	}
 	
@@ -267,8 +266,8 @@ public class LZJDistance implements IVariableWindowStrategy {
      * a ".lz77" extension to infile name when creating the output file
      * @exception IOException if an error occurs
      */
-    public static HashSet<String> toLZSet77(byte[] buf) {
-    	HashSet<String> lz77strings = new HashSet<>();
+    public static ObjectOpenHashSet<String> toLZSet77(byte[] buf) {
+    	ObjectOpenHashSet<String> lz77strings = new ObjectOpenHashSet<>();
     	int pos = 0;
     	
 	    String currentMatch = "";

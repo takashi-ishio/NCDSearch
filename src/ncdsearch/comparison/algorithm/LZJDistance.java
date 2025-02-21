@@ -134,10 +134,11 @@ public class LZJDistance implements IVariableWindowStrategy {
 	}
 
 	/**
-	 * Find the best LZJD value and its window size 
-	 * @param code specifies an entire file 
-	 * @param startPos specifies the first token index of LZSets
-	 * @param endPos specifies the last token index of the search
+	 * Compare a given code fragment with the query and 
+	 * find the best LZJD value and its window size 
+	 * @param code is an entire file including the fragment to be compared.  
+	 * @param startPos specifies the first token index of the fragment to be compared
+	 * @param endPos specifies the last token index of the fragment to be compared
 	 * @param threshold specifies the maximum distance of LZJD 
 	 * @return the best LZJD value
 	 */
@@ -168,8 +169,8 @@ public class LZJDistance implements IVariableWindowStrategy {
 			int nextEnd = code.getBytePosition(startPos+t+1)-firstTokenPos;
 			while (end <= nextEnd) {
 				ByteArrayFragment text = new ByteArrayFragment(buf, firstTokenPos + start, end - start);
-				boolean modified = s.add(text);
-				if (modified) {
+				boolean isNewElement = s.add(text);
+				if (isNewElement) {
 					start = end;
 					if (querySet.contains(text)) {
 						intersection++;

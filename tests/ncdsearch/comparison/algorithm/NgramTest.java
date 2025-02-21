@@ -4,7 +4,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import gnu.trove.list.array.TLongArrayList;
-import ncdsearch.comparison.algorithm.NgramDistance;
 
 public class NgramTest {
 

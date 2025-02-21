@@ -5,7 +5,6 @@ import org.junit.Test;
 
 import gnu.trove.map.hash.TObjectIntHashMap;
 import ncdsearch.comparison.TokenSequence;
-import ncdsearch.comparison.algorithm.TfidfCosineDistance;
 import sarf.lexer.FileType;
 import sarf.lexer.TokenReaderFactory;
 

@@ -10,6 +10,9 @@ import gnu.trove.map.hash.TIntDoubleHashMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 
 public abstract class DistanceClustering extends Clustering {
+	
+	private boolean DEBUG = false;
+	
 	protected TIntObjectHashMap<TIntDoubleHashMap> distanceMap;
 	protected TIntDoubleHashMap minDistanceMap;
 	protected TIntObjectHashMap<Cluster> clusterMap;
@@ -40,7 +43,7 @@ public abstract class DistanceClustering extends Clustering {
 		}
 		init();
 		int mapSize = totalVertexNumber;
-		//System.err.println("initial clusters : " + mapSize);
+		if (DEBUG) System.err.println("initial clusters : " + mapSize);
 		int idx = 0;
 		while (mapSize > clusterNum) {
 			idx++;
@@ -53,7 +56,7 @@ public abstract class DistanceClustering extends Clustering {
 			mapSize = count;
 		}
 
-		//System.err.println("iterate count : " + idx);
+		if (DEBUG) System.err.println("iterate count : " + idx);
 
 		return getNodeList();
 	}
@@ -62,7 +65,7 @@ public abstract class DistanceClustering extends Clustering {
 		init();
 		int mapSize = totalVertexNumber;
 		double minDistance = 0.0;
-		//System.err.println("initial clusters : " + mapSize);
+		if (DEBUG) System.err.println("initial clusters : " + mapSize);
 		int idx = 1;
 		while (minDistance <= exDistanceThreshold && idx != totalVertexNumber) {
 			idx++;
@@ -70,7 +73,7 @@ public abstract class DistanceClustering extends Clustering {
 			minDistance = getMinDistance();
 		}
 
-		//System.err.println("iterate count : " + (idx - 1));
+		if (DEBUG) System.err.println("iterate count : " + (idx - 1));
 		return getNodeList();
 	}
 

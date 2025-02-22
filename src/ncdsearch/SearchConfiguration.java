@@ -19,6 +19,7 @@ import ncdsearch.comparison.TokenSequence;
 import ncdsearch.comparison.algorithm.ByteLCSDistance;
 import ncdsearch.comparison.algorithm.CharLZJDistance;
 import ncdsearch.comparison.algorithm.LZJDistance;
+import ncdsearch.comparison.algorithm.LZJDistance2022;
 import ncdsearch.comparison.algorithm.NgramDistance;
 import ncdsearch.comparison.algorithm.NgramSetDistance;
 import ncdsearch.comparison.algorithm.NormalizedByteLevenshteinDistance;
@@ -91,7 +92,8 @@ public class SearchConfiguration {
 	private static final String ALGORITHM_BYTE_NGRAM_SET = "setbngram";
 	private static final String ALGORITHM_TFIDF = "tfidf";
 	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE = "lzjd";
-	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT = "strict";
+	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_PUBLISHED = "lzjd2022";
+	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT = "lzjdstrict";
 	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_WITH_NCD = "ncd";
 	private static final String ALGORITHM_CHAR_LAMPEL_ZIV_JACCARD_DISTANCE = "clzjd";
 	
@@ -103,6 +105,7 @@ public class SearchConfiguration {
 			ALGORITHM_BYTE_NGRAM_MULTISET,
 			ALGORITHM_BYTE_NGRAM_SET, ALGORITHM_TFIDF, 
 			ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE, 
+			ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_PUBLISHED,
 			ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT,
 			ALGORITHM_CHAR_LAMPEL_ZIV_JACCARD_DISTANCE};
 	
@@ -558,8 +561,10 @@ public class SearchConfiguration {
 		} else if (algorithmName.startsWith(ALGORITHM_CHAR_LAMPEL_ZIV_JACCARD_DISTANCE)) {
 			return new CharLZJDistance(queryTokens);
 		} else if (algorithmName.startsWith(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE)) {
+			return new LZJDistance(queryTokens);
+		} else if (algorithmName.startsWith(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_PUBLISHED)) {
 			boolean strict = algorithmName.contains(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT);
-			LZJDistance d = new LZJDistance(queryTokens, strict);
+			LZJDistance2022 d = new LZJDistance2022(queryTokens, strict);
 			if (algorithmName.contains(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_WITH_NCD)) {
 				d.setSecondaryDistance(new NormalizedCompressionDistance(queryTokens));
 			}

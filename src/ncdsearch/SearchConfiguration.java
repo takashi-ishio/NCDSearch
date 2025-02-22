@@ -560,9 +560,11 @@ public class SearchConfiguration {
 			return new NgramSetDistance(queryTokens, n);
 		} else if (algorithmName.startsWith(ALGORITHM_CHAR_LAMPEL_ZIV_JACCARD_DISTANCE)) {
 			return new CharLZJDistance(queryTokens);
-		} else if (algorithmName.startsWith(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE)) {
+		} else if (algorithmName.equals(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE)) {
+			System.err.println("LZJD");
 			return new LZJDistance(queryTokens);
 		} else if (algorithmName.startsWith(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_PUBLISHED)) {
+			System.err.println("LZJDTrad");
 			boolean strict = algorithmName.contains(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT);
 			LZJDistance2022 d = new LZJDistance2022(queryTokens, strict);
 			if (algorithmName.contains(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_WITH_NCD)) {

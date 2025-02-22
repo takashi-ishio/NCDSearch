@@ -204,7 +204,8 @@ A larger amount of memory is also required to store N files in memory at once.
 You can specify an algorithm using `-a` option.
 This tool supports the following algorithms.
 
- - `lzjd`: Lempel-Ziv Jaccard Distance.  The default strategy.
+ - `lzjd`: The default strategy of the tool.  An efficient implementation of Lempel-Ziv Jaccard Distance.  
+ - `lzjd2022`: An implementation of Lempel-Ziv Jaccard Distance described in the [technical paper](NCDSearch_evaluation_2022.pdf).
  - `clzjd`: Character-level Lempel-Ziv Jaccard Distance.  It internally uses `char` instead of `byte` for comparison.  This may be important to find similar multi-byte strings.
  - `tld`: Token-level Levenshtein Distance.  A distance is measured by the number of add/delete/modify operations to transform a query string to a code fragment in source code.
  - `ntld`: Normalized Token-level Levenshtein Distance.  A distance is a variant of Token-level Levenshtein Distance normalized by the length of a query string.

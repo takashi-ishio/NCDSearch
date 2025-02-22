@@ -94,7 +94,7 @@ public class LZJDistance implements IVariableWindowStrategy {
 		int byteCount = code.getBytePosition(endPos) - firstTokenPos;
 		IntOpenCustomHashSet s = new IntOpenCustomHashSet(2 * byteCount, hashingStrategy);
 
-		int allowedMaxUnmatched = 1+(int)(threshold * querySet.size() * 1.0 / (1 - threshold));
+		int allowedMaxUnmatched = 1 + (int)(threshold * querySet.size() / (1 - threshold));
 
 		int start = 0;
 		int end = 1;
@@ -102,9 +102,9 @@ public class LZJDistance implements IVariableWindowStrategy {
 		
 		int windowSize = endPos-startPos;
 		// For each token position, update LZSet and LZJD 
-		for (int t=0; t<windowSize; t++) {
+		for (int t=1; t<=windowSize; t++) {
 			
-			int nextEnd = code.getBytePosition(startPos+t+1)-firstTokenPos;
+			int nextEnd = code.getBytePosition(startPos + t) - firstTokenPos;
 			while (end <= nextEnd) {
 				int phraseHash = MurmurHash3.murmurhash3_x86_32(buf, firstTokenPos + start, end-start, 0);
 				boolean isNewElement = s.add(phraseHash);
@@ -118,10 +118,10 @@ public class LZJDistance implements IVariableWindowStrategy {
 			}
 			
 			int unionSize = querySet.size() + s.size() - intersection;
-			double lzjd = (unionSize - intersection) * 1.0 / unionSize;
+			double lzjd = (double)(unionSize - intersection) / unionSize;
 			if (lzjd < bestLZJD) {
 				bestLZJD = lzjd;
-				bestWindowSize = t+1;
+				bestWindowSize = t;
 			}
 
 			// Terminate the loop early, if no chance 

@@ -226,8 +226,11 @@ public class TokenSequence {
 	/**
 	 * Extract a substring of tokens between the specified lines.
 	 * @param startLine specifies the start line of tokens.
-	 * @param endLine specifies the end line of tokens.  Differently from substring method, the line is included in the substring.
-	 * @return tokens.  The method returns null if invalid lines are specified (e.g. startLine is greater than endLine).
+	 * @param endLine specifies the end line of tokens.  
+	 * Differently from substring method, the line is included in the substring 
+	 * for consistency with the command line interface.
+	 * @return tokens.  The method returns null if invalid lines are specified 
+	 * (e.g. startLine is greater than endLine).
 	 */
 	public TokenSequence substringByLine(int startLine, int endLine) {
 		int startPos;
@@ -295,13 +298,14 @@ public class TokenSequence {
 	}
 
 	/**
+	 * Scan tokens and find tokens that are the first tokens of lines.
 	 * @return token positions that are the first tokens of lines, 
 	 * i.e. each pos in the resultant array satisfies: getLine(pos-1) < getLine(pos).
 	 */
 	public int[] getLineHeadTokenPositions() {
 		TIntArrayList result = new TIntArrayList();
 		for (int i=0; i<size(); i++) {
-			if (i == 0 || getLine(i-1) < getLine(i)) {
+			if (i + start <= 0 || getLine(i-1) < getLine(i)) {
 				result.add(i);
 			}
 		}
@@ -310,7 +314,8 @@ public class TokenSequence {
 	
 	/**
 	 * @param windowSize
-	 * @return every token positions to be compared with a query. 
+	 * @return every token positions (0..size()-windowSize+1) 
+	 * to be compared with a query. 
 	 * If windowSize is larger than the token sequence,
 	 * the entire token sequence is compared. 
 	 */
@@ -342,6 +347,9 @@ public class TokenSequence {
 	
 	/**
 	 * @return the number of non-empty lines in the file.
+	 * This method is prepared for statistics; 
+	 * this number does not represent the number of 
+	 * lines in an extracted subsequence.
 	 */
 	public int getLineCount() {
 		return lineCount;

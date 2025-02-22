@@ -100,7 +100,11 @@ public class TokenSequenceTest {
 		for (int i=0; i<to-from+1; i++) {
 			Assert.assertEquals(expected_sub[i], sub.getBytePosition(i));
 		}
-		
+
+		TokenSequence last = sequence.substring(12, 14);
+		int[] expected_last = new int[]{32, 34, 36};
+		Assert.assertArrayEquals(expected_last, last.getBytePositions());
+
 		TokenSequence line = sequence.substringByLine(2, 3);
 		// expected: "int x = 0 ; int y = 1 ; "
 		int[] expected_line = new int[]{10, 14, 16, 18, 20, 22, 26, 28, 30, 32, 34};

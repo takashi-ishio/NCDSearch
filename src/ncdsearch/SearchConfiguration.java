@@ -115,7 +115,7 @@ public class SearchConfiguration {
 	private TokenSequence queryTokens;
 	private ArrayList<String> sourceDirs = new ArrayList<>();
 	private FileType queryFileType = null;
-	private TIntArrayList windowSize;
+	private int[] windowSize;
 	private boolean normalization = false;
 	private PredictionFilter prefilter = null;
 	private ArrayList<String> inclusionFilters = new ArrayList<>();
@@ -369,31 +369,33 @@ public class SearchConfiguration {
 			prefilter.setQuery(queryTokens);
 		}
 		 
-		TDoubleArrayList windowRatio = new TDoubleArrayList();
-		for (double start = 1.0; start >= MIN_WINDOW; start -= WINDOW_STEP) {
-			windowRatio.add(start);
-		}
-		for (double start = 1.0 + WINDOW_STEP; start <= MAX_WINDOW; start += WINDOW_STEP) {
-			windowRatio.add(start);
-		}
-		windowRatio.sort();
-		
 		if (algorithm.startsWith(ALGORITHM_TOKEN_LEVENSHTEIN_DISTANCE)) {
-			windowSize = new TIntArrayList();
-			windowSize.add(queryTokens.size());
+			TIntArrayList windowSizeList = new TIntArrayList();
+			windowSizeList.add(queryTokens.size());
 			for (int i=1; i<=threshold; i++) {
-				windowSize.add(queryTokens.size() + i);
-				windowSize.add(queryTokens.size() - i);
+				windowSizeList.add(queryTokens.size() + i);
+				windowSizeList.add(queryTokens.size() - i);
 			}
-			windowSize.sort();
+			windowSizeList.sort();
+			windowSize = windowSizeList.toArray();
 		} else {
-			windowSize = new TIntArrayList();
+			TDoubleArrayList windowRatio = new TDoubleArrayList();
+			for (double start = 1.0; start >= MIN_WINDOW; start -= WINDOW_STEP) {
+				windowRatio.add(start);
+			}
+			for (double start = 1.0 + WINDOW_STEP; start <= MAX_WINDOW; start += WINDOW_STEP) {
+				windowRatio.add(start);
+			}
+			windowRatio.sort();
+			
+			TIntArrayList windowSizeList = new TIntArrayList();
 			for (int i=0; i<windowRatio.size(); i++) {
 				int w = (int)Math.ceil(queryTokens.size() * windowRatio.get(i));
-				if (i == 0 || windowSize.get(windowSize.size()-1) != w) {
-					windowSize.add(w);
+				if (i == 0 || windowSizeList.get(windowSizeList.size()-1) != w) {
+					windowSizeList.add(w);
 				}
 			}
+			windowSize = windowSizeList.toArray();
 		}
 
 	}
@@ -402,7 +404,7 @@ public class SearchConfiguration {
 	 * @return true if arguments are valid and also a query is specified.
 	 */
 	public boolean isValidConfiguration() {
-		boolean windowSizeSpecified = windowSize != null && windowSize.size() > 0; 
+		boolean windowSizeSpecified = windowSize != null && windowSize.length > 0; 
 		boolean gitDirSpecified = gitDirName != null && gitDirName.isDirectory() && gitDirName.canRead();
 		boolean fileListSpecified = filelistName != null && filelistName.isFile() && filelistName.canRead();
 		boolean sourceDirSpecified = sourceDirs.size() > 0;
@@ -588,11 +590,11 @@ public class SearchConfiguration {
 		return b.toString();
 	}
 
-	public static String concat(TIntArrayList list) {
+	public static String concat(int[] list) {
 		StringBuilder b = new StringBuilder();
-		for (int i=0; i<list.size(); i++) {
+		for (int i=0; i<list.length; i++) {
 			if (i>0) b.append(", ");
-			b.append(list.get(i));
+			b.append(list[i]);
 		}
 		return b.toString();
 	}
@@ -695,19 +697,11 @@ public class SearchConfiguration {
 	}
 	
 	public int getLargestWindowSize() {
-		return windowSize.get(windowSize.size()-1);
+		return windowSize[windowSize.length-1];
 	}
 	
-	public int getWindowSizeCount() {
-		return windowSize.size();
-	}
-	
-	/**
-	 * @param n should be between 0 and getWindowSizeCount()-1.
-	 * @return n-th window size.
-	 */
-	public int getWindowSize(int n) {
-		return windowSize.get(n);
+	public int[] getWindowSizeList() {
+		return windowSize;
 	}
 	
 	public Charset getSourceCharset() {

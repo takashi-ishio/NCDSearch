@@ -670,9 +670,9 @@ public class SearchConfiguration {
 	}
 	
 	/**
-	 * 
-	 * @param filepath
-	 * @return true if it is supported 
+	 * @param filepath specifies a file path.
+	 * @return a file type to scan the file path depending on 
+	 * the current configuration.
 	 */
 	public FileType getTargetLanguage(String filepath) {
 		if (targetFileType != null) {

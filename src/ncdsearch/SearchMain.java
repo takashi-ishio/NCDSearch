@@ -73,89 +73,30 @@ public class SearchMain {
 	 */
 	public void execute() {
 		
-		// This is a List to record all strategy objects created for multi-threaded search
-		final List<ICodeDistanceStrategy> createdStrategies = Collections.synchronizedList(new ArrayList<ICodeDistanceStrategy>());
-
-		try (IReport report = config.getReport()) {
+		try (IReport report = config.getReport(); 
+			StrategyManager strategyInstances = new StrategyManager()) {
 			
-			// A search strategy object is created for each thread 
-			ThreadLocal<ICodeDistanceStrategy> strategies = new ThreadLocal<ICodeDistanceStrategy>() {
-				@Override
-				protected ICodeDistanceStrategy initialValue() {
-					ICodeDistanceStrategy similarityStrategy = config.createStrategy();
-					createdStrategies.add(similarityStrategy);
-					return similarityStrategy;
-				}
-			};
-			
-			final Concurrent c = new Concurrent(config.getThreadCount(), null);
+			Concurrent c = new Concurrent(config.getThreadCount(), null);
 			
 			try (IFiles files = config.getFiles()) { 
 
 				for (IFile f = files.next(); f != null; f = files.next()) {
-					final String targetPath = f.getPath();
-					if (config.isVerbose()) System.err.println(targetPath);
+					String targetPath = f.getPath();
+					if (config.isVerbose()) {
+						System.err.println(targetPath);
+					}
 					
-					final FileType type = config.getTargetLanguage(targetPath);
+					FileType type = config.getTargetLanguage(targetPath);
 					if (TokenReaderFactory.isSupported(type)) {
 						
 						// Analyze the content if the file is a target programming language 
-						final IFile target = f;
-						c.execute(new Concurrent.Task() {
-							@Override
-							public boolean run(OutputStream out) throws IOException {
-	
-								// Read the file content
-								TokenReader reader = TokenReaderFactory.create(type, target.read(), config.getSourceCharset());
-								TokenSequence fileTokens = new TokenSequence(reader, config.useNormalization(), config.useSeparator());
-						
-								// Apply a quick filter 
-								PredictionFilter prefilter = config.getPrefilter();
-								if (prefilter == null || prefilter.shouldSearch(fileTokens)) {
-									int[] positions;
-									if (config.isFullScan()) {
-										positions = fileTokens.getFullPositions(config.getQueryTokens().size());
-									} else {
-										positions = fileTokens.getLineHeadTokenPositions();
-									}
-									
-									// Count the number of lines and tokens processed by this search
-									report.recordAnalyzedFile(targetPath, fileTokens.getLineCount(), fileTokens.size());
-	
-									// Identify a similar code fragment for each position (if exists)
-									ArrayList<Fragment> fragments = new ArrayList<>();
-									ICodeDistanceStrategy similarityStrategy = strategies.get();
-									for (int p=0; p<positions.length; p++) {
-										Fragment fragment = checkPosition(targetPath, fileTokens, positions[p], similarityStrategy);
-										if (fragment != null) {
-											fragments.add(fragment);
-										}
-									}
-							
-									if (config.allowOverlap()) {
-										// Print the raw result
-										report.write(fragments);
-									} else {
-										// Remove redundant elements and print the result.
-										ArrayList<Fragment> result = Fragment.filter(fragments);
-										if (result.size() > 0) {
-											report.write(result);
-										}
-									}
-								}
-								return true;
-							}
-						});
+						c.execute(new SearchTask(targetPath, type, f, report, strategyInstances));
 					}
 				}
 				c.waitComplete();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-		} finally {
-			for (ICodeDistanceStrategy s: createdStrategies) {
-				s.close();
-			}
 		}
 	}
 	
@@ -198,5 +139,108 @@ public class SearchMain {
 		}
 	}
 	
+	
+	public class StrategyManager implements AutoCloseable {
+
+		/** 
+		 * This is a List to record all strategy objects created for multi-threaded search
+		 */
+		private List<ICodeDistanceStrategy> createdStrategyInstances = Collections.synchronizedList(new ArrayList<ICodeDistanceStrategy>());
+
+		/** 
+		 * A search strategy object is created for each thread
+		 */
+		private ThreadLocal<ICodeDistanceStrategy> instances = new ThreadLocal<ICodeDistanceStrategy>() {
+			@Override
+			protected ICodeDistanceStrategy initialValue() {
+				ICodeDistanceStrategy similarityStrategy = config.createStrategy();
+				createdStrategyInstances.add(similarityStrategy);
+				return similarityStrategy;
+			}
+		};
+
+		public StrategyManager() {
+		}
+		
+		/**
+		 * @return a thread-local instance of a strategy object.
+		 */
+		public ICodeDistanceStrategy getThreadLocalInstance() {
+			return instances.get();
+		}
+		
+		/**
+		 * This method releases all strategy instances.
+		 */
+		public void close() {
+			for (ICodeDistanceStrategy s: createdStrategyInstances) {
+				s.close();
+			}
+		}
+		
+		
+	}
+	
+	public class SearchTask implements Concurrent.Task {
+		
+		private String targetPath;
+		private FileType type;
+		private IFile target;
+		private IReport report;
+		private StrategyManager strategyInstances;
+
+		public SearchTask(String targetPath, FileType type, IFile target, IReport report, StrategyManager strategyInstances) {
+			this.targetPath = targetPath;
+			this.type = type;
+			this.target = target;
+			this.report = report;
+			this.strategyInstances = strategyInstances;
+		}
+
+		@Override
+		public boolean run(OutputStream out) throws IOException {
+
+			// Read the file content
+			TokenReader reader = TokenReaderFactory.create(type, target.read(), config.getSourceCharset());
+			TokenSequence fileTokens = new TokenSequence(reader, config.useNormalization(), config.useSeparator());
+	
+			// Apply a quick filter 
+			PredictionFilter prefilter = config.getPrefilter();
+			if (prefilter == null || prefilter.shouldSearch(fileTokens)) {
+				int[] positions;
+				if (config.isFullScan()) {
+					positions = fileTokens.getFullPositions(config.getQueryTokens().size());
+				} else {
+					positions = fileTokens.getLineHeadTokenPositions();
+				}
+				
+				// Count the number of lines and tokens processed by this search
+				report.recordAnalyzedFile(targetPath, fileTokens.getLineCount(), fileTokens.size());
+
+				// Identify a similar code fragment for each position (if exists)
+				ArrayList<Fragment> fragments = new ArrayList<>();
+				ICodeDistanceStrategy similarityStrategy = strategyInstances.getThreadLocalInstance();
+				for (int p=0; p<positions.length; p++) {
+					Fragment fragment = checkPosition(targetPath, fileTokens, positions[p], similarityStrategy);
+					if (fragment != null) {
+						fragments.add(fragment);
+					}
+				}
+		
+				if (config.allowOverlap()) {
+					// Print the raw result
+					report.write(fragments);
+				} else {
+					// Remove redundant elements and print the result.
+					ArrayList<Fragment> result = Fragment.filter(fragments);
+					if (result.size() > 0) {
+						report.write(result);
+					}
+				}
+			}
+			return true;
+		}
+
+	}
 
 }

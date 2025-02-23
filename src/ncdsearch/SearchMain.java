@@ -186,9 +186,9 @@ public class SearchMain {
 				ICodeDistanceStrategy similarityStrategy = strategyInstances.getThreadLocalInstance();
 				ArrayList<Fragment> fragments;
 				if (similarityStrategy instanceof IVariableWindowStrategy) {
-					fragments = checkPositions(targetPath, fileTokens, positions, config.getLargestWindowSize(), config.getDistanceThreshold(), (IVariableWindowStrategy)similarityStrategy); 
+					fragments = applyVariableWindowStrategy(targetPath, fileTokens, positions, config.getLargestWindowSize(), config.getDistanceThreshold(), (IVariableWindowStrategy)similarityStrategy); 
 				} else {
-					fragments = checkPositionsWithFixedSizeStrategy(targetPath, fileTokens, positions, config.getWindowSizeList(), config.getDistanceThreshold(), similarityStrategy);
+					fragments = applyFixedWindowStrategy(targetPath, fileTokens, positions, config.getWindowSizeList(), config.getDistanceThreshold(), similarityStrategy);
 				}
 		
 				if (config.allowOverlap()) {
@@ -205,49 +205,30 @@ public class SearchMain {
 			return true;
 		}
 		
-		public ArrayList<Fragment> checkPositions(String filepath, TokenSequence fileTokens, int[] positions, int windowSize, double threshold, IVariableWindowStrategy strategy) {
-			ArrayList<Fragment> fragments = new ArrayList<>();
-			for (int startPos: positions) {
-				Fragment fragment = applyVariableWindowStrategy(filepath, fileTokens, startPos, windowSize, threshold, strategy); 
-				if (fragment != null) {
-					fragments.add(fragment);
-				}
-			}					
-			return fragments;
-		}
-		
-		public ArrayList<Fragment> checkPositionsWithFixedSizeStrategy(String filepath, TokenSequence fileTokens, int[] positions, int[] windowSizeList, double threshold, ICodeDistanceStrategy strategy) {
-			ArrayList<Fragment> fragments = new ArrayList<>();
-			for (int startPos: positions) {
-				Fragment fragment = applyFixedWindowStrategy(filepath, fileTokens, startPos, windowSizeList, threshold, strategy);
-				if (fragment != null) {
-					fragments.add(fragment);
-				}
-			}
-			return fragments;
-		}
 	}
 	
 	/**
 	 * Find the best match for a particular source code location using a given strategy.
 	 * @param filepath specifies the file name.
 	 * @param fileTokens specifies the file content.
-	 * @param startPos specifies the position of the comparison.
+	 * @param startPositions specify positions of the comparison.
 	 * @param windowSize specifies the maximum window size for comparison.
 	 * @param distanceThreshold specifies a threshold for a report.
 	 * @param strategy specifies an algorithm for comparison.
 	 * @return a code fragment that matches the given query if its distance is less than or equal to a threshold
 	 */
-	public static Fragment applyVariableWindowStrategy(String filepath, TokenSequence fileTokens, int startPos, int windowSize, double distanceThreshold, IVariableWindowStrategy strategy) {
-		double distance = strategy.findBestMatch(fileTokens, startPos, startPos + windowSize, distanceThreshold);
-		if (distance <= distanceThreshold) {
-			int w = strategy.getBestWindowSize();
-			return new Fragment(filepath, fileTokens, startPos, startPos + w, distance); 
-		} else {
-			return null;
+	public static ArrayList<Fragment> applyVariableWindowStrategy(String filepath, TokenSequence fileTokens, int[] startPositions, int windowSize, double distanceThreshold, IVariableWindowStrategy strategy) {
+		ArrayList<Fragment> fragments = new ArrayList<>();
+		for (int startPos: startPositions) {
+			double distance = strategy.findBestMatch(fileTokens, startPos, startPos + windowSize, distanceThreshold);
+			if (distance <= distanceThreshold) {
+				int w = strategy.getBestWindowSize();
+				fragments.add(new Fragment(filepath, fileTokens, startPos, startPos + w, distance)); 
+			}
 		}
+		return fragments;
 	}
-	
+
 	/**
 	 * Find the best match for a particular position using a strategy by using multiple window size
 	 * @param filepath specifies the file name.
@@ -258,28 +239,29 @@ public class SearchMain {
 	 * @param strategy specifies an algorithm for comparison.
 	 * @return
 	 */
-	public static Fragment applyFixedWindowStrategy(String filepath, TokenSequence fileTokens, int startPos, int[] windowSizeList, double distanceThreshold, ICodeDistanceStrategy strategy) {
-		// Try multiple window size
-		double minDistance = Double.MAX_VALUE;
-		int minWindowSize = -1;
-		for (int w: windowSizeList) {
-			final TokenSequence window = fileTokens.substring(startPos, startPos + w);
-			if (window != null) {
-				double d = strategy.computeDistance(window);
-				if (d < minDistance) {
-					minDistance = d;
-					minWindowSize = w;
+	public static ArrayList<Fragment> applyFixedWindowStrategy(String filepath, TokenSequence fileTokens, int[] startPositions, int[] windowSizeList, double distanceThreshold, ICodeDistanceStrategy strategy) {
+		ArrayList<Fragment> fragments = new ArrayList<>();
+		for (int startPos: startPositions) {
+			// Try multiple window size
+			double minDistance = Double.MAX_VALUE;
+			int minWindowSize = -1;
+			for (int w: windowSizeList) {
+				final TokenSequence window = fileTokens.substring(startPos, startPos + w);
+				if (window != null) {
+					double d = strategy.computeDistance(window);
+					if (d < minDistance) {
+						minDistance = d;
+						minWindowSize = w;
+					}
 				}
 			}
-		}
-		
-		// Report the best one
-		if (minDistance <= distanceThreshold) {
-			return new Fragment(filepath, fileTokens, startPos, startPos + minWindowSize, minDistance);
-		} else {
-			return null;
-		}
-		
+			
+			// Report the best one
+			if (minDistance <= distanceThreshold) {
+				fragments.add(new Fragment(filepath, fileTokens, startPos, startPos + minWindowSize, minDistance));
+			}
+		}		
+		return fragments;
 	}
 
 }

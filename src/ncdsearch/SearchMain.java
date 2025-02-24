@@ -4,11 +4,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 import ncdsearch.comparison.ICodeDistanceStrategy;
 import ncdsearch.comparison.IVariableWindowStrategy;
+import ncdsearch.comparison.StrategyManager;
 import ncdsearch.comparison.TokenSequence;
 import ncdsearch.comparison.algorithm.PredictionFilter;
 import ncdsearch.eval.FileComparison;
@@ -48,7 +47,7 @@ public class SearchMain {
 			} catch (IOException e) {
 			}
 			
-			// The config test mode does not proceed to an actual search
+			// The configuration test mode does not proceed to an actual search
 			return;
 		}
 
@@ -74,7 +73,7 @@ public class SearchMain {
 	public void execute() {
 		
 		try (IReport report = config.getReport(); 
-			StrategyManager strategyInstances = new StrategyManager()) {
+			StrategyManager strategyInstances = new StrategyManager(config)) {
 			
 			Concurrent c = new Concurrent(config.getThreadCount(), null);
 			
@@ -101,48 +100,6 @@ public class SearchMain {
 	}
 	
 	
-	
-	public class StrategyManager implements AutoCloseable {
-
-		/** 
-		 * This is a List to record all strategy objects created for multi-threaded search
-		 */
-		private List<ICodeDistanceStrategy> createdStrategyInstances = Collections.synchronizedList(new ArrayList<ICodeDistanceStrategy>());
-
-		/** 
-		 * A search strategy object is created for each thread
-		 */
-		private ThreadLocal<ICodeDistanceStrategy> instances = new ThreadLocal<ICodeDistanceStrategy>() {
-			@Override
-			protected ICodeDistanceStrategy initialValue() {
-				ICodeDistanceStrategy similarityStrategy = config.createStrategy();
-				createdStrategyInstances.add(similarityStrategy);
-				return similarityStrategy;
-			}
-		};
-
-		public StrategyManager() {
-		}
-		
-		/**
-		 * @return a thread-local instance of a strategy object.
-		 */
-		public ICodeDistanceStrategy getThreadLocalInstance() {
-			return instances.get();
-		}
-		
-		/**
-		 * This method releases all strategy instances.
-		 */
-		public void close() {
-			for (ICodeDistanceStrategy s: createdStrategyInstances) {
-				s.close();
-			}
-		}
-		
-	}
-
-	
 	/**
 	 * This class implements a search for a single file 
 	 */
@@ -154,6 +111,14 @@ public class SearchMain {
 		private IReport report;
 		private StrategyManager strategyInstances;
 
+		/**
+		 * The constructor stores the information of a code search task for a single file.
+		 * @param targetPath specifies a file path to be analyzed.
+		 * @param type specifies a file type to choose a lexical analyzer.
+		 * @param target specifies a file content.  This could be different from targetPath so that the targetPath variable may store more information.
+		 * @param report is an object to record a result.
+		 * @param strategyInstances provide a strategy object for code comparison.
+		 */
 		public SearchTask(String targetPath, FileType type, IFile target, IReport report, StrategyManager strategyInstances) {
 			this.targetPath = targetPath;
 			this.type = type;

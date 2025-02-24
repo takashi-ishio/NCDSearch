@@ -14,6 +14,7 @@ import java.util.List;
 import gnu.trove.list.array.TDoubleArrayList;
 import gnu.trove.list.array.TIntArrayList;
 import ncdsearch.comparison.ICodeDistanceStrategy;
+import ncdsearch.comparison.ICodeDistanceStrategyFactory;
 import ncdsearch.comparison.NormalizedCompressionDistance;
 import ncdsearch.comparison.TokenSequence;
 import ncdsearch.comparison.algorithm.ByteLCSDistance;
@@ -44,7 +45,7 @@ import sarf.lexer.FileType;
 import sarf.lexer.TokenReader;
 import sarf.lexer.TokenReaderFactory;
 
-public class SearchConfiguration {
+public class SearchConfiguration implements ICodeDistanceStrategyFactory {
 
 	public static final String ARG_MIN_WINDOW = "-min";
 	public static final String ARG_MAX_WINDOW = "-max";
@@ -518,7 +519,7 @@ public class SearchConfiguration {
 	 * @return a strategy object.
 	 * The object may have an internal state.  
 	 */
-	public ICodeDistanceStrategy createStrategy() {
+	public ICodeDistanceStrategy create() {
 		return createStrategy(algorithm);
 	}
 	

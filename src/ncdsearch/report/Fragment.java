@@ -73,14 +73,14 @@ public class Fragment implements Comparable<Fragment> {
 	}
 
 	/**
-	 * @return a string represenation of the position and the distance.
+	 * @return a string representation of the position and the distance.
 	 */
 	public String toString() {
 		return toString(false, LinkStyle.FileURL);
 	}
 
 	/**
-	 * @return a string represenation of the position and the distance. 
+	 * @return a string representation of the position and the distance. 
 	 * It includes
 	 *         character positions in lines to analyze details.
 	 */
@@ -91,7 +91,7 @@ public class Fragment implements Comparable<Fragment> {
 	/**
 	 * @param detail If this flag is set to true, the resultant string includes character positions in lines.
 	 * @param style specifies a format of file name so that a particular editor/console can automatically hyperlink the file name. 
-	 * @return a string represenation of the position and the distance.
+	 * @return a string representation of the position and the distance.
 	 */
 	public String toString(boolean detail, LinkStyle style) {
 		StringBuilder b = new StringBuilder();

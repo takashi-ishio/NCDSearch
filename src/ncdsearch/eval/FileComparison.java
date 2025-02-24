@@ -10,7 +10,7 @@ import ncdsearch.SearchConfiguration;
 import ncdsearch.comparison.ICodeDistanceStrategy;
 import ncdsearch.comparison.NormalizedCompressionDistance;
 import ncdsearch.comparison.TokenSequence;
-import ncdsearch.comparison.algorithm.LZJDistance;
+import ncdsearch.comparison.algorithm.LZJDistance2022;
 import ncdsearch.comparison.algorithm.NormalizedTokenLevenshteinDistance;
 import ncdsearch.comparison.ncd.Compressor;
 import sarf.lexer.FileType;
@@ -71,7 +71,7 @@ public class FileComparison {
 			if (useNormalizedTokenLD) {
 				strategy = new NormalizedTokenLevenshteinDistance(tokens1);
 			} else if (useLZJD) {
-				strategy = new LZJDistance(tokens1);
+				strategy = new LZJDistance2022(tokens1);
 			} else {
 				strategy = new NormalizedCompressionDistance(tokens1, Compressor.createInstance(compressor));
 			}

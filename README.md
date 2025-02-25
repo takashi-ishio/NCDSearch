@@ -237,8 +237,9 @@ The option can be used to check how command line options are recognized by the t
 
 #### Full Scan Mode
 
-For efficiency, the tool compares a query with sampled lines of code by default.  It is fast, but may result in false negatives.
-If your query is small enough, you should specify `-full` option that checks all tokens so that you can get more results.
+The tool starts comparisons from the beginning of each line.  While it is fast, it may result in false negatives.
+By specifying the `-full` option, similar code starting from the middle of a line can also be detected.
+This option should only be used with short queries.
 
         java -jar ncdsearch.jar dir_or_file -lang java -full -e identifier
 

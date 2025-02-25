@@ -45,28 +45,28 @@ The following table is a list of major options.
 
 |Category       | Option                  |Description                                                             |
 |:-----------|:-----------------------|:-----------------------------------------------------------------------|
-|Query          |`-e` [query]            |Specify a query. All arguments after the option are regarded as a query.|
+|[Query](#query-options)|`-e` [query]            |Specify a query. All arguments after the option are regarded as a query.|
 |               |`-q` [filename]         |Read a query from a specified file.  `-` represents a standard input.   | 
 |               |`-sline` [line-number]  |Specify a start line number of a query in the file of `-q` option.      |
 |               |`-eline` [line-number]  |Specify an end line number of a query in the file of `-q` option.       |
 |               |`-lang` [language]      |Specify a programming language of a query.  Required for `-e` option.   |
-|Target file    | [src]                   |Specify a source file or directory name.                               |
+|[Target file](#target-file-options)| [src]                   |Specify a source file or directory name.                               |
 |               |`-targetlang` [language]|Specify a programming language for target files.                      |
 |               |`-i` [extension]         |Specify a file extension to include in the search.                     |
 |               |`-encoding` [encoding]  |Specify a text encoding of source files.  The default encoding is UTF-8.|
 |               |`-l` [filelist]         |Search files listed in the specified text file (one file name per line) |
 |               |`-git` [git-dir]        |Search files in the specified git repository instead of normal files.   |
 |               |`-gitcommit` [commit]   |Specifies a commit to be analyzed when `-git` option is specified.  The default value is "HEAD".|
-|Output         |`-v`                    |Show configuration and progress.                                        |
+|[Output](#output-options)|`-v`                    |Show configuration and progress.                                        |
 |               |`-sort`                 |Report fragments in the ascending order of distance.                    |
 |               |`-time`                 |Report the ellapsed time and the numbers of analyzed files and lines.   |
 |               |`-json`                 |Enable a JSON format report.                                            |
 |               |`-pos`                  |Report the detected source code locations in detail.                    |
 |               |`-link` [style]         |If one of `eclipse`, `vscode`, and `fileurl` is given, file names are printed using a clickable format on particular environments.  The default is `none` (just a file name). |
-|Strategy       |`-a` [algorithm]        |Specify an algorithm to compute a similarity. The default is `lzjd`.   |
+|[Strategy](#strategy-options)|`-a` [algorithm]        |Specify an algorithm to compute a similarity. The default is `lzjd`.   |
 |               |`-th` [threshold]       |Specify a threshold of the distance.  The default is 0.5.               |
 |               |`-thread` [num]         |Specify the number of threads for concurrent search.                    ||
-|Troubleshooting|`-testconfig`           |This option does not execute a search but print the current configuration.||
+|[Troubleshooting](#troubleshooting-options)|`-testconfig`           |This option does not execute a search but print the current configuration.|
 
 
 ### Query options
@@ -228,6 +228,10 @@ The `-a tld` option uses Levenshtein Distance on tokens without normalization.
 It simply counts the number of added, removed, and modified tokens and reports a code fragment whose distance is at most a given threshold.
 For example, `-q "a < b" -th 1 -full` matches `a > b` and  `a < c`.
 
+### Troubleshooting options
+
+The `-testconfig` option prints the current configuration as similar to `-v`, but it does not proceed to an actual search step.
+The option can be used to check how command line options are recognized by the tool.
 
 ### Experimental options
 

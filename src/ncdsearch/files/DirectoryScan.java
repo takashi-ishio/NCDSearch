@@ -14,8 +14,8 @@ public class DirectoryScan implements IFiles {
 	private IFileFilter filter;
 
 	/**
-	 * Construct an instance without file filtering
-	 * @param dirs
+	 * Construct an instance without file filtering.
+	 * @param dirs specify a list of directories. 
 	 */
 	public DirectoryScan(List<String> dirs) {
 		this(dirs, new IFileFilter() {
@@ -26,6 +26,11 @@ public class DirectoryScan implements IFiles {
 		});
 	}
 
+	/**
+	 * Construct an instance with a file filter.
+	 * @param dirs specify a list of directories. 
+	 * @param filter is to select target files in the directories.
+	 */
 	public DirectoryScan(List<String> dirs, IFileFilter filter) {
 		for (String d: dirs) {
 			files.add(new File(d));
@@ -37,6 +42,7 @@ public class DirectoryScan implements IFiles {
 	 * Search all files in a directory recursively.
 	 * @param dir specifies a search root.
 	 * @param action is called for each file.
+	 * @return the next file.  If the traversal completed, this method returns null.
 	 */
 	public IFile next() {
 		while (!files.isEmpty()) {

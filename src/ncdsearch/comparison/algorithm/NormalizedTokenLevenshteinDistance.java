@@ -1,7 +1,6 @@
 package ncdsearch.comparison.algorithm;
 
 
-import ncdsearch.comparison.ICodeDistanceStrategy;
 import ncdsearch.comparison.TokenSequence;
 
 
@@ -10,7 +9,7 @@ import ncdsearch.comparison.TokenSequence;
  * It is the number of edit operations (add/delete/modify) on tokens  
  * divided by the length of the longer sequence.
  */
-public class NormalizedTokenLevenshteinDistance extends TokenLevenshteinDistance implements ICodeDistanceStrategy {
+public class NormalizedTokenLevenshteinDistance extends TokenLevenshteinDistance {
 
 	private int queryLength;
 	

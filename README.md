@@ -184,15 +184,6 @@ If a result is different from your expectation, you can try `-v` to see the conf
 
         java -jar ncdsearch.jar dir_or_file -lang java -v < query
 
-### Multi-threading
-
-The program uses N working threads if `-thread N` option is provided.
-The multi-threading execution processes N files in parallel.
-File locations in the output may be differently ordered in each execution.
-
-Although N can be an arbitrary number (e.g. 2, 4, or 8), an effective value of N is dependent on available CPU resources. 
-A larger amount of memory is also required to store N files in memory at once.
-
 
 ### Strategy options
 
@@ -208,7 +199,6 @@ This tool supports the following algorithms.
  - `blcs`: Normalized Byte-level Longest Common Subsequence.  A distance is measured by the length of common byte subsequence normalized by the length of a query string.
  - `zip`: Normalized Compression Distance with Deflate algorithm that has been used in gzip.
  - `xz`, `zstd`, `bzip2`, `snappy`, `folca`: Normalized Compression Distance with the corresponding compression algorithm. These algorithms are provided just for experiments to see an impact of compression algorithms.
-
 
 #### Normalized Compression Distance (NCD)
 
@@ -227,6 +217,16 @@ The `-a ntld` option uses Normalized Levenshtein Distance on tokens, i.e. the ra
 The `-a tld` option uses Levenshtein Distance on tokens without normalization.
 It simply counts the number of added, removed, and modified tokens and reports a code fragment whose distance is at most a given threshold.
 For example, `-q "a < b" -th 1 -full` matches `a > b` and  `a < c`.
+
+#### Multi-threaded search
+
+The program uses N working threads if `-thread N` option is provided.
+The multi-threading execution processes N files in parallel.
+File locations in the output may be differently ordered in each execution.
+
+Although N can be an arbitrary number (e.g. 2, 4, or 8), an effective value of N is dependent on available CPU resources. 
+A larger amount of memory is also required to store N files in memory at once.
+
 
 ### Troubleshooting options
 

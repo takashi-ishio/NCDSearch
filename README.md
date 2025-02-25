@@ -43,33 +43,33 @@ Online usage example is available at:
 
 The following table is a list of major options. 
 
-|Option                  |Description                                                             |
-|:-----------------------|:-----------------------------------------------------------------------|
-|`-e` [query]            |Specify a query. All arguments after the option are regarded as a query.|
-|`-q` [filename]         |Read a query from a specified file.  `-` represents a standard input.   | 
-|`-sline` [line-number]  |Specify a start line number of a query in the file of `-q` option.      |
-|`-eline` [line-number]  |Specify an end line number of a query in the file of `-q` option.       |
-|`-lang` [language]      |Specify a programming language of a query.  Required for `-e` option.   |
-|`-targetlang` [language]|Specify a programming language for target files.                      |
-|`-i` [extension]         |Specify a file extension to include in the search.                     |
-|`-th` [threshold]       |Specify a threshold of the distance.  The default is 0.5.               |
-|`-thread` [num]         |Specify the number of threads for concurrent search.                    |
-|`-encoding` [encoding]  |Specify a text encoding of source files.  The default encoding is UTF-8.|
-|`-l` [filelist]         |Search files listed in the specified text file (one file name per line) |
-|`-git` [git-dir]        |Search files in the specified git repository instead of normal files.   |
-|`-gitcommit` [commit]   |Specifies a commit to be analyzed when `-git` option is specified.  The default value is "HEAD".|
-|`-v`                    |Show configuration and progress.                                        |
-|`-sort`                 |Report fragments in the ascending order of distance.                    |
-|`-time`                 |Report the ellapsed time and the numbers of analyzed files and lines.   |
-|`-json`                 |Enable a JSON format report.                                            |
-|`-pos`                  |Report the detected source code locations in detail.                    |
-|`-a` [algorithm]        |Specify an algorithm to compute a distance. The default is `lzjd`.      |
-|`-link` [style]         |If one of `eclipse`, `vscode`, and `fileurl` is given, file names are printed using a clickable format on particular environments.  The default is `none` (just a file name). |
-|`-testconfig`           |This option does not execute a search but print the current configuration.|
+|Category       | Option                  |Description                                                             |
+|:-----------|:-----------------------|:-----------------------------------------------------------------------|
+|Query          |`-e` [query]            |Specify a query. All arguments after the option are regarded as a query.|
+|               |`-q` [filename]         |Read a query from a specified file.  `-` represents a standard input.   | 
+|               |`-sline` [line-number]  |Specify a start line number of a query in the file of `-q` option.      |
+|               |`-eline` [line-number]  |Specify an end line number of a query in the file of `-q` option.       |
+|               |`-lang` [language]      |Specify a programming language of a query.  Required for `-e` option.   |
+|Target file    | [src]                   |Specify a source file or directory name.                               |
+|               |`-targetlang` [language]|Specify a programming language for target files.                      |
+|               |`-i` [extension]         |Specify a file extension to include in the search.                     |
+|               |`-encoding` [encoding]  |Specify a text encoding of source files.  The default encoding is UTF-8.|
+|               |`-l` [filelist]         |Search files listed in the specified text file (one file name per line) |
+|               |`-git` [git-dir]        |Search files in the specified git repository instead of normal files.   |
+|               |`-gitcommit` [commit]   |Specifies a commit to be analyzed when `-git` option is specified.  The default value is "HEAD".|
+|Output         |`-v`                    |Show configuration and progress.                                        |
+|               |`-sort`                 |Report fragments in the ascending order of distance.                    |
+|               |`-time`                 |Report the ellapsed time and the numbers of analyzed files and lines.   |
+|               |`-json`                 |Enable a JSON format report.                                            |
+|               |`-pos`                  |Report the detected source code locations in detail.                    |
+|               |`-link` [style]         |If one of `eclipse`, `vscode`, and `fileurl` is given, file names are printed using a clickable format on particular environments.  The default is `none` (just a file name). |
+|Strategy       |`-a` [algorithm]        |Specify an algorithm to compute a similarity. The default is `lzjd`.   |
+|               |`-th` [threshold]       |Specify a threshold of the distance.  The default is 0.5.               |
+|               |`-thread` [num]         |Specify the number of threads for concurrent search.                    ||
+|Troubleshooting|`-testconfig`           |This option does not execute a search but print the current configuration.||
 
 
-
-### Query Code Fragment
+### Query options
 
 You can input code fragments using STDIN, a query file, or command line arguments.
 
@@ -96,33 +96,11 @@ If you would like to see only exact matches, you can use `-a tld` option that us
         java -jar ncdsearch.jar dir_or_file -lang java -e public static void main(String[] args)
 
 
+### Target file options
 
-### Output Format
+The tool accepts file and directory names to search as arguments.
 
-The tool reports a result in a CSV format by default.
-For example, an execution with a query:
-
-        java -jar ncdsearch.jar -lang java -e "if (this.distance > another.distance) return true;"
-
-would report a line like this:
-
-        path/to/src/ncdsearch/Fragment.java,81,81,0.10714285714285714
-
-Each line of an output represents a similar source code fragment detected by the tool.
-  * The first column is the file name including the code fragment. 
-  * The second and third columns indicate the lines of the first and last tokens of the fragment. 
-    * You may specify `-pos` option to extract char positions in the lines. 
-  * The last column indicates the normalized compression distance between the query and the code fragment.  Since it is a distance, more similar code fragments have smaller values.
-
-According to the report, you may find a similar line of code in a file. For example:
-
-        81:   if (this.distance < another.distance) return true;
-
-The tool also supports a JSON format.  Add `-json` option to use the format.
-The `-pos` option with the json option reports source code tokens in addition to locations.
-
-
-### Source File Encoding
+#### Source File Encoding
 
 The tool assumes UTF-8 by default.
 Please specify `-encoding` option to choose a charset, e.g. `-encoding UTF-16`.
@@ -130,7 +108,7 @@ A list of supported encodings is dependent on a platform.
 A list for Oracle Java SE is available at: <https://docs.oracle.com/javase/jp/8/docs/technotes/guides/intl/encoding.doc.html>
 
 
-### Programming Language
+#### Programming Languages
 
 The `-lang` option specifies a programming language.  
 The tool uses file extensions as programming language names: `java` (Java), `c` (C/C++), `cs` (C#), `js` (JavaScript), `cbl` (Cobol), `vb` (Visual Basic 6), `txt` (plain text), and `generic` (generic tokenizer).  
@@ -175,15 +153,32 @@ you can use `-targetlang` option.  The following command regards a query code fr
 In addition to `-i` option, you can use `-l [filename]` option to specify a text file including a list of file names.
 
 
-### Full Scan Mode
+### Output options
 
-For efficiency, the tool compares a query with sampled lines of code by default.  It is fast, but may result in false negatives.
-If your query is small enough, you should specify `-full` option that checks all tokens so that you can get more results.
+The tool reports a result in a CSV format by default.
+For example, an execution with a query:
 
-        java -jar ncdsearch.jar dir_or_file -lang java -full -e identifier
+        java -jar ncdsearch.jar -lang java -e "if (this.distance > another.distance) return true;"
+
+would report a line like this:
+
+        path/to/src/ncdsearch/Fragment.java,81,81,0.10714285714285714
+
+Each line of an output represents a similar source code fragment detected by the tool.
+  * The first column is the file name including the code fragment. 
+  * The second and third columns indicate the lines of the first and last tokens of the fragment. 
+    * You may specify `-pos` option to extract char positions in the lines. 
+  * The last column indicates the normalized compression distance between the query and the code fragment.  Since it is a distance, more similar code fragments have smaller values.
+
+According to the report, you may find a similar line of code in a file. For example:
+
+        81:   if (this.distance < another.distance) return true;
+
+The tool also supports a JSON format.  Add `-json` option to use the format.
+The `-pos` option with the json option reports source code tokens in addition to locations.
 
 
-### Verbose Mode
+#### Verbose Mode
 
 If a result is different from your expectation, you can try `-v` to see the configuration and progress of the search.
 
@@ -199,7 +194,7 @@ Although N can be an arbitrary number (e.g. 2, 4, or 8), an effective value of N
 A larger amount of memory is also required to store N files in memory at once.
 
 
-### Algorithms
+### Strategy options
 
 You can specify an algorithm using `-a` option.
 This tool supports the following algorithms.
@@ -213,7 +208,6 @@ This tool supports the following algorithms.
  - `blcs`: Normalized Byte-level Longest Common Subsequence.  A distance is measured by the length of common byte subsequence normalized by the length of a query string.
  - `zip`: Normalized Compression Distance with Deflate algorithm that has been used in gzip.
  - `xz`, `zstd`, `bzip2`, `snappy`, `folca`: Normalized Compression Distance with the corresponding compression algorithm. These algorithms are provided just for experiments to see an impact of compression algorithms.
-
 
 
 #### Normalized Compression Distance (NCD)
@@ -233,6 +227,16 @@ The `-a ntld` option uses Normalized Levenshtein Distance on tokens, i.e. the ra
 The `-a tld` option uses Levenshtein Distance on tokens without normalization.
 It simply counts the number of added, removed, and modified tokens and reports a code fragment whose distance is at most a given threshold.
 For example, `-q "a < b" -th 1 -full` matches `a > b` and  `a < c`.
+
+
+### Experimental options
+
+#### Full Scan Mode
+
+For efficiency, the tool compares a query with sampled lines of code by default.  It is fast, but may result in false negatives.
+If your query is small enough, you should specify `-full` option that checks all tokens so that you can get more results.
+
+        java -jar ncdsearch.jar dir_or_file -lang java -full -e identifier
 
 
 ## Evaluation Dataset

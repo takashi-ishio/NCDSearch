@@ -14,11 +14,13 @@ import java.util.List;
 import gnu.trove.list.array.TDoubleArrayList;
 import gnu.trove.list.array.TIntArrayList;
 import ncdsearch.comparison.ICodeDistanceStrategy;
+import ncdsearch.comparison.ICodeDistanceStrategyFactory;
 import ncdsearch.comparison.NormalizedCompressionDistance;
 import ncdsearch.comparison.TokenSequence;
 import ncdsearch.comparison.algorithm.ByteLCSDistance;
 import ncdsearch.comparison.algorithm.CharLZJDistance;
 import ncdsearch.comparison.algorithm.LZJDistance;
+import ncdsearch.comparison.algorithm.LZJDistance2022;
 import ncdsearch.comparison.algorithm.NgramDistance;
 import ncdsearch.comparison.algorithm.NgramSetDistance;
 import ncdsearch.comparison.algorithm.NormalizedByteLevenshteinDistance;
@@ -43,7 +45,7 @@ import sarf.lexer.FileType;
 import sarf.lexer.TokenReader;
 import sarf.lexer.TokenReaderFactory;
 
-public class SearchConfiguration {
+public class SearchConfiguration implements ICodeDistanceStrategyFactory {
 
 	public static final String ARG_MIN_WINDOW = "-min";
 	public static final String ARG_MAX_WINDOW = "-max";
@@ -91,7 +93,8 @@ public class SearchConfiguration {
 	private static final String ALGORITHM_BYTE_NGRAM_SET = "setbngram";
 	private static final String ALGORITHM_TFIDF = "tfidf";
 	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE = "lzjd";
-	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT = "strict";
+	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_PUBLISHED = "lzjd2022";
+	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT = "lzjdstrict";
 	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_WITH_NCD = "ncd";
 	private static final String ALGORITHM_CHAR_LAMPEL_ZIV_JACCARD_DISTANCE = "clzjd";
 	
@@ -103,6 +106,7 @@ public class SearchConfiguration {
 			ALGORITHM_BYTE_NGRAM_MULTISET,
 			ALGORITHM_BYTE_NGRAM_SET, ALGORITHM_TFIDF, 
 			ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE, 
+			ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_PUBLISHED,
 			ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT,
 			ALGORITHM_CHAR_LAMPEL_ZIV_JACCARD_DISTANCE};
 	
@@ -112,7 +116,7 @@ public class SearchConfiguration {
 	private TokenSequence queryTokens;
 	private ArrayList<String> sourceDirs = new ArrayList<>();
 	private FileType queryFileType = null;
-	private TIntArrayList windowSize;
+	private int[] windowSize;
 	private boolean normalization = false;
 	private PredictionFilter prefilter = null;
 	private ArrayList<String> inclusionFilters = new ArrayList<>();
@@ -366,31 +370,33 @@ public class SearchConfiguration {
 			prefilter.setQuery(queryTokens);
 		}
 		 
-		TDoubleArrayList windowRatio = new TDoubleArrayList();
-		for (double start = 1.0; start >= MIN_WINDOW; start -= WINDOW_STEP) {
-			windowRatio.add(start);
-		}
-		for (double start = 1.0 + WINDOW_STEP; start <= MAX_WINDOW; start += WINDOW_STEP) {
-			windowRatio.add(start);
-		}
-		windowRatio.sort();
-		
 		if (algorithm.startsWith(ALGORITHM_TOKEN_LEVENSHTEIN_DISTANCE)) {
-			windowSize = new TIntArrayList();
-			windowSize.add(queryTokens.size());
+			TIntArrayList windowSizeList = new TIntArrayList();
+			windowSizeList.add(queryTokens.size());
 			for (int i=1; i<=threshold; i++) {
-				windowSize.add(queryTokens.size() + i);
-				windowSize.add(queryTokens.size() - i);
+				windowSizeList.add(queryTokens.size() + i);
+				windowSizeList.add(queryTokens.size() - i);
 			}
-			windowSize.sort();
+			windowSizeList.sort();
+			windowSize = windowSizeList.toArray();
 		} else {
-			windowSize = new TIntArrayList();
+			TDoubleArrayList windowRatio = new TDoubleArrayList();
+			for (double start = 1.0; start >= MIN_WINDOW; start -= WINDOW_STEP) {
+				windowRatio.add(start);
+			}
+			for (double start = 1.0 + WINDOW_STEP; start <= MAX_WINDOW; start += WINDOW_STEP) {
+				windowRatio.add(start);
+			}
+			windowRatio.sort();
+			
+			TIntArrayList windowSizeList = new TIntArrayList();
 			for (int i=0; i<windowRatio.size(); i++) {
 				int w = (int)Math.ceil(queryTokens.size() * windowRatio.get(i));
-				if (i == 0 || windowSize.get(windowSize.size()-1) != w) {
-					windowSize.add(w);
+				if (i == 0 || windowSizeList.get(windowSizeList.size()-1) != w) {
+					windowSizeList.add(w);
 				}
 			}
+			windowSize = windowSizeList.toArray();
 		}
 
 	}
@@ -399,7 +405,7 @@ public class SearchConfiguration {
 	 * @return true if arguments are valid and also a query is specified.
 	 */
 	public boolean isValidConfiguration() {
-		boolean windowSizeSpecified = windowSize != null && windowSize.size() > 0; 
+		boolean windowSizeSpecified = windowSize != null && windowSize.length > 0; 
 		boolean gitDirSpecified = gitDirName != null && gitDirName.isDirectory() && gitDirName.canRead();
 		boolean fileListSpecified = filelistName != null && filelistName.isFile() && filelistName.canRead();
 		boolean sourceDirSpecified = sourceDirs.size() > 0;
@@ -513,7 +519,7 @@ public class SearchConfiguration {
 	 * @return a strategy object.
 	 * The object may have an internal state.  
 	 */
-	public ICodeDistanceStrategy createStrategy() {
+	public ICodeDistanceStrategy create() {
 		return createStrategy(algorithm);
 	}
 	
@@ -557,9 +563,11 @@ public class SearchConfiguration {
 			return new NgramSetDistance(queryTokens, n);
 		} else if (algorithmName.startsWith(ALGORITHM_CHAR_LAMPEL_ZIV_JACCARD_DISTANCE)) {
 			return new CharLZJDistance(queryTokens);
-		} else if (algorithmName.startsWith(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE)) {
+		} else if (algorithmName.equals(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE)) {
+			return new LZJDistance(queryTokens);
+		} else if (algorithmName.startsWith(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_PUBLISHED)) {
 			boolean strict = algorithmName.contains(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT);
-			LZJDistance d = new LZJDistance(queryTokens, strict);
+			LZJDistance2022 d = new LZJDistance2022(queryTokens, strict);
 			if (algorithmName.contains(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_WITH_NCD)) {
 				d.setSecondaryDistance(new NormalizedCompressionDistance(queryTokens));
 			}
@@ -583,11 +591,11 @@ public class SearchConfiguration {
 		return b.toString();
 	}
 
-	public static String concat(TIntArrayList list) {
+	public static String concat(int[] list) {
 		StringBuilder b = new StringBuilder();
-		for (int i=0; i<list.size(); i++) {
+		for (int i=0; i<list.length; i++) {
 			if (i>0) b.append(", ");
-			b.append(list.get(i));
+			b.append(list[i]);
 		}
 		return b.toString();
 	}
@@ -665,9 +673,9 @@ public class SearchConfiguration {
 	}
 	
 	/**
-	 * 
-	 * @param filepath
-	 * @return true if it is supported 
+	 * @param filepath specifies a file path.
+	 * @return a file type to scan the file path depending on 
+	 * the current configuration.
 	 */
 	public FileType getTargetLanguage(String filepath) {
 		if (targetFileType != null) {
@@ -690,19 +698,11 @@ public class SearchConfiguration {
 	}
 	
 	public int getLargestWindowSize() {
-		return windowSize.get(windowSize.size()-1);
+		return windowSize[windowSize.length-1];
 	}
 	
-	public int getWindowSizeCount() {
-		return windowSize.size();
-	}
-	
-	/**
-	 * @param n should be between 0 and getWindowSizeCount()-1.
-	 * @return n-th window size.
-	 */
-	public int getWindowSize(int n) {
-		return windowSize.get(n);
+	public int[] getWindowSizeList() {
+		return windowSize;
 	}
 	
 	public Charset getSourceCharset() {

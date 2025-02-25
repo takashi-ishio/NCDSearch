@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import gnu.trove.list.array.TIntArrayList;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import sarf.lexer.TokenReader;
 
 
@@ -25,12 +25,12 @@ public class TokenSequence {
 	/**
 	 * Line number attribute of each token
 	 */
-	private TIntArrayList lines;
+	private IntArrayList lines;
 	
 	/**
 	 * The character position in line of each token
 	 */
-	private TIntArrayList charpos;
+	private IntArrayList charpos;
 	
 	/**
 	 * An index of the first token of the code fragment.
@@ -54,7 +54,7 @@ public class TokenSequence {
 	/**
 	 * Positions in the byte array corresponding to tokens
 	 */
-	private TIntArrayList bytepos;
+	private IntArrayList bytepos;
 	
 	/**
 	 * This is a flag representing whether a separator is 
@@ -87,9 +87,9 @@ public class TokenSequence {
 	 */
 	public TokenSequence(TokenReader r, boolean normalization, boolean separator) {
 		tokens = new ArrayList<>();
-		lines = new TIntArrayList();
-		charpos = new TIntArrayList();
-		bytepos = new TIntArrayList();
+		lines = new IntArrayList();
+		charpos = new IntArrayList();
+		bytepos = new IntArrayList();
 		useSeparator = separator;
 		lineCount = 0;
 		int lastLine = -1;
@@ -148,14 +148,14 @@ public class TokenSequence {
 	public TokenSequence(String s) {
 		tokens = new ArrayList<>();
 		tokens.add(s);
-		lines = new TIntArrayList();
+		lines = new IntArrayList();
 		lines.add(0);
-		charpos = new TIntArrayList();
+		charpos = new IntArrayList();
 		charpos.add(0);
 		start = 0;
 		end = 1;
 		bytes = s.getBytes();
-		bytepos = new TIntArrayList();
+		bytepos = new IntArrayList();
 		bytepos.add(0);
 		bytepos.add(bytes.length);
 		useSeparator = false;
@@ -175,7 +175,7 @@ public class TokenSequence {
 	 * @return a line number.
 	 */
 	public int getLine(int pos) {
-		return lines.get(pos + start);
+		return lines.getInt(pos + start);
 	}
 	
 	/**
@@ -186,7 +186,7 @@ public class TokenSequence {
 	 * because it regards any UNICODE character (including a tab) as one character.
 	 */
 	public int getCharPositionInLine(int pos) {
-		return charpos.get(pos + start);
+		return charpos.getInt(pos + start);
 	}
 	
 	/**
@@ -196,7 +196,7 @@ public class TokenSequence {
 	 * @return
 	 */
 	public int getEndCharPositionInLine(int pos) {
-		return charpos.get(pos + start) + getToken(pos).length();
+		return charpos.getInt(pos + start) + getToken(pos).length();
 	}
 	
 	/**
@@ -226,8 +226,11 @@ public class TokenSequence {
 	/**
 	 * Extract a substring of tokens between the specified lines.
 	 * @param startLine specifies the start line of tokens.
-	 * @param endLine specifies the end line of tokens.  Differently from substring method, the line is included in the substring.
-	 * @return tokens.  The method returns null if invalid lines are specified (e.g. startLine is greater than endLine).
+	 * @param endLine specifies the end line of tokens.  
+	 * Differently from substring method, the line is included in the substring 
+	 * for consistency with the command line interface.
+	 * @return tokens.  The method returns null if invalid lines are specified 
+	 * (e.g. startLine is greater than endLine).
 	 */
 	public TokenSequence substringByLine(int startLine, int endLine) {
 		int startPos;
@@ -271,7 +274,7 @@ public class TokenSequence {
 		if (start == 0 && end == tokens.size()) {
 			return bytes;
 		} else {
-			return Arrays.copyOfRange(bytes, bytepos.get(start), bytepos.get(end));
+			return Arrays.copyOfRange(bytes, bytepos.getInt(start), bytepos.getInt(end));
 		}
 	}
 	
@@ -281,9 +284,10 @@ public class TokenSequence {
 	 */
 	public int[] getBytePositions() {
 		if (start == 0 && end == tokens.size()) {
-			return bytepos.toArray();
+			return bytepos.toIntArray();
 		}
-		return bytepos.toArray(start, end-start+1);
+		// bytepos.getInt(end) should be included in the result
+		return bytepos.subList(start, end+1).toIntArray();
 	}
 	
 	/**
@@ -291,26 +295,28 @@ public class TokenSequence {
 	 * @return a position of the token in the internal byte array.
 	 */
 	public int getBytePosition(int pos) {
-		return bytepos.get(pos + start);
+		return bytepos.getInt(pos + start);
 	}
 
 	/**
+	 * Scan tokens and find tokens that are the first tokens of lines.
 	 * @return token positions that are the first tokens of lines, 
 	 * i.e. each pos in the resultant array satisfies: getLine(pos-1) < getLine(pos).
 	 */
 	public int[] getLineHeadTokenPositions() {
-		TIntArrayList result = new TIntArrayList();
+		IntArrayList result = new IntArrayList();
 		for (int i=0; i<size(); i++) {
-			if (i == 0 || getLine(i-1) < getLine(i)) {
+			if (i + start <= 0 || getLine(i-1) < getLine(i)) {
 				result.add(i);
 			}
 		}
-		return result.toArray();
+		return result.toIntArray();
 	}
 	
 	/**
 	 * @param windowSize
-	 * @return every token positions to be compared with a query. 
+	 * @return every token positions (0..size()-windowSize+1) 
+	 * to be compared with a query. 
 	 * If windowSize is larger than the token sequence,
 	 * the entire token sequence is compared. 
 	 */
@@ -342,6 +348,9 @@ public class TokenSequence {
 	
 	/**
 	 * @return the number of non-empty lines in the file.
+	 * This method is prepared for statistics; 
+	 * this number does not represent the number of 
+	 * lines in an extracted subsequence.
 	 */
 	public int getLineCount() {
 		return lineCount;

@@ -204,7 +204,8 @@ A larger amount of memory is also required to store N files in memory at once.
 You can specify an algorithm using `-a` option.
 This tool supports the following algorithms.
 
- - `lzjd`: Lempel-Ziv Jaccard Distance.  The default strategy.
+ - `lzjd`: The default strategy of the tool.  An efficient implementation of Lempel-Ziv Jaccard Distance.  
+ - `lzjd2022`: An implementation of Lempel-Ziv Jaccard Distance described in the [technical paper](NCDSearch_evaluation_2022.pdf).
  - `clzjd`: Character-level Lempel-Ziv Jaccard Distance.  It internally uses `char` instead of `byte` for comparison.  This may be important to find similar multi-byte strings.
  - `tld`: Token-level Levenshtein Distance.  A distance is measured by the number of add/delete/modify operations to transform a query string to a code fragment in source code.
  - `ntld`: Normalized Token-level Levenshtein Distance.  A distance is a variant of Token-level Levenshtein Distance normalized by the length of a query string.
@@ -255,6 +256,7 @@ The source code of this project is available under the MIT License.
 The full license description is included in the LICENSE file.
 
  - GNU Trove (https://bitbucket.org/trove4j/trove): LGPL License
+ - fastutil (https://fastutil.di.unimi.it/): Apache License 2.0
  - ANTLR4 (http://www.antlr.org/license.html): BSD License
  - JUnit 4 (https://junit.org/junit4/): Eclipse Public License 1.0
  - Eclipse JGit (https://projects.eclipse.org/projects/technology.jgit): Eclipse Distribution License 1.0 (BSD-3-Clause)

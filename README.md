@@ -192,6 +192,7 @@ This tool supports the following algorithms.
 
  - `lzjd`: The default strategy of the tool.  An efficient implementation of Lempel-Ziv Jaccard Distance.  
  - `lzjd2022`: An implementation of Lempel-Ziv Jaccard Distance described in the [technical paper](NCDSearch_evaluation_2022.pdf).
+ - `lzjdtrie`: A faster implementation of `lzjd2022` with strict comparison.  It represents LZSets as LZ78 tries so that it does not compute hash values of phrases.
  - `clzjd`: Character-level Lempel-Ziv Jaccard Distance.  It internally uses `char` instead of `byte` for comparison.  This may be important to find similar multi-byte strings.
  - `tld`: Token-level Levenshtein Distance.  A distance is measured by the number of add/delete/modify operations to transform a query string to a code fragment in source code.
  - `ntld`: Normalized Token-level Levenshtein Distance.  A distance is a variant of Token-level Levenshtein Distance normalized by the length of a query string.

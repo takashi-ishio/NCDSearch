@@ -21,6 +21,7 @@ import ncdsearch.comparison.algorithm.ByteLCSDistance;
 import ncdsearch.comparison.algorithm.CharLZJDistance;
 import ncdsearch.comparison.algorithm.LZJDistance;
 import ncdsearch.comparison.algorithm.LZJDistance2022;
+import ncdsearch.comparison.algorithm.LZJDistanceTrie;
 import ncdsearch.comparison.algorithm.NgramDistance;
 import ncdsearch.comparison.algorithm.NgramSetDistance;
 import ncdsearch.comparison.algorithm.NormalizedByteLevenshteinDistance;
@@ -95,6 +96,7 @@ public class SearchConfiguration implements ICodeDistanceStrategyFactory {
 	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE = "lzjd";
 	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_PUBLISHED = "lzjd2022";
 	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT = "lzjdstrict";
+	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_TRIE = "lzjdtrie";
 	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_WITH_NCD = "ncd";
 	private static final String ALGORITHM_CHAR_LAMPEL_ZIV_JACCARD_DISTANCE = "clzjd";
 	
@@ -108,6 +110,7 @@ public class SearchConfiguration implements ICodeDistanceStrategyFactory {
 			ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE, 
 			ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_PUBLISHED,
 			ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT,
+			ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_TRIE,
 			ALGORITHM_CHAR_LAMPEL_ZIV_JACCARD_DISTANCE};
 	
 	
@@ -565,6 +568,8 @@ public class SearchConfiguration implements ICodeDistanceStrategyFactory {
 			return new CharLZJDistance(queryTokens);
 		} else if (algorithmName.equals(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE)) {
 			return new LZJDistance(queryTokens);
+		} else if (algorithmName.equals(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_TRIE)) {
+			return new LZJDistanceTrie(queryTokens);
 		} else if (algorithmName.startsWith(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_PUBLISHED)) {
 			boolean strict = algorithmName.contains(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT);
 			LZJDistance2022 d = new LZJDistance2022(queryTokens, strict);

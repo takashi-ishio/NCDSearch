@@ -20,6 +20,13 @@ import ncdsearch.comparison.TokenSequence;
  * Phrases that are not in the query's LZSet are kept in a small hash table
  * whose entries are discarded in O(1) by incrementing an epoch counter.
  * The result is the same as LZJDistance2022 with strict comparison.
+ *
+ * In addition, findBestMatch skips a window that cannot satisfy a threshold.
+ * Every common element of LZSet(q) and LZSet(w) is a query phrase occurring in w as a substring.
+ * Since LZJD(q, w) <= threshold requires |LZSet(q) ∩ LZSet(w)| >= (1 - threshold) * |LZSet(q)|,
+ * a window including fewer query phrases is never reported.
+ * The number of query phrases in a window is incrementally updated
+ * when windows move forward in a file.
  */
 public class LZJDistanceTrie implements IVariableWindowStrategy {
 
@@ -98,6 +105,33 @@ public class LZJDistanceTrie implements IVariableWindowStrategy {
 	private int bestWindowSize;
 
 	/**
+	 * A byte array of a file analyzed by the filter.
+	 * The filter keeps the state for a window buf[filterStart, filterEnd).
+	 */
+	private byte[] filterBuf;
+	private int filterStart;
+	private int filterEnd;
+
+	/**
+	 * occurrences[node] is the number of occurrences of the query phrase in the filter window.
+	 */
+	private int[] occurrences;
+
+	/**
+	 * The number of query phrases occurring at least once in the filter window.
+	 */
+	private int distinctPhrases;
+
+	/**
+	 * Walks on the query trie that start in the filter window and reach its end.
+	 * They are extended when the window is extended.
+	 * The number of walks is at most the length of the longest query phrase.
+	 */
+	private int[] activeStarts;
+	private int[] activeNodes;
+	private int activeCount;
+
+	/**
 	 * Create a strategy instance with a query code fragment.
 	 * @param query is a query code fragment.
 	 */
@@ -107,15 +141,20 @@ public class LZJDistanceTrie implements IVariableWindowStrategy {
 		Long2IntOpenHashMap edges = new Long2IntOpenHashMap();
 		int node = 0;
 		int count = 0;
+		int phraseLength = 0;
+		int maxPhraseLength = 0;
 		for (int i=0; i<b.length; i++) {
 			long key = edgeKey(node, b[i] & 0xff);
 			int child = edges.get(key);
+			phraseLength++;
 			if (child != 0) {
 				node = child;
 			} else {
 				count++;
 				edges.put(key, count);
 				node = 0;
+				maxPhraseLength = Math.max(maxPhraseLength, phraseLength);
+				phraseLength = 0;
 			}
 		}
 		querySetSize = count;
@@ -135,6 +174,88 @@ public class LZJDistanceTrie implements IVariableWindowStrategy {
 		}
 		stamp = new int[count + 1];
 		allocateLocal(INITIAL_LOCAL_CAPACITY);
+
+		occurrences = new int[count + 1];
+		activeStarts = new int[maxPhraseLength + 1];
+		activeNodes = new int[maxPhraseLength + 1];
+	}
+
+	/**
+	 * @return the child of a query trie node for byte b, or 0 if it does not exist.
+	 */
+	private int child(int node, int b) {
+		int c = column[b];
+		return c < 0 ? 0 : qnext[node * alphabetSize + c];
+	}
+
+	/**
+	 * Count query phrases occurring in buf[start, end).
+	 * The state is incrementally updated if the window moves forward from the last call.
+	 * @return the number of distinct query phrases in the window.
+	 */
+	private int countQueryPhrases(byte[] buf, int start, int end) {
+		if (buf != filterBuf || start < filterStart || end < filterEnd || start >= filterEnd) {
+			// Restart counting from an empty window
+			filterBuf = buf;
+			filterStart = start;
+			filterEnd = start;
+			Arrays.fill(occurrences, 0);
+			distinctPhrases = 0;
+			activeCount = 0;
+		}
+
+		if (filterStart < start) {
+			// Remove occurrences starting before the window
+			for (int i=filterStart; i<start; i++) {
+				int node = 0;
+				for (int j=i; j<filterEnd; j++) {
+					node = child(node, buf[j] & 0xff);
+					if (node == 0) break;
+					if (--occurrences[node] == 0) {
+						distinctPhrases--;
+					}
+				}
+			}
+			int k = 0;
+			for (int a=0; a<activeCount; a++) {
+				if (activeStarts[a] >= start) {
+					activeStarts[k] = activeStarts[a];
+					activeNodes[k] = activeNodes[a];
+					k++;
+				}
+			}
+			activeCount = k;
+			filterStart = start;
+		}
+
+		// Add occurrences ending in the extended part of the window
+		for (int j=filterEnd; j<end; j++) {
+			int b = buf[j] & 0xff;
+			int k = 0;
+			for (int a=0; a<activeCount; a++) {
+				int node = child(activeNodes[a], b);
+				if (node != 0) {
+					if (occurrences[node]++ == 0) {
+						distinctPhrases++;
+					}
+					activeStarts[k] = activeStarts[a];
+					activeNodes[k] = node;
+					k++;
+				}
+			}
+			int node = child(0, b);
+			if (node != 0) {
+				if (occurrences[node]++ == 0) {
+					distinctPhrases++;
+				}
+				activeStarts[k] = j;
+				activeNodes[k] = node;
+				k++;
+			}
+			activeCount = k;
+		}
+		filterEnd = end;
+		return distinctPhrases;
 	}
 
 	private static long edgeKey(int parent, int b) {
@@ -266,11 +387,23 @@ public class LZJDistanceTrie implements IVariableWindowStrategy {
 		bestWindowSize = 0;
 
 		byte[] buf = code.toByteArray();
+		int windowSize = endPos - startPos;
+		if (windowSize <= 0) {
+			return bestLZJD;
+		}
+
+		// Skip the window if it does not include enough query phrases.
+		// A small margin avoids skipping a window due to a rounding error.
+		double requiredPhrases = (1 - threshold) * querySetSize - 1e-9;
+		if (requiredPhrases > 0 &&
+			countQueryPhrases(buf, code.getBytePosition(startPos), code.getBytePosition(endPos)) < requiredPhrases) {
+			return bestLZJD;
+		}
+
 		int allowedMaxUnmatched = 1 + (int)(threshold * querySetSize / (1 - threshold));
 
 		reset();
 		int pos = code.getBytePosition(startPos);
-		int windowSize = endPos - startPos;
 		// For each token position, update LZSet and LZJD
 		for (int t=1; t<=windowSize; t++) {
 			int nextPos = code.getBytePosition(startPos + t);
@@ -323,7 +456,8 @@ public class LZJDistanceTrie implements IVariableWindowStrategy {
 
 	@Override
 	public void close() {
-		// No resource used
+		// Release the reference to the last file
+		filterBuf = null;
 	}
 
 }

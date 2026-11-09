@@ -3,8 +3,8 @@ package ncdsearch.comparison.ncd.folca;
 import java.io.ByteArrayOutputStream;
 import java.util.HashSet;
 
-import gnu.trove.list.array.TLongArrayList;
-import gnu.trove.map.hash.TLongIntHashMap;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 
 /**
  * This dictionary object is to record a pair of integer symbols as a new symbol
@@ -14,13 +14,13 @@ public class Dictionary {
 
 	private static int SYMBOL_START = 256; 
 	private int nextSymbol = SYMBOL_START;
-	private TLongIntHashMap symbols;
-	private TLongArrayList tree;
+	private Long2IntOpenHashMap symbols;
+	private LongArrayList tree;
 	private Integer root;
 	
 	public Dictionary() {
-		symbols = new TLongIntHashMap(65536);
-		tree = new TLongArrayList(65536);
+		symbols = new Long2IntOpenHashMap(65536);
+		tree = new LongArrayList(65536);
 	}
 	
 	
@@ -30,7 +30,7 @@ public class Dictionary {
 	
 	public int getSymbol(int first, int second) {
 		long l = encode(first, second);
-		if (symbols.contains(l)) {
+		if (symbols.containsKey(l)) {
 			return symbols.get(l);
 		} else {
 			int s = nextSymbol++;
@@ -52,9 +52,9 @@ public class Dictionary {
 		for (int i=0; i<tree.size(); i++) {
 			buf.append(i + SYMBOL_START); 
 			buf.append(" -> ");
-			buf.append(firstSymbol(tree.get(i)));
+			buf.append(firstSymbol(tree.getLong(i)));
 			buf.append(", ");
-			buf.append(secondSymbol(tree.get(i)));
+			buf.append(secondSymbol(tree.getLong(i)));
 			buf.append("; ");			
 		}
 		return buf.toString();
@@ -74,13 +74,13 @@ public class Dictionary {
 	
 	public int decodeFirst(int symbol) {
 		assert symbol >= SYMBOL_START;
-		long l = tree.get(symbol-SYMBOL_START);
+		long l = tree.getLong(symbol-SYMBOL_START);
 		return firstSymbol(l);
 	}
 	
 	public int decodeSecond(int symbol) {
 		assert symbol >= SYMBOL_START;
-		long l = tree.get(symbol-SYMBOL_START);
+		long l = tree.getLong(symbol-SYMBOL_START);
 		return secondSymbol(l);
 	}
 	

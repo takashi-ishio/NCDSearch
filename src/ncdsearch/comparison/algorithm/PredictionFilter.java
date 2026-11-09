@@ -2,7 +2,7 @@ package ncdsearch.comparison.algorithm;
 
 import java.io.IOException;
 
-import gnu.trove.list.array.TLongArrayList;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import ncdsearch.SearchConfiguration;
 import ncdsearch.comparison.TokenSequence;
 import ncdsearch.files.IFile;
@@ -12,7 +12,7 @@ import sarf.lexer.TokenReaderFactory;
 
 public class PredictionFilter {
 
-	private TLongArrayList queryNgrams;
+	private LongArrayList queryNgrams;
 	private int N;
 	private double threshold;
 	
@@ -48,7 +48,7 @@ public class PredictionFilter {
 		try {
 			byte[] buf = file.toByteArray();
 			if (buf.length >= N) {
-				TLongArrayList fileNgrams = NgramDistance.createNgram(buf, N);
+				LongArrayList fileNgrams = NgramDistance.createNgram(buf, N);
 				int intersection = NgramDistance.computeIntersection(queryNgrams, fileNgrams);
 				double overlap = intersection * 1.0 / queryNgrams.size();
 				return overlap >= threshold;

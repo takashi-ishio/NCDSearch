@@ -5,8 +5,8 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import gnu.trove.map.hash.TObjectDoubleHashMap;
-import gnu.trove.map.hash.TObjectIntHashMap;
+import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import ncdsearch.comparison.ICodeDistanceStrategy;
 import ncdsearch.comparison.TokenSequence;
 import ncdsearch.files.DirectoryScan;
@@ -17,13 +17,13 @@ import sarf.lexer.TokenReaderFactory;
 
 public class TfidfCosineDistance implements ICodeDistanceStrategy {
 
-	private static TObjectIntHashMap<String> dfMap;
+	private static Object2IntOpenHashMap<String> dfMap;
 	private static TFIDFVector queryTFIDF;
 	
 	
 	private static synchronized void computeDocumentFrequency(ArrayList<String> sourceDirs, FileType queryFileType, TokenSequence query, Charset charset) {
 		if (dfMap == null) {			
-			dfMap = new TObjectIntHashMap<>();
+			dfMap = new Object2IntOpenHashMap<>();
 			try {
 				DirectoryScan dir = new DirectoryScan(sourceDirs);
 				for (IFile f=dir.next(); f != null; f=dir.next()) {
@@ -36,7 +36,7 @@ public class TfidfCosineDistance implements ICodeDistanceStrategy {
 								tokens.add(r.getToken());
 							}
 							for (String t: tokens) {
-								dfMap.adjustOrPutValue(t, 1, 1);
+								dfMap.addTo(t, 1);
 							}
 						} catch (IOException e) {
 						}
@@ -62,7 +62,7 @@ public class TfidfCosineDistance implements ICodeDistanceStrategy {
 	 * @param dfMap maps a token to its document frequency 
 	 * @param query
 	 */
-	protected TfidfCosineDistance(TObjectIntHashMap<String> dfMap, TokenSequence query) {
+	protected TfidfCosineDistance(Object2IntOpenHashMap<String> dfMap, TokenSequence query) {
 		TfidfCosineDistance.dfMap = dfMap;
 		queryTFIDF = new TFIDFVector(query);
 	}
@@ -80,21 +80,21 @@ public class TfidfCosineDistance implements ICodeDistanceStrategy {
 	
 	private static class TFIDFVector {
 
-		private TObjectDoubleHashMap<String> vec;
+		private Object2DoubleOpenHashMap<String> vec;
 		private double absolute;
 		
 		public TFIDFVector(TokenSequence tokens) {
-			vec = new TObjectDoubleHashMap<>();
+			vec = new Object2DoubleOpenHashMap<>();
 			for (int i=0; i<tokens.size(); i++) {
-				vec.adjustOrPutValue(tokens.getToken(i), 1, 1);
+				vec.addTo(tokens.getToken(i), 1);
 			}
 			// Translate tf vector to tf-idf vector
 			double squareSum = 0;
 			for (String t: vec.keySet()) {
-				double tf = vec.get(t);
-				int df = dfMap.get(t);
+				double tf = vec.getDouble(t);
+				int df = dfMap.getInt(t);
 				// assume IDF == 1 if the term does not appear in documents
-				double tfidf = (df > 0) ? (tf / dfMap.get(t)) : tf; 
+				double tfidf = (df > 0) ? (tf / dfMap.getInt(t)) : tf; 
 				vec.put(t, tfidf);
 				squareSum += tfidf * tfidf; 
 			}
@@ -104,8 +104,8 @@ public class TfidfCosineDistance implements ICodeDistanceStrategy {
 		public double getCosineSimilarity(TFIDFVector another) {
 			double sum = 0;
 			for (String t: vec.keySet()) {
-				double d = another.vec.get(t);
-				sum += vec.get(t) * d;
+				double d = another.vec.getDouble(t);
+				sum += vec.getDouble(t) * d;
 			}
 			return sum / (this.absolute * another.absolute);
 		}

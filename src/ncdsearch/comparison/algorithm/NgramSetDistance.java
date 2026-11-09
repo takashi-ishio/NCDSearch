@@ -2,7 +2,7 @@ package ncdsearch.comparison.algorithm;
 
 import java.util.Arrays;
 
-import gnu.trove.set.hash.TLongHashSet;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import ncdsearch.comparison.ICodeDistanceStrategy;
 import ncdsearch.comparison.TokenSequence;
 
@@ -22,7 +22,7 @@ public class NgramSetDistance implements ICodeDistanceStrategy {
 	
 	static long[] createNgramSet(byte[] buf, int n) {
 		assert n < 8;
-		TLongHashSet result = new TLongHashSet(buf.length-(n-1));
+		LongOpenHashSet result = new LongOpenHashSet(buf.length-(n-1));
 		for (int i=0; i<buf.length-(n-1); i++) {
 			long l = 0;
 			for (int j=0; j<n; j++) {
@@ -30,7 +30,7 @@ public class NgramSetDistance implements ICodeDistanceStrategy {
 			}
 			result.add(l);
 		}
-		long[] array = result.toArray();
+		long[] array = result.toLongArray();
 		Arrays.sort(array);
 		return array;
 	}

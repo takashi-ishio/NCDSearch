@@ -265,7 +265,6 @@ Each object includes a query source code fragment and code clones that should be
 The source code of this project is available under the MIT License.
 The full license description is included in the LICENSE file.
 
- - GNU Trove (https://bitbucket.org/trove4j/trove): LGPL License
  - fastutil (https://fastutil.di.unimi.it/): Apache License 2.0
  - ANTLR4 (http://www.antlr.org/license.html): BSD License
  - JUnit 4 (https://junit.org/junit4/): Eclipse Public License 1.0

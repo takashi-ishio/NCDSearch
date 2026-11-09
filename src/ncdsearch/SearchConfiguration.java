@@ -11,8 +11,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import gnu.trove.list.array.TDoubleArrayList;
-import gnu.trove.list.array.TIntArrayList;
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.doubles.DoubleArrays;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import ncdsearch.comparison.ICodeDistanceStrategy;
 import ncdsearch.comparison.ICodeDistanceStrategyFactory;
 import ncdsearch.comparison.NormalizedCompressionDistance;
@@ -374,32 +375,32 @@ public class SearchConfiguration implements ICodeDistanceStrategyFactory {
 		}
 		 
 		if (algorithm.startsWith(ALGORITHM_TOKEN_LEVENSHTEIN_DISTANCE)) {
-			TIntArrayList windowSizeList = new TIntArrayList();
+			IntArrayList windowSizeList = new IntArrayList();
 			windowSizeList.add(queryTokens.size());
 			for (int i=1; i<=threshold; i++) {
 				windowSizeList.add(queryTokens.size() + i);
 				windowSizeList.add(queryTokens.size() - i);
 			}
-			windowSizeList.sort();
-			windowSize = windowSizeList.toArray();
+			windowSize = windowSizeList.toIntArray();
+			Arrays.sort(windowSize);
 		} else {
-			TDoubleArrayList windowRatio = new TDoubleArrayList();
+			DoubleArrayList windowRatio = new DoubleArrayList();
 			for (double start = 1.0; start >= MIN_WINDOW; start -= WINDOW_STEP) {
 				windowRatio.add(start);
 			}
 			for (double start = 1.0 + WINDOW_STEP; start <= MAX_WINDOW; start += WINDOW_STEP) {
 				windowRatio.add(start);
 			}
-			windowRatio.sort();
+			DoubleArrays.unstableSort(windowRatio.elements(), 0, windowRatio.size());
 			
-			TIntArrayList windowSizeList = new TIntArrayList();
+			IntArrayList windowSizeList = new IntArrayList();
 			for (int i=0; i<windowRatio.size(); i++) {
-				int w = (int)Math.ceil(queryTokens.size() * windowRatio.get(i));
-				if (i == 0 || windowSizeList.get(windowSizeList.size()-1) != w) {
+				int w = (int)Math.ceil(queryTokens.size() * windowRatio.getDouble(i));
+				if (i == 0 || windowSizeList.getInt(windowSizeList.size()-1) != w) {
 					windowSizeList.add(w);
 				}
 			}
-			windowSize = windowSizeList.toArray();
+			windowSize = windowSizeList.toIntArray();
 		}
 
 	}

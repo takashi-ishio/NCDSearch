@@ -74,11 +74,6 @@
   	  <version>4.13.2</version>
   	</dependency>
    	<!-- data structures -->
-   	<dependency> 
-   	  <groupId>net.sf.trove4j</groupId>
-   	  <artifactId>trove4j</artifactId>
-   	  <version>3.0.3</version>
-   	</dependency>
 	<dependency>
 	    <groupId>it.unimi.dsi</groupId>
 	    <artifactId>fastutil-core</artifactId>

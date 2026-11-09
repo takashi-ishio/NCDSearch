@@ -6,16 +6,16 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import gnu.trove.map.hash.TIntDoubleHashMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
+import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 public abstract class DistanceClustering extends Clustering {
 	
 	private boolean DEBUG = false;
 	
-	protected TIntObjectHashMap<TIntDoubleHashMap> distanceMap;
-	protected TIntDoubleHashMap minDistanceMap;
-	protected TIntObjectHashMap<Cluster> clusterMap;
+	protected Int2ObjectOpenHashMap<Int2DoubleOpenHashMap> distanceMap;
+	protected Int2DoubleOpenHashMap minDistanceMap;
+	protected Int2ObjectOpenHashMap<Cluster> clusterMap;
 
 	protected int clusterNum;
 	protected int totalVertexNumber;
@@ -78,9 +78,9 @@ public abstract class DistanceClustering extends Clustering {
 	}
 
 	protected void init() {
-		distanceMap = new TIntObjectHashMap<>();
-		minDistanceMap = new TIntDoubleHashMap();
-		clusterMap = new TIntObjectHashMap<>();
+		distanceMap = new Int2ObjectOpenHashMap<>();
+		minDistanceMap = new Int2DoubleOpenHashMap();
+		clusterMap = new Int2ObjectOpenHashMap<>();
 
 		totalVertexNumber = allNode.size();
 		//this.clusterNum = allNode.size() / 5 + 1;
@@ -126,7 +126,7 @@ public abstract class DistanceClustering extends Clustering {
 		int arraySize = clusters.size();
 		for (int i = 0; i < arraySize; i++) {
 			Cluster target = clusters.get(i);
-			TIntDoubleHashMap map = new TIntDoubleHashMap();
+			Int2DoubleOpenHashMap map = new Int2DoubleOpenHashMap();
 			double min = Double.MAX_VALUE;
 			for (int j = 0; j < arraySize; j++) {
 				if (i < j) {
@@ -155,7 +155,7 @@ public abstract class DistanceClustering extends Clustering {
 		for (int i = 0; i < totalVertexNumber; i++) {
 			if (!removedFlagMap[i]) {
 				double min = Double.MAX_VALUE;
-				TIntDoubleHashMap innerMap = distanceMap.get(i);
+				Int2DoubleOpenHashMap innerMap = distanceMap.get(i);
 				for (int j = 0; j < totalVertexNumber; j++) {
 					if (i != j && !removedFlagMap[j]) {
 						double distance = innerMap.get(j);

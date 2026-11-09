@@ -17,8 +17,6 @@ import ncdsearch.comparison.TokenSequence;
  * This class keeps the LZSet of a query as a trie with a dense transition table,
  * so that the membership of a phrase is checked in O(1) per byte
  * without hashing the whole phrase.
- * Phrases that are not in the query's LZSet are kept in a small hash table
- * whose entries are discarded in O(1) by incrementing an epoch counter.
  * The result is the same as LZJDistance2022 with strict comparison.
  *
  * In addition, findBestMatch skips a window that cannot satisfy a threshold.
@@ -30,9 +28,10 @@ import ncdsearch.comparison.TokenSequence;
  */
 public class LZJDistanceTrie implements IVariableWindowStrategy {
 
-	private static final int NOT_FOUND = -1;
-
-	private static final int INITIAL_LOCAL_CAPACITY = 256;
+	/**
+	 * The node representing an empty phrase in tries.
+	 */
+	private static final int EMPTY_PHRASE = 0;
 
 	/**
 	 * A map from a byte to a column of the transition table, or -1 if the byte does not appear in the query.
@@ -47,7 +46,7 @@ public class LZJDistanceTrie implements IVariableWindowStrategy {
 	/**
 	 * The transition table of the query trie.
 	 * qnext[node * alphabetSize + column[b]] is the child node of the node for byte b, or 0 if it does not exist.
-	 * The node 0 is the root representing an empty phrase.
+	 * Nodes 1..querySetSize represent the phrases in the LZSet of the query.
 	 */
 	private int[] qnext;
 
@@ -57,48 +56,16 @@ public class LZJDistanceTrie implements IVariableWindowStrategy {
 	private int querySetSize;
 
 	/**
-	 * stamp[node] == epoch represents that the query phrase is included in the LZSet of a target.
+	 * The LZSet of a target, which is cleared for each comparison.
+	 * targetQueryPhrases[node] is true if the query phrase is included in the set.
+	 * Other phrases are kept as a trie in targetOtherPhrases;
+	 * a key is an edge (parent node, byte) and a value is a node larger than querySetSize.
 	 */
-	private int[] stamp;
+	private boolean[] targetQueryPhrases;
+	private Long2IntOpenHashMap targetOtherPhrases = new Long2IntOpenHashMap();
 
 	/**
-	 * This counter is incremented for each comparison to discard the previous target LZSet.
-	 */
-	private int epoch;
-
-	/**
-	 * An open addressing hash table for phrases that are not included in the query trie.
-	 * A key is an edge (parent node, byte) and a value is the node ID of the phrase.
-	 */
-	private long[] localKeys;
-	private int[] localValues;
-	private int[] localStamps;
-	private int localMask;
-	private int localCount;
-
-	/**
-	 * The node representing the prefix of the current phrase.
-	 */
-	private int current;
-
-	/**
-	 * True if the current node is in the query trie.
-	 */
-	private boolean inQuery;
-
-	/**
-	 * A node ID for the next phrase that is not in the query trie.
-	 * IDs larger than querySetSize are used so that they are distinguished from query nodes.
-	 */
-	private int nextLocalId;
-
-	/**
-	 * The size of the LZSet of a target.
-	 */
-	private int setSize;
-
-	/**
-	 * The number of elements included in both LZSets of the query and a target.
+	 * The number of query phrases included in the LZSet of a target.
 	 */
 	private int intersection;
 
@@ -106,7 +73,8 @@ public class LZJDistanceTrie implements IVariableWindowStrategy {
 
 	/**
 	 * A byte array of a file analyzed by the filter.
-	 * The filter keeps the state for a window buf[filterStart, filterEnd).
+	 * The filter keeps the state for a window buf[filterStart, filterEnd)
+	 * so that the state is incrementally updated for the next window.
 	 */
 	private byte[] filterBuf;
 	private int filterStart;
@@ -139,7 +107,7 @@ public class LZJDistanceTrie implements IVariableWindowStrategy {
 		// Build a query trie using Algorithm 1
 		byte[] b = query.toByteArray();
 		Long2IntOpenHashMap edges = new Long2IntOpenHashMap();
-		int node = 0;
+		int node = EMPTY_PHRASE;
 		int count = 0;
 		int phraseLength = 0;
 		int maxPhraseLength = 0;
@@ -152,7 +120,7 @@ public class LZJDistanceTrie implements IVariableWindowStrategy {
 			} else {
 				count++;
 				edges.put(key, count);
-				node = 0;
+				node = EMPTY_PHRASE;
 				maxPhraseLength = Math.max(maxPhraseLength, phraseLength);
 				phraseLength = 0;
 			}
@@ -172,12 +140,15 @@ public class LZJDistanceTrie implements IVariableWindowStrategy {
 			long key = e.getLongKey();
 			qnext[(int)(key >>> 8) * alphabetSize + column[(int)(key & 0xff)]] = e.getIntValue();
 		}
-		stamp = new int[count + 1];
-		allocateLocal(INITIAL_LOCAL_CAPACITY);
+		targetQueryPhrases = new boolean[count + 1];
 
 		occurrences = new int[count + 1];
 		activeStarts = new int[maxPhraseLength + 1];
 		activeNodes = new int[maxPhraseLength + 1];
+	}
+
+	private static long edgeKey(int parent, int b) {
+		return ((long)parent << 8) | b;
 	}
 
 	/**
@@ -258,116 +229,57 @@ public class LZJDistanceTrie implements IVariableWindowStrategy {
 		return distinctPhrases;
 	}
 
-	private static long edgeKey(int parent, int b) {
-		return ((long)parent << 8) | b;
-	}
-
 	/**
 	 * Start a new LZSet for a target.
 	 */
-	private void reset() {
-		epoch++;
-		if (epoch == 0) {
-			// The counter overflowed; clear stamps to avoid wrong matches
-			Arrays.fill(stamp, 0);
-			Arrays.fill(localStamps, 0);
-			epoch = 1;
-		}
-		current = 0;
-		inQuery = true;
-		nextLocalId = querySetSize + 1;
-		setSize = 0;
+	private void clearTargetSet() {
+		Arrays.fill(targetQueryPhrases, false);
+		targetOtherPhrases.clear();
 		intersection = 0;
-		localCount = 0;
 	}
 
 	/**
-	 * Update the LZSet of a target by bytes buf[from..to-1].
+	 * @return the size of the LZSet of a target.
 	 */
-	private void scan(byte[] buf, int from, int to) {
+	private int targetSetSize() {
+		return intersection + targetOtherPhrases.size();
+	}
+
+	/**
+	 * Add phrases in buf[from, to) to the LZSet of a target (Algorithm 1).
+	 * @param phrase is the node of an incomplete phrase continued from the previous bytes.
+	 * @return the node of an incomplete phrase at the end of the bytes.
+	 * The method returns EMPTY_PHRASE if the last byte completed a new phrase.
+	 */
+	private int scan(byte[] buf, int from, int to, int phrase) {
 		for (int i=from; i<to; i++) {
 			int b = buf[i] & 0xff;
-			int c = column[b];
-			if (inQuery && c >= 0) {
-				int q = qnext[current * alphabetSize + c];
+			if (phrase <= querySetSize) {
+				// The current phrase is in the query trie
+				int q = child(phrase, b);
 				if (q != 0) {
-					if (stamp[q] == epoch) {
-						current = q;
+					if (targetQueryPhrases[q]) {
+						phrase = q;
 					} else {
 						// A new element that is also included in the query LZSet
-						stamp[q] = epoch;
-						setSize++;
+						targetQueryPhrases[q] = true;
 						intersection++;
-						current = 0;
+						phrase = EMPTY_PHRASE;
 					}
 					continue;
 				}
 			}
 			// The phrase is not in the query LZSet
-			long key = edgeKey(current, b);
-			int child = findLocal(key);
-			if (child != NOT_FOUND) {
-				current = child;
-				inQuery = false;
+			long key = edgeKey(phrase, b);
+			int other = targetOtherPhrases.get(key);
+			if (other != 0) {
+				phrase = other;
 			} else {
-				addLocal(key, nextLocalId++);
-				setSize++;
-				current = 0;
-				inQuery = true;
+				targetOtherPhrases.put(key, querySetSize + 1 + targetOtherPhrases.size());
+				phrase = EMPTY_PHRASE;
 			}
 		}
-	}
-
-	private void allocateLocal(int capacity) {
-		localKeys = new long[capacity];
-		localValues = new int[capacity];
-		localStamps = new int[capacity];
-		localMask = capacity - 1;
-	}
-
-	private int slot(long key) {
-		return (int)((key * 0x9E3779B97F4A7C15L) >>> 32) & localMask;
-	}
-
-	private int findLocal(long key) {
-		int i = slot(key);
-		while (localStamps[i] == epoch) {
-			if (localKeys[i] == key) {
-				return localValues[i];
-			}
-			i = (i + 1) & localMask;
-		}
-		return NOT_FOUND;
-	}
-
-	private void addLocal(long key, int value) {
-		if ((localCount + 1) * 2 > localKeys.length) {
-			growLocal();
-		}
-		insertLocal(key, value);
-		localCount++;
-	}
-
-	private void insertLocal(long key, int value) {
-		int i = slot(key);
-		while (localStamps[i] == epoch) {
-			i = (i + 1) & localMask;
-		}
-		localKeys[i] = key;
-		localValues[i] = value;
-		localStamps[i] = epoch;
-	}
-
-	private void growLocal() {
-		long[] keys = localKeys;
-		int[] values = localValues;
-		int[] stamps = localStamps;
-		allocateLocal(keys.length * 2);
-		for (int i=0; i<keys.length; i++) {
-			if (stamps[i] == epoch) {
-				insertLocal(keys[i], values[i]);
-			}
-		}
+		return phrase;
 	}
 
 	/**
@@ -402,15 +314,16 @@ public class LZJDistanceTrie implements IVariableWindowStrategy {
 
 		int allowedMaxUnmatched = 1 + (int)(threshold * querySetSize / (1 - threshold));
 
-		reset();
+		clearTargetSet();
+		int phrase = EMPTY_PHRASE;
 		int pos = code.getBytePosition(startPos);
 		// For each token position, update LZSet and LZJD
 		for (int t=1; t<=windowSize; t++) {
 			int nextPos = code.getBytePosition(startPos + t);
-			scan(buf, pos, nextPos);
+			phrase = scan(buf, pos, nextPos, phrase);
 			pos = nextPos;
 
-			int unmatched = setSize - intersection;
+			int unmatched = targetSetSize() - intersection;
 			int unionSize = querySetSize + unmatched;
 			double lzjd = (double)(unionSize - intersection) / unionSize;
 			if (lzjd < bestLZJD) {
@@ -448,10 +361,14 @@ public class LZJDistanceTrie implements IVariableWindowStrategy {
 	@Override
 	public double computeDistance(TokenSequence code) {
 		byte[] buf = code.toByteArray();
-		reset();
-		scan(buf, 0, buf.length);
-		int unionSize = querySetSize + setSize - intersection;
-		return (double)(unionSize - intersection) / unionSize;
+		clearTargetSet();
+		scan(buf, 0, buf.length, EMPTY_PHRASE);
+		int unionSize = querySetSize + targetSetSize() - intersection;
+		double lzjd = (double)(unionSize - intersection) / unionSize;
+		// Release a large table allocated for the entire code
+		targetOtherPhrases.clear();
+		targetOtherPhrases.trim();
+		return lzjd;
 	}
 
 	@Override

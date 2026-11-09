@@ -72,32 +72,9 @@ public class LZJDistanceTrie implements IVariableWindowStrategy {
 	private int bestWindowSize;
 
 	/**
-	 * A byte array of a file analyzed by the filter.
-	 * The filter keeps the state for a window buf[filterStart, filterEnd)
-	 * so that the state is incrementally updated for the next window.
+	 * The number of query phrases in the last window, which is reused for the next window.
 	 */
-	private byte[] filterBuf;
-	private int filterStart;
-	private int filterEnd;
-
-	/**
-	 * occurrences[node] is the number of occurrences of the query phrase in the filter window.
-	 */
-	private int[] occurrences;
-
-	/**
-	 * The number of query phrases occurring at least once in the filter window.
-	 */
-	private int distinctPhrases;
-
-	/**
-	 * Walks on the query trie that start in the filter window and reach its end.
-	 * They are extended when the window is extended.
-	 * The number of walks is at most the length of the longest query phrase.
-	 */
-	private int[] activeStarts;
-	private int[] activeNodes;
-	private int activeCount;
+	private QueryPhraseCountCache phraseCountCache;
 
 	/**
 	 * Create a strategy instance with a query code fragment.
@@ -142,9 +119,7 @@ public class LZJDistanceTrie implements IVariableWindowStrategy {
 		}
 		targetQueryPhrases = new boolean[count + 1];
 
-		occurrences = new int[count + 1];
-		activeStarts = new int[maxPhraseLength + 1];
-		activeNodes = new int[maxPhraseLength + 1];
+		phraseCountCache = new QueryPhraseCountCache(maxPhraseLength);
 	}
 
 	private static long edgeKey(int parent, int b) {
@@ -160,73 +135,117 @@ public class LZJDistanceTrie implements IVariableWindowStrategy {
 	}
 
 	/**
-	 * Count query phrases occurring in buf[start, end).
-	 * The state is incrementally updated if the window moves forward from the last call.
-	 * @return the number of distinct query phrases in the window.
+	 * A cache to count query phrases occurring in a window.
+	 * It keeps the counts for the last window lastBuf[lastStart, lastEnd),
+	 * so that the counts are incrementally updated for the next window.
 	 */
-	private int countQueryPhrases(byte[] buf, int start, int end) {
-		if (buf != filterBuf || start < filterStart || end < filterEnd || start >= filterEnd) {
-			// Restart counting from an empty window
-			filterBuf = buf;
-			filterStart = start;
-			filterEnd = start;
-			Arrays.fill(occurrences, 0);
-			distinctPhrases = 0;
-			activeCount = 0;
+	private class QueryPhraseCountCache {
+
+		private byte[] lastBuf;
+		private int lastStart;
+		private int lastEnd;
+
+		/**
+		 * occurrences[node] is the number of occurrences of the query phrase in the window.
+		 */
+		private int[] occurrences;
+
+		/**
+		 * The number of query phrases occurring at least once in the window.
+		 */
+		private int distinctPhrases;
+
+		/**
+		 * Walks on the query trie that start in the window and reach its end.
+		 * They are extended when the window is extended.
+		 * The number of walks is at most the length of the longest query phrase.
+		 */
+		private int[] activeStarts;
+		private int[] activeNodes;
+		private int activeCount;
+
+		public QueryPhraseCountCache(int maxPhraseLength) {
+			occurrences = new int[querySetSize + 1];
+			activeStarts = new int[maxPhraseLength + 1];
+			activeNodes = new int[maxPhraseLength + 1];
 		}
 
-		if (filterStart < start) {
-			// Remove occurrences starting before the window
-			for (int i=filterStart; i<start; i++) {
-				int node = 0;
-				for (int j=i; j<filterEnd; j++) {
-					node = child(node, buf[j] & 0xff);
-					if (node == 0) break;
-					if (--occurrences[node] == 0) {
-						distinctPhrases--;
+		/**
+		 * Count query phrases occurring in buf[start, end).
+		 * The counts are incrementally updated if the window moves forward from the last call.
+		 * @return the number of distinct query phrases in the window.
+		 */
+		public int count(byte[] buf, int start, int end) {
+			if (buf != lastBuf || start < lastStart || end < lastEnd || start >= lastEnd) {
+				// Restart counting from an empty window
+				lastBuf = buf;
+				lastStart = start;
+				lastEnd = start;
+				Arrays.fill(occurrences, 0);
+				distinctPhrases = 0;
+				activeCount = 0;
+			}
+
+			if (lastStart < start) {
+				// Remove occurrences starting before the window
+				for (int i=lastStart; i<start; i++) {
+					int node = 0;
+					for (int j=i; j<lastEnd; j++) {
+						node = child(node, buf[j] & 0xff);
+						if (node == 0) break;
+						if (--occurrences[node] == 0) {
+							distinctPhrases--;
+						}
 					}
 				}
-			}
-			int k = 0;
-			for (int a=0; a<activeCount; a++) {
-				if (activeStarts[a] >= start) {
-					activeStarts[k] = activeStarts[a];
-					activeNodes[k] = activeNodes[a];
-					k++;
+				int k = 0;
+				for (int a=0; a<activeCount; a++) {
+					if (activeStarts[a] >= start) {
+						activeStarts[k] = activeStarts[a];
+						activeNodes[k] = activeNodes[a];
+						k++;
+					}
 				}
+				activeCount = k;
+				lastStart = start;
 			}
-			activeCount = k;
-			filterStart = start;
-		}
 
-		// Add occurrences ending in the extended part of the window
-		for (int j=filterEnd; j<end; j++) {
-			int b = buf[j] & 0xff;
-			int k = 0;
-			for (int a=0; a<activeCount; a++) {
-				int node = child(activeNodes[a], b);
+			// Add occurrences ending in the extended part of the window
+			for (int j=lastEnd; j<end; j++) {
+				int b = buf[j] & 0xff;
+				int k = 0;
+				for (int a=0; a<activeCount; a++) {
+					int node = child(activeNodes[a], b);
+					if (node != 0) {
+						if (occurrences[node]++ == 0) {
+							distinctPhrases++;
+						}
+						activeStarts[k] = activeStarts[a];
+						activeNodes[k] = node;
+						k++;
+					}
+				}
+				int node = child(0, b);
 				if (node != 0) {
 					if (occurrences[node]++ == 0) {
 						distinctPhrases++;
 					}
-					activeStarts[k] = activeStarts[a];
+					activeStarts[k] = j;
 					activeNodes[k] = node;
 					k++;
 				}
+				activeCount = k;
 			}
-			int node = child(0, b);
-			if (node != 0) {
-				if (occurrences[node]++ == 0) {
-					distinctPhrases++;
-				}
-				activeStarts[k] = j;
-				activeNodes[k] = node;
-				k++;
-			}
-			activeCount = k;
+			lastEnd = end;
+			return distinctPhrases;
 		}
-		filterEnd = end;
-		return distinctPhrases;
+
+		/**
+		 * Release the reference to the last file.
+		 */
+		public void clear() {
+			lastBuf = null;
+		}
 	}
 
 	/**
@@ -301,7 +320,7 @@ public class LZJDistanceTrie implements IVariableWindowStrategy {
 		// A small margin avoids skipping a window due to a rounding error.
 		double requiredPhrases = (1 - threshold) * querySetSize - 1e-9;
 		if (requiredPhrases > 0 &&
-			countQueryPhrases(buf, code.getBytePosition(startPos), code.getBytePosition(endPos)) < requiredPhrases) {
+			phraseCountCache.count(buf, code.getBytePosition(startPos), code.getBytePosition(endPos)) < requiredPhrases) {
 			return bestLZJD;
 		}
 
@@ -366,8 +385,7 @@ public class LZJDistanceTrie implements IVariableWindowStrategy {
 
 	@Override
 	public void close() {
-		// Release the reference to the last file
-		filterBuf = null;
+		phraseCountCache.clear();
 	}
 
 }

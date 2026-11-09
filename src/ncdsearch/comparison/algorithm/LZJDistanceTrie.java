@@ -239,13 +239,6 @@ public class LZJDistanceTrie implements IVariableWindowStrategy {
 	}
 
 	/**
-	 * @return the size of the LZSet of a target.
-	 */
-	private int targetSetSize() {
-		return intersection + targetOtherPhrases.size();
-	}
-
-	/**
 	 * Add phrases in buf[from, to) to the LZSet of a target (Algorithm 1).
 	 * @param phrase is the node of an incomplete phrase continued from the previous bytes.
 	 * @return the node of an incomplete phrase at the end of the bytes.
@@ -323,7 +316,7 @@ public class LZJDistanceTrie implements IVariableWindowStrategy {
 			phrase = scan(buf, pos, nextPos, phrase);
 			pos = nextPos;
 
-			int unmatched = targetSetSize() - intersection;
+			int unmatched = targetOtherPhrases.size();
 			int unionSize = querySetSize + unmatched;
 			double lzjd = (double)(unionSize - intersection) / unionSize;
 			if (lzjd < bestLZJD) {
@@ -363,7 +356,7 @@ public class LZJDistanceTrie implements IVariableWindowStrategy {
 		byte[] buf = code.toByteArray();
 		clearTargetSet();
 		scan(buf, 0, buf.length, EMPTY_PHRASE);
-		int unionSize = querySetSize + targetSetSize() - intersection;
+		int unionSize = querySetSize + targetOtherPhrases.size();
 		double lzjd = (double)(unionSize - intersection) / unionSize;
 		// Release a large table allocated for the entire code
 		targetOtherPhrases.clear();

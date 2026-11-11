@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
@@ -96,21 +97,26 @@ public class SearchConfiguration implements ICodeDistanceStrategyFactory {
 	private static final String ALGORITHM_TFIDF = "tfidf";
 	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE = "lzjd";
 	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_PUBLISHED = "lzjd2022";
-	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT = "lzjdstrict";
 	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_TRIE = "lzjdtrie";
-	private static final String ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_WITH_NCD = "ncd";
 	private static final String ALGORITHM_CHAR_LAMPEL_ZIV_JACCARD_DISTANCE = "clzjd";
-	
+
+	/**
+	 * Options appended to lzjd2022 (in this order):
+	 * "lzjd2022", "lzjd2022strict", "lzjd2022ncd", and "lzjd2022strictncd".
+	 */
+	private static final String LZJD2022_OPTION_STRICT = "strict";
+	private static final String LZJD2022_OPTION_WITH_NCD = "ncd";
+
+	/**
+	 * Algorithm names that must exactly match the -a argument.
+	 */
 	private static final String[] ALGORITHMS = {ALGORITHM_TOKEN_LEVENSHTEIN_DISTANCE,
 			ALGORITHM_BYTE_LCS_DISTANCE, ALGORITHM_NORMALIZED_BYTE_LEVENSHTEIN_DISTANCE,
-			ALGORITHM_NORMALIZED_TOKEN_LEVENSHTEIN_DISTANCE, 
+			ALGORITHM_NORMALIZED_TOKEN_LEVENSHTEIN_DISTANCE,
 			ALGORITHM_VARIABLE_WINDOW_NORMALIZED_BYTE_LEVENSHTEIN_DISTANCE,
 			ALGORITHM_VARIABLE_WINDOW_NORMALIZED_TOKEN_LEVENSHTEIN_DISTANCE,
-			ALGORITHM_BYTE_NGRAM_MULTISET,
-			ALGORITHM_BYTE_NGRAM_SET, ALGORITHM_TFIDF, 
-			ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE, 
-			ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_PUBLISHED,
-			ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT,
+			ALGORITHM_TFIDF,
+			ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE,
 			ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_TRIE,
 			ALGORITHM_CHAR_LAMPEL_ZIV_JACCARD_DISTANCE};
 	
@@ -374,7 +380,7 @@ public class SearchConfiguration implements ICodeDistanceStrategyFactory {
 			prefilter.setQuery(queryTokens);
 		}
 		 
-		if (algorithm.startsWith(ALGORITHM_TOKEN_LEVENSHTEIN_DISTANCE)) {
+		if (algorithm.equals(ALGORITHM_TOKEN_LEVENSHTEIN_DISTANCE)) {
 			IntArrayList windowSizeList = new IntArrayList();
 			windowSizeList.add(queryTokens.size());
 			for (int i=1; i<=threshold; i++) {
@@ -501,16 +507,68 @@ public class SearchConfiguration implements ICodeDistanceStrategyFactory {
 	}
 
 	public boolean isValidAlgorithmName(String name) {
-		for (String al: ALGORITHMS) {
-			if (name.startsWith(al)) return true; 
-		}
-
-		try {
-			Compressor c = Compressor.valueOf(name.toUpperCase());
-			return c != null;
-		} catch (IllegalArgumentException e) {
-			argumentError = "Invalid algorithm name: " + algorithm;
+		if (isKnownAlgorithmName(name)) {
+			return true;
+		} else {
+			argumentError = "Invalid algorithm name: " + name;
 			return false;
+		}
+	}
+
+	/**
+	 * @param name specifies an algorithm name
+	 * @return true if createStrategy accepts the name
+	 */
+	public static boolean isKnownAlgorithmName(String name) {
+		if (name == null) return false;
+		for (String al: ALGORITHMS) {
+			if (name.equals(al)) return true;
+		}
+		return parseNgramSize(name, ALGORITHM_BYTE_NGRAM_MULTISET) > 0 ||
+				parseNgramSize(name, ALGORITHM_BYTE_NGRAM_SET) > 0 ||
+				isLZJD2022Name(name) ||
+				parseCompressor(name) != null;
+	}
+
+	/**
+	 * @return n if name is prefix followed by a positive integer n.
+	 * Otherwise, -1.
+	 */
+	private static int parseNgramSize(String name, String prefix) {
+		if (name.startsWith(prefix)) {
+			String n = name.substring(prefix.length());
+			if (!n.isEmpty() && n.chars().allMatch(ch -> '0' <= ch && ch <= '9')) {
+				try {
+					return Integer.parseInt(n);
+				} catch (NumberFormatException e) {
+					// Too large
+				}
+			}
+		}
+		return -1;
+	}
+
+	/**
+	 * @return true if name is lzjd2022 optionally followed by "strict" and/or "ncd" in this order.
+	 */
+	private static boolean isLZJD2022Name(String name) {
+		if (!name.startsWith(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_PUBLISHED)) return false;
+		String options = name.substring(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_PUBLISHED.length());
+		if (options.startsWith(LZJD2022_OPTION_STRICT)) {
+			options = options.substring(LZJD2022_OPTION_STRICT.length());
+		}
+		return options.isEmpty() || options.equals(LZJD2022_OPTION_WITH_NCD);
+	}
+
+	/**
+	 * @return a compressor whose name matches the given name (case-insensitive).
+	 * null if no compressor matches.
+	 */
+	private static Compressor parseCompressor(String name) {
+		try {
+			return Compressor.valueOf(name.toUpperCase(Locale.ROOT));
+		} catch (IllegalArgumentException e) {
+			return null;
 		}
 	}
 	
@@ -533,7 +591,7 @@ public class SearchConfiguration implements ICodeDistanceStrategyFactory {
 	 * @return
 	 */
 	public ICodeDistanceStrategy createStrategy(String algorithmName) {
-		if (algorithmName.startsWith(ALGORITHM_TFIDF)) {
+		if (algorithmName.equals(ALGORITHM_TFIDF)) {
 			return new TfidfCosineDistance(sourceDirs, queryFileType, queryTokens, charset);
 		} else {
 			return createStrategy(algorithmName, queryTokens);
@@ -547,45 +605,50 @@ public class SearchConfiguration implements ICodeDistanceStrategyFactory {
 	 * @return
 	 */
 	public static ICodeDistanceStrategy createStrategy(String algorithmName, TokenSequence queryTokens) {
-		if (algorithmName.startsWith(ALGORITHM_TOKEN_LEVENSHTEIN_DISTANCE)) {
+		if (algorithmName.equals(ALGORITHM_TOKEN_LEVENSHTEIN_DISTANCE)) {
 			return new TokenLevenshteinDistance(queryTokens);
-		} else if (algorithmName.startsWith(ALGORITHM_BYTE_LCS_DISTANCE)) {
+		} else if (algorithmName.equals(ALGORITHM_BYTE_LCS_DISTANCE)) {
 			return new ByteLCSDistance(queryTokens);
-		} else if (algorithmName.startsWith(ALGORITHM_NORMALIZED_BYTE_LEVENSHTEIN_DISTANCE)) {
+		} else if (algorithmName.equals(ALGORITHM_NORMALIZED_BYTE_LEVENSHTEIN_DISTANCE)) {
 			return new NormalizedByteLevenshteinDistance(queryTokens);
-		} else if (algorithmName.startsWith(ALGORITHM_NORMALIZED_TOKEN_LEVENSHTEIN_DISTANCE)) {
+		} else if (algorithmName.equals(ALGORITHM_NORMALIZED_TOKEN_LEVENSHTEIN_DISTANCE)) {
 			return new NormalizedTokenLevenshteinDistance(queryTokens);
-		} else if (algorithmName.startsWith(ALGORITHM_VARIABLE_WINDOW_NORMALIZED_BYTE_LEVENSHTEIN_DISTANCE)) {
+		} else if (algorithmName.equals(ALGORITHM_VARIABLE_WINDOW_NORMALIZED_BYTE_LEVENSHTEIN_DISTANCE)) {
 			return new VariableWindowNormalizedByteLevenshteinDistance(queryTokens);
-		} else if (algorithmName.startsWith(ALGORITHM_VARIABLE_WINDOW_NORMALIZED_TOKEN_LEVENSHTEIN_DISTANCE)) {
+		} else if (algorithmName.equals(ALGORITHM_VARIABLE_WINDOW_NORMALIZED_TOKEN_LEVENSHTEIN_DISTANCE)) {
 			return new VariableWindowNormalizedTokenLevenshteinDistance(queryTokens);
-		} else if (algorithmName.startsWith(ALGORITHM_BYTE_NGRAM_MULTISET)) {
-			int n = Integer.parseInt(algorithmName.substring(ALGORITHM_BYTE_NGRAM_MULTISET.length()));
-			return new NgramDistance(queryTokens, n);
-		} else if (algorithmName.startsWith(ALGORITHM_BYTE_NGRAM_SET)) {
-			int n = Integer.parseInt(algorithmName.substring(ALGORITHM_BYTE_NGRAM_SET.length()));
-			return new NgramSetDistance(queryTokens, n);
-		} else if (algorithmName.startsWith(ALGORITHM_CHAR_LAMPEL_ZIV_JACCARD_DISTANCE)) {
+		} else if (algorithmName.equals(ALGORITHM_CHAR_LAMPEL_ZIV_JACCARD_DISTANCE)) {
 			return new CharLZJDistance(queryTokens);
 		} else if (algorithmName.equals(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE)) {
 			return new LZJDistance(queryTokens);
 		} else if (algorithmName.equals(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_TRIE)) {
 			return new LZJDistanceTrie(queryTokens);
-		} else if (algorithmName.startsWith(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_PUBLISHED)) {
-			boolean strict = algorithmName.contains(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_STRICT);
+		} else if (isLZJD2022Name(algorithmName)) {
+			String options = algorithmName.substring(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_PUBLISHED.length());
+			boolean strict = options.startsWith(LZJD2022_OPTION_STRICT);
 			LZJDistance2022 d = new LZJDistance2022(queryTokens, strict);
-			if (algorithmName.contains(ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_WITH_NCD)) {
+			if (options.endsWith(LZJD2022_OPTION_WITH_NCD)) {
 				d.setSecondaryDistance(new NormalizedCompressionDistance(queryTokens));
 			}
 			return d;
+		} else if (algorithmName.equals(ALGORITHM_TFIDF)) {
+			throw new IllegalArgumentException(ALGORITHM_TFIDF + " requires a search configuration to read source files");
 		}
 
-		Compressor c = Compressor.ZIP;
-		try {
-			c = Compressor.valueOf(algorithmName.toUpperCase());
-		} catch (IllegalArgumentException e) {
+		int n = parseNgramSize(algorithmName, ALGORITHM_BYTE_NGRAM_MULTISET);
+		if (n > 0) {
+			return new NgramDistance(queryTokens, n);
 		}
-		return new NormalizedCompressionDistance(queryTokens, Compressor.createInstance(c));
+		n = parseNgramSize(algorithmName, ALGORITHM_BYTE_NGRAM_SET);
+		if (n > 0) {
+			return new NgramSetDistance(queryTokens, n);
+		}
+
+		Compressor c = parseCompressor(algorithmName);
+		if (c != null) {
+			return new NormalizedCompressionDistance(queryTokens, Compressor.createInstance(c));
+		}
+		throw new IllegalArgumentException("Invalid algorithm name: " + algorithmName);
 	}
 
 	public static String concat(ArrayList<String> queryArgs) {

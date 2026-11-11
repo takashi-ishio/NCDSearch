@@ -74,6 +74,59 @@ public class SearchConfigurationTest {
 		}
 	}
 	
+	/**
+	 * Note that -e consumes all the remaining arguments, -a must precede -e.
+	 */
+	private SearchConfiguration configWithAlgorithm(String algorithm) {
+		return config(". -lang java -a " + algorithm + " -e int x = 0 ;");
+	}
+
+	@Test
+	public void testValidAlgorithmNames() {
+		String[][] expected = {
+			{"tld", "TokenLevenshteinDistance"},
+			{"blcs", "ByteLCSDistance"},
+			{"nbld", "NormalizedByteLevenshteinDistance"},
+			{"ntld", "NormalizedTokenLevenshteinDistance"},
+			{"vnbld", "VariableWindowNormalizedByteLevenshteinDistance"},
+			{"vntld", "VariableWindowNormalizedTokenLevenshteinDistance"},
+			{"bngram3", "NgramDistance"},
+			{"setbngram3", "NgramSetDistance"},
+			{"lzjd", "LZJDistance"},
+			{"lzjdtrie", "LZJDistanceTrie"},
+			{"lzjd2022", "LZJDistance2022"},
+			{"lzjd2022strict", "LZJDistance2022"},
+			{"lzjd2022ncd", "LZJDistance2022"},
+			{"lzjd2022strictncd", "LZJDistance2022"},
+			{"clzjd", "CharLZJDistance"},
+			{"zip", "NormalizedCompressionDistance"},
+			{"xz", "NormalizedCompressionDistance"},
+			{"ZSTD", "NormalizedCompressionDistance"},
+		};
+		for (String[] pair: expected) {
+			SearchConfiguration c = configWithAlgorithm(pair[0]);
+			Assert.assertTrue(pair[0], c.isValidConfiguration());
+			Assert.assertEquals(pair[0], pair[1], c.create().getClass().getSimpleName());
+		}
+	}
+
+	@Test
+	public void testInvalidAlgorithmNames() {
+		String[] invalid = {"lzjdtree", "lzjdfoo", "lzjdstrict", "lzjd2022x", "lzjd2022ncdstrict",
+				"tldx", "clzjdabc", "lzj", "foo", "bngram", "bngramx", "setbngram", "Lzjd"};
+		for (String name: invalid) {
+			SearchConfiguration c = configWithAlgorithm(name);
+			Assert.assertFalse(name, c.isValidConfiguration());
+			Assert.assertEquals("Invalid algorithm name: " + name, c.getArgumentError());
+			try {
+				SearchConfiguration.createStrategy(name, c.getQueryTokens());
+				Assert.fail("createStrategy must reject " + name);
+			} catch (IllegalArgumentException e) {
+				// expected
+			}
+		}
+	}
+
 	@Test
 	public void testGitConfiguration() {
 		// This test assumes the current directory is the project directory managed by git

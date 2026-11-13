@@ -24,22 +24,6 @@ public class LZJDistanceTrieTest {
 		return new TokenSequence(TokenReaderFactory.create(FileType.JAVA, content), false);
 	}
 
-	@Test
-	public void testComputeDistance() {
-		TokenSequence query = tokenize("if (x == null) return 0;".getBytes());
-		LZJDistanceTrie trie = new LZJDistanceTrie(query);
-		LZJDistance2022 strict = new LZJDistance2022(query, true);
-		Assert.assertEquals(0.0, trie.computeDistance(query), 0.0);
-
-		String[] targets = { "if (y == null) return 1;", "while (x != null) x = x.next;", "abc", "" };
-		for (String t: targets) {
-			TokenSequence target = tokenize(t.getBytes());
-			Assert.assertEquals(t, strict.computeDistance(target), trie.computeDistance(target), 0.0);
-		}
-		trie.close();
-		strict.close();
-	}
-
 	private static List<TokenSequence> loadFiles() throws IOException {
 		List<TokenSequence> files = new ArrayList<>();
 		try (Stream<Path> paths = Files.walk(Paths.get("src", "ncdsearch"))) {

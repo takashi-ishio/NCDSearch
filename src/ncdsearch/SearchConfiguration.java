@@ -572,6 +572,10 @@ public class SearchConfiguration implements ICodeDistanceStrategyFactory {
 		}
 	}
 	
+	/**
+	 * @return a token sequence of the query.
+	 * null if the query is unavailable (e.g., the query file could not be read).
+	 */
 	public TokenSequence getQueryTokens() {
 		return queryTokens;
 	}
@@ -669,14 +673,26 @@ public class SearchConfiguration implements ICodeDistanceStrategyFactory {
 		return b.toString();
 	}
 	
+	/**
+	 * @return true if the verbose mode is enabled.
+	 * The configuration test mode also enables the verbose mode.
+	 */
 	public boolean isVerbose() {
 		return verbose || testConfig;
 	}
-	
+
+	/**
+	 * @return true if the elapsed time and the numbers of scanned
+	 * files, lines, and tokens should be reported.
+	 * The verbose mode also enables this option.
+	 */
 	public boolean reportTime() {
 		return showTime || verbose;
 	}
-	
+
+	/**
+	 * @return the threshold of distance to report a code fragment.
+	 */
 	public double getDistanceThreshold() {
 		return threshold;
 	}
@@ -714,10 +730,17 @@ public class SearchConfiguration implements ICodeDistanceStrategyFactory {
 		}
 	}
 	
+	/**
+	 * @return true if target files are given by a file list.
+	 */
 	public boolean useFileList() {
 		return filelistName != null;
 	}
-	
+
+	/**
+	 * @return true if search results should be sorted by distance
+	 * before they are written to a report.
+	 */
 	public boolean sortResult() {
 		return sortResult;
 	}
@@ -762,22 +785,42 @@ public class SearchConfiguration implements ICodeDistanceStrategyFactory {
 		return linkStyle;
 	}
 	
+	/**
+	 * @return true if overlapping code fragments are reported.
+	 */
 	public boolean allowOverlap() {
 		return allowOverlap;
 	}
-	
+
+	/**
+	 * @return the largest sliding window size (the number of tokens).
+	 * This method assumes that the window size list is available.
+	 */
 	public int getLargestWindowSize() {
 		return windowSize[windowSize.length-1];
 	}
-	
+
+	/**
+	 * @return an array of sliding window sizes (the numbers of tokens)
+	 * sorted in ascending order.
+	 * null if the query is unavailable.
+	 */
 	public int[] getWindowSizeList() {
 		return windowSize;
 	}
-	
+
+	/**
+	 * @return the character set to read source files.
+	 * UTF-8 is used by default.
+	 */
 	public Charset getSourceCharset() {
 		return charset;
 	}
-	
+
+	/**
+	 * @return the programming language of the query.
+	 * Java is used by default.
+	 */
 	public FileType getQueryLanguage() {
 		return queryFileType;
 	}
@@ -790,18 +833,32 @@ public class SearchConfiguration implements ICodeDistanceStrategyFactory {
 		return fullscan;
 	}
 	
+	/**
+	 * @return a prediction filter to skip files unlikely to include similar code.
+	 * null if the filter is not specified.
+	 */
 	public PredictionFilter getPrefilter() {
 		return prefilter;
 	}
-	
+
+	/**
+	 * @return true if detailed positions of code fragments
+	 * should be included in a report.
+	 */
 	public boolean reportPositionDetail() {
 		return reportPositionDetail;
 	}
-	
+
+	/**
+	 * @return true if tokens are normalized before comparison.
+	 */
 	public boolean useNormalization() {
 		return normalization;
 	}
-	
+
+	/**
+	 * @return true if a separator is inserted between tokens.
+	 */
 	public boolean useSeparator() {
 		return useSeparator;
 	}
@@ -830,6 +887,10 @@ public class SearchConfiguration implements ICodeDistanceStrategyFactory {
 		return report;
 	}
 	
+	/**
+	 * @return an error message about command line arguments.
+	 * null if no error is detected.
+	 */
 	public String getArgumentError() {
 		return argumentError;
 	}

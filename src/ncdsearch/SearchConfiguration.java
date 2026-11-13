@@ -806,6 +806,19 @@ public class SearchConfiguration implements ICodeDistanceStrategyFactory {
 		return useSeparator;
 	}
 	
+	/**
+	 * Create a report object according to the configuration.
+	 * A JSON report is created if the JSON output is enabled;
+	 * otherwise, a report for the standard output is created.
+	 * <p>
+	 * Note that this method has a side effect:
+	 * it writes the configuration to the created report
+	 * before returning it.
+	 * The caller is responsible for closing the returned report
+	 * to finalize the output.
+	 * @return a new report object.  The configuration has been already written to it.
+	 * @throws IOException if an error occurred while writing the configuration.
+	 */
 	public IReport getReport() throws IOException {
 		IReport report;
 		if (reportJson) {

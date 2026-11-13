@@ -153,7 +153,7 @@ public class SearchConfiguration implements ICodeDistanceStrategyFactory {
 	private boolean reportJson = false;
 	private boolean sortResult = false;
 
-	private String algorithm = "lzjd";
+	private String algorithm = ALGORITHM_LAMPEL_ZIV_JACCARD_DISTANCE_TRIE;
 	private Charset charset;
 	private String charsetError;
 	private String targetLang = null;

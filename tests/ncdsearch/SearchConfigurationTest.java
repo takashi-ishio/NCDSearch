@@ -82,6 +82,18 @@ public class SearchConfigurationTest {
 	}
 
 	@Test
+	public void testDefaultAlgorithm() {
+		SearchConfiguration c = config(". -lang java -e int x = 0 ;");
+		Assert.assertTrue(c.isValidConfiguration());
+		Assert.assertEquals("LZJDistanceTrie", c.create().getClass().getSimpleName());
+
+		// The previous default remains available
+		c = configWithAlgorithm("lzjd");
+		Assert.assertTrue(c.isValidConfiguration());
+		Assert.assertEquals("LZJDistance", c.create().getClass().getSimpleName());
+	}
+
+	@Test
 	public void testValidAlgorithmNames() {
 		String[][] expected = {
 			{"tld", "TokenLevenshteinDistance"},

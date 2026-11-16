@@ -1,6 +1,7 @@
 package ncdsearch.comparison.algorithm;
 
-import gnu.trove.list.array.TLongArrayList;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongArrays;
 import ncdsearch.comparison.ICodeDistanceStrategy;
 import ncdsearch.comparison.TokenSequence;
 
@@ -10,16 +11,16 @@ import ncdsearch.comparison.TokenSequence;
 public class NgramDistance implements ICodeDistanceStrategy {
 
 	private int n;
-	private TLongArrayList query;
+	private LongArrayList query;
 	
 	public NgramDistance(TokenSequence query, int n) {
 		this.query = createNgram(query.toByteArray(), n);
 		this.n = n;
 	}
 	
-	static TLongArrayList createNgram(byte[] buf, int n) {
+	static LongArrayList createNgram(byte[] buf, int n) {
 		assert n < 8;
-		TLongArrayList result = new TLongArrayList(buf.length-(n-1));
+		LongArrayList result = new LongArrayList(buf.length-(n-1));
 		if (buf.length < n) return result;
 		long bitmask = 0xff;
 		long l = 0;
@@ -31,34 +32,34 @@ public class NgramDistance implements ICodeDistanceStrategy {
 			l = ((l << 8) + buf[i]) & bitmask; 
 			result.add(l);
 		}
-		result.sort();
+		LongArrays.unstableSort(result.elements(), 0, result.size());
 		return result;
 	}
 
 	@Override
 	public double computeDistance(TokenSequence code) {
-		TLongArrayList another = createNgram(code.toByteArray(), n);
+		LongArrayList another = createNgram(code.toByteArray(), n);
 		return 1 - computeSimilarity(query, another);
 	}
 
-	static double computeSimilarity(TLongArrayList query, TLongArrayList another) {
+	static double computeSimilarity(LongArrayList query, LongArrayList another) {
 		int intersection = computeIntersection(query, another);
 		return intersection * 1.0 / (query.size() + another.size() - intersection);
 	}
 
-	static int computeIntersection(TLongArrayList query, TLongArrayList another) {
+	static int computeIntersection(LongArrayList query, LongArrayList another) {
 		int count = 0;
 		int i = 0;
 		int j = 0;
 		while (i < query.size() && j < another.size()) {
-			if (query.get(i) == another.get(j)) {
+			if (query.getLong(i) == another.getLong(j)) {
 				count++;
 				i++;
 				j++;
-			} else if (query.get(i) < another.get(j)) {
+			} else if (query.getLong(i) < another.getLong(j)) {
 				i++;
 			} else {
-				assert query.get(i) > another.get(j);
+				assert query.getLong(i) > another.getLong(j);
 				j++;
 			}
 		}

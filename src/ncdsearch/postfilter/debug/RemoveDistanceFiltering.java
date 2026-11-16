@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import gnu.trove.map.hash.TIntDoubleHashMap;
+import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 import ncdsearch.postfilter.strategy.Cluster;
 import ncdsearch.postfilter.strategy.Component;
 
@@ -41,7 +41,7 @@ public abstract class RemoveDistanceFiltering extends DistanceFiltering {
 		for (int i = 0; i < totalVertexNumber; i++) {
 			if (!removedFlagMap[i])
 				continue;
-			TIntDoubleHashMap innerMap = distanceMap.get(i);
+			Int2DoubleOpenHashMap innerMap = distanceMap.get(i);
 			for (int j = 0; j < totalVertexNumber; j++) {
 				if (i != j && !removedFlagMap[j]) {
 					double distance = innerMap.get(j);

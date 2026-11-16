@@ -42,8 +42,9 @@ public class SearchMain {
 
 		SearchConfiguration config = new SearchConfiguration(args);
 		if (config.isTestingConfiguration()) {
+			// Create a report object to write the configuration
 			try (IReport report = config.getReport()) {
-				// simply output a report
+				// Nothing to do; the configuration has been already written by getReport()
 			} catch (IOException e) {
 			}
 			

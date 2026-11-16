@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import gnu.trove.map.hash.TIntDoubleHashMap;
+import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 
 public class Shortest extends DistanceClustering {
 
@@ -38,14 +38,14 @@ public class Shortest extends DistanceClustering {
 			}
 		}
 		int minJ = -1;
-		TIntDoubleHashMap iMap = distanceMap.get(minI);
+		Int2DoubleOpenHashMap iMap = distanceMap.get(minI);
 
 		for (int j = 0; j < totalVertexNumber; j++) {
 			if (!removedFlagMap[j] && j != minI && minDistance == iMap.get(j)) {
 				minJ = j;
 			}
 		}
-		TIntDoubleHashMap jMap = distanceMap.get(minJ);
+		Int2DoubleOpenHashMap jMap = distanceMap.get(minJ);
 		for (int k = 0; k < totalVertexNumber; k++) {
 			if (!removedFlagMap[k] && k != minI && k != minJ) {
 				jMap.put(k, Math.min(iMap.get(k), jMap.get(k)));

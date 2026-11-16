@@ -3,7 +3,7 @@ package ncdsearch.comparison.algorithm;
 import org.junit.Assert;
 import org.junit.Test;
 
-import gnu.trove.map.hash.TObjectIntHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import ncdsearch.comparison.TokenSequence;
 import sarf.lexer.FileType;
 import sarf.lexer.TokenReaderFactory;
@@ -12,7 +12,7 @@ public class TfidfTest {
 
 	@Test
 	public void testCosineDistance() {
-		TObjectIntHashMap<String> map = new TObjectIntHashMap<>();
+		Object2IntOpenHashMap<String> map = new Object2IntOpenHashMap<>();
 		map.put("long", 10);
 		map.put("int", 10);
 		map.put("x", 1);

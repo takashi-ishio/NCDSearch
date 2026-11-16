@@ -6,13 +6,13 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import gnu.trove.map.hash.TIntDoubleHashMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
+import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 public class NewmanFast extends Clustering {
-	private TIntObjectHashMap<TIntDoubleHashMap> deltaModularityMap;
-	private TIntDoubleHashMap maxDeltaModularityMap;
-	private TIntObjectHashMap<Cluster> clusterMap;
+	private Int2ObjectOpenHashMap<Int2DoubleOpenHashMap> deltaModularityMap;
+	private Int2DoubleOpenHashMap maxDeltaModularityMap;
+	private Int2ObjectOpenHashMap<Cluster> clusterMap;
 	private int totalVertexNumber;
 	private int totalEdgeNumber;
 	private boolean[] removedFlagMap;
@@ -25,9 +25,9 @@ public class NewmanFast extends Clustering {
 
 	@Override
 	public List<List<JsonNode>> clustering() {
-		deltaModularityMap = new TIntObjectHashMap<>();
-		maxDeltaModularityMap = new TIntDoubleHashMap();
-		clusterMap = new TIntObjectHashMap<>();
+		deltaModularityMap = new Int2ObjectOpenHashMap<>();
+		maxDeltaModularityMap = new Int2DoubleOpenHashMap();
+		clusterMap = new Int2ObjectOpenHashMap<>();
 
 		totalVertexNumber = allNode.size();
 		totalEdgeNumber = totalVertexNumber - 1;
@@ -92,7 +92,7 @@ public class NewmanFast extends Clustering {
 		int arraySize = clusters.size();
 		for (int i = 0; i < arraySize; i++) {
 			Cluster target = clusters.get(i);
-			TIntDoubleHashMap map = new TIntDoubleHashMap();
+			Int2DoubleOpenHashMap map = new Int2DoubleOpenHashMap();
 			double max = -Double.MAX_VALUE;
 			for (int j = 0; j < arraySize; j++) {
 				if (i < j) {
@@ -120,7 +120,7 @@ public class NewmanFast extends Clustering {
 		for (int i = 0; i < totalVertexNumber; i++) {
 			if (!removedFlagMap[i]) {
 				double max = -Double.MAX_VALUE;
-				TIntDoubleHashMap innerMap = deltaModularityMap.get(i);
+				Int2DoubleOpenHashMap innerMap = deltaModularityMap.get(i);
 				for (int j = 0; j < totalVertexNumber; j++) {
 					if (i != j && !removedFlagMap[j]) {
 						double deltaModularity = innerMap.get(j);
@@ -149,14 +149,14 @@ public class NewmanFast extends Clustering {
 			}
 		}
 		int maxJ = -1;
-		TIntDoubleHashMap iMap = deltaModularityMap.get(maxI);
+		Int2DoubleOpenHashMap iMap = deltaModularityMap.get(maxI);
 		/*get max delta modularity cluster pair*/
 		for (int j = 0; j < totalVertexNumber; j++) {
 			if (!removedFlagMap[j] && j != maxI && maxDeltaModularity == iMap.get(j)) {
 				maxJ = j;
 			}
 		}
-		TIntDoubleHashMap jMap = deltaModularityMap.get(maxJ);
+		Int2DoubleOpenHashMap jMap = deltaModularityMap.get(maxJ);
 		for (int k = 0; k < totalVertexNumber; k++) {
 			if (!removedFlagMap[k] && k != maxI && k != maxJ) {
 				//				System.err.println("maxi = " + maxI + " maxj = " + maxJ +" k = " + k);
